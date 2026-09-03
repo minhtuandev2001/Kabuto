@@ -1,0 +1,302 @@
+[
+  {
+    "lesson": 1,
+    "title": "はじめまして - Chào hỏi, giới thiệu",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 2,
+    "title": "これ・それ・あれ - Đồ vật quanh ta",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 3,
+    "title": "ここ・そこ・あそこ - Địa điểm",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 4,
+    "title": "じかん - Thời gian, giờ giấc",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 5,
+    "title": "いきます・きます - Di chuyển",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 6,
+    "title": "たべます・のみます - Sinh hoạt hằng ngày",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 7,
+    "title": "どうぐ - Công cụ và tặng quà",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 8,
+    "title": "けいようし - Tính từ",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 9,
+    "title": "すき・きらい - Sở thích",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 10,
+    "title": "あります・います - Sự tồn tại",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 11,
+    "title": "かず - Số đếm, số lượng",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 12,
+    "title": "ひかく - So sánh",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 13,
+    "title": "〜たい - Mong muốn",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 14,
+    "title": "〜てください - Nhờ vả, yêu cầu",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 15,
+    "title": "きょか - Cho phép và cấm đoán",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 16,
+    "title": "〜て、〜 - Nối hành động",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 17,
+    "title": "〜ないでください - Khuyên nhủ",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 18,
+    "title": "〜ことができます - Khả năng",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 19,
+    "title": "〜たことがあります - Kinh nghiệm",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 20,
+    "title": "ふつうけい - Thể thông thường",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 21,
+    "title": "〜とおもいます - Nêu ý kiến",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 22,
+    "title": "めいししゅうしょく - Mệnh đề bổ nghĩa",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 23,
+    "title": "〜とき - Thời điểm",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 24,
+    "title": "あげます・もらいます - Cho và nhận",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 25,
+    "title": "〜たら - Câu điều kiện",
+    "book": "Minna no Nihongo Sơ cấp 1",
+    "jlpt": "N5"
+  },
+  {
+    "lesson": 26,
+    "title": "〜んです - Giải thích lý do",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 27,
+    "title": "かのうけい - Thể khả năng",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 28,
+    "title": "〜ながら - Hành động đồng thời",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 29,
+    "title": "〜ています - Trạng thái kết quả",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 30,
+    "title": "〜てあります - Sự chuẩn bị",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 31,
+    "title": "〜つもり - Ý định, kế hoạch",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 32,
+    "title": "〜でしょう - Dự đoán",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 33,
+    "title": "めいれいけい - Thể mệnh lệnh",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 34,
+    "title": "〜とおりに - Làm theo hướng dẫn",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 35,
+    "title": "〜ば - Câu điều kiện ば",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 36,
+    "title": "〜ように - Mục đích",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 37,
+    "title": "うけみ - Thể bị động",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 38,
+    "title": "〜のは・のが - Danh từ hóa",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 39,
+    "title": "〜て・〜ので - Nguyên nhân",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 40,
+    "title": "〜かどうか - Nghi vấn gián tiếp",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 41,
+    "title": "いただきます - Cho nhận lịch sự",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 42,
+    "title": "〜ために - Mục đích, công dụng",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 43,
+    "title": "〜そうです - Có vẻ, sắp sửa",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 44,
+    "title": "〜すぎます - Quá mức",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 45,
+    "title": "〜ばあいは - Trường hợp",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 46,
+    "title": "〜ところです - Thời điểm hành động",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 47,
+    "title": "〜そうです - Nghe nói",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 48,
+    "title": "しえき - Thể sai khiến",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 49,
+    "title": "そんけいご - Tôn kính ngữ",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  },
+  {
+    "lesson": 50,
+    "title": "けんじょうご - Khiêm nhường ngữ",
+    "book": "Minna no Nihongo Sơ cấp 2",
+    "jlpt": "N4"
+  }
+]

@@ -1,0 +1,382 @@
+[
+  {
+    "lesson": 21,
+    "order": 1,
+    "kana": "おもいます",
+    "kanji": "思います",
+    "romaji": "omoimasu",
+    "sinoVietnamese": "TƯ",
+    "meaning": "nghĩ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/omoimasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 2,
+    "kana": "いいます",
+    "kanji": "言います",
+    "romaji": "iimasu",
+    "sinoVietnamese": "NGÔN",
+    "meaning": "nói",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/iimasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 3,
+    "kana": "たります",
+    "kanji": "足ります",
+    "romaji": "tarimasu",
+    "sinoVietnamese": "TÚC",
+    "meaning": "đủ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/tarimasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 4,
+    "kana": "かちます",
+    "kanji": "勝ちます",
+    "romaji": "kachimasu",
+    "sinoVietnamese": "THẮNG",
+    "meaning": "thắng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/kachimasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 5,
+    "kana": "まけます",
+    "kanji": "負けます",
+    "romaji": "makemasu",
+    "sinoVietnamese": "PHỤ",
+    "meaning": "thua",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/makemasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 6,
+    "kana": "[おまつりが～] あります",
+    "kanji": "[お祭りが～]あります",
+    "romaji": "[omatsuriga～] arimasu",
+    "sinoVietnamese": "TẾ",
+    "meaning": "được tổ chức, diễn ra, có [lễ hội~]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/arimasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 7,
+    "kana": "やくにたちます",
+    "kanji": "役に立ちます",
+    "romaji": "yakunitachimasu",
+    "sinoVietnamese": "DỊCH LẬP",
+    "meaning": "giúp ích",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/yakunitachimasu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 8,
+    "kana": "むだ[な]",
+    "kanji": "",
+    "romaji": "muda[na]",
+    "sinoVietnamese": "",
+    "meaning": "lãng phí, vô ích",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/muda.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 9,
+    "kana": "ふべん[な]",
+    "kanji": "不便[な]",
+    "romaji": "fuben[na]",
+    "sinoVietnamese": "BẤT TIỆN",
+    "meaning": "bất tiện",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/fuben.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 10,
+    "kana": "おなじ",
+    "kanji": "",
+    "romaji": "onaji",
+    "sinoVietnamese": "",
+    "meaning": "giống",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/onaji.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 11,
+    "kana": "すごい",
+    "kanji": "",
+    "romaji": "sugoi",
+    "sinoVietnamese": "",
+    "meaning": "ghê quá, giỏi quá",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/sugoi.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 12,
+    "kana": "しゅしょう",
+    "kanji": "首相",
+    "romaji": "shushou",
+    "sinoVietnamese": "THỦ TƯỚNG",
+    "meaning": "thủ tướng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/syusyou.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 13,
+    "kana": "だいとうりょう",
+    "kanji": "大統領",
+    "romaji": "daitouryou",
+    "sinoVietnamese": "ĐẠI THỐNG LÃNH",
+    "meaning": "tổng thống",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/daitouryou.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 14,
+    "kana": "せいじ",
+    "kanji": "政治",
+    "romaji": "seiji",
+    "sinoVietnamese": "CHÍNH TRỊ",
+    "meaning": "chính trị",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/seiji.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 15,
+    "kana": "ニュース",
+    "kanji": "",
+    "romaji": "nyuｰsu",
+    "sinoVietnamese": "",
+    "meaning": "tin tức, bản tin",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/k_nyuusu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 16,
+    "kana": "スピーチ",
+    "kanji": "",
+    "romaji": "supiｰchi",
+    "sinoVietnamese": "",
+    "meaning": "bài diễn thuyết, bài phát biểu (～をします: diễn thuyết)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/k_supiichi.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 17,
+    "kana": "しあい",
+    "kanji": "試合",
+    "romaji": "shiai",
+    "sinoVietnamese": "THÍ HỢP",
+    "meaning": "trận đấu",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/shiai.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 18,
+    "kana": "アルバイト",
+    "kanji": "",
+    "romaji": "arubaito",
+    "sinoVietnamese": "",
+    "meaning": "công việc làm thêm (～をします: làm thêm)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/k_arubaito.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 19,
+    "kana": "いけん",
+    "kanji": "意見",
+    "romaji": "iken",
+    "sinoVietnamese": "Ý KIẾN",
+    "meaning": "ý kiến",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/iken.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 20,
+    "kana": "[お]はなし",
+    "kanji": "[お]話",
+    "romaji": "[o]hanashi",
+    "sinoVietnamese": "THOẠI",
+    "meaning": "I câu chuyện, bài nói chuyện (～をします: Nói chuyện)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/ohanashi.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 21,
+    "kana": "ユーモア",
+    "kanji": "",
+    "romaji": "yuｰmoa",
+    "sinoVietnamese": "",
+    "meaning": "hài hước",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/k_yuumoa.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 22,
+    "kana": "むだ",
+    "kanji": "",
+    "romaji": "muda",
+    "sinoVietnamese": "",
+    "meaning": "sự lãng phí",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/muda.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 23,
+    "kana": "デザイン",
+    "kanji": "",
+    "romaji": "dezain",
+    "sinoVietnamese": "",
+    "meaning": "thiết kế",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/dezain.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 24,
+    "kana": "こうつう",
+    "kanji": "交通",
+    "romaji": "koutsuu",
+    "sinoVietnamese": "GIAO THÔNG",
+    "meaning": "giao thông, đi lại",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/kotsuu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 25,
+    "kana": "ラッシュ",
+    "kanji": "",
+    "romaji": "rasshu",
+    "sinoVietnamese": "",
+    "meaning": "giờ cao điểm",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/rasshu.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 26,
+    "kana": "さいきん",
+    "kanji": "最近",
+    "romaji": "saikin",
+    "sinoVietnamese": "TỐI CẬN",
+    "meaning": "gần đây",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/saikin.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 27,
+    "kana": "たぶん",
+    "kanji": "",
+    "romaji": "tabun",
+    "sinoVietnamese": "",
+    "meaning": "chắc, có thể",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/tabun.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 28,
+    "kana": "きっと",
+    "kanji": "",
+    "romaji": "kitto",
+    "sinoVietnamese": "",
+    "meaning": "chắc chắn, nhất định",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/kitto.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 29,
+    "kana": "ほんとうに",
+    "kanji": "",
+    "romaji": "hontouni",
+    "sinoVietnamese": "",
+    "meaning": "thật sự",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/hontouni.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 30,
+    "kana": "そんなに",
+    "kanji": "",
+    "romaji": "sonnani",
+    "sinoVietnamese": "",
+    "meaning": "(không)~ lắm",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/sonnani.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 31,
+    "kana": "～について",
+    "kanji": "",
+    "romaji": "～nitsuite",
+    "sinoVietnamese": "",
+    "meaning": "về~",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/nitsuite.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 32,
+    "kana": "しかたが　ありません。",
+    "kanji": "",
+    "romaji": "shikataga arimasen｡",
+    "sinoVietnamese": "",
+    "meaning": "Không có cách nào khác./đành chịu vậy/ Chuyện đã rồi.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/shikatagaarimasen.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 33,
+    "kana": "しばらくですね。",
+    "kanji": "",
+    "romaji": "shibarakudesune｡",
+    "sinoVietnamese": "",
+    "meaning": "Lâu không gặp nhỉ.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/shibarakudesune.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 34,
+    "kana": "～でものみませんか。",
+    "kanji": "～でも飲みませんか。",
+    "romaji": "～demonomimasenka｡",
+    "sinoVietnamese": "ẤM",
+    "meaning": "Anh/chị uống~ (cà-phê, rựu hay cái gì đó) nhé.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/demonomimasenka.wav"
+  },
+  {
+    "lesson": 21,
+    "order": 35,
+    "kana": "みないと…。",
+    "kanji": "見ないと…。",
+    "romaji": "minaito～｡",
+    "sinoVietnamese": "KIẾN",
+    "meaning": "Tôi phải xem",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/minaito.wav"
+  },
+  {
+    "lesson": 21,
+    "order": 36,
+    "kana": "もちろん",
+    "kanji": "",
+    "romaji": "mochiron",
+    "sinoVietnamese": "",
+    "meaning": "tất nhiên",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/mochiron.mp3"
+  },
+  {
+    "lesson": 21,
+    "order": 37,
+    "kana": "カンガルー",
+    "kanji": "",
+    "romaji": "kangaruｰ",
+    "sinoVietnamese": "",
+    "meaning": "con kăng-gu-ru, chuột túi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/kangaru.wav"
+  },
+  {
+    "lesson": 21,
+    "order": 38,
+    "kana": "キャプテン・クック",
+    "kanji": "",
+    "romaji": "kyaputen～kukku",
+    "sinoVietnamese": "",
+    "meaning": "thuyền trưởng Cook (James Cook 1728 – 79)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai21/kyapputenkukku.wav"
+  }
+]

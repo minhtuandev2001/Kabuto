@@ -1,0 +1,422 @@
+[
+  {
+    "lesson": 13,
+    "order": 1,
+    "kana": "あそびます",
+    "kanji": "遊びます",
+    "romaji": "asobimasu",
+    "sinoVietnamese": "DU",
+    "meaning": "chơi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/asobimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 2,
+    "kana": "およぎます",
+    "kanji": "泳ぎます",
+    "romaji": "oyogimasu",
+    "sinoVietnamese": "VỊNH",
+    "meaning": "bơi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/oyogimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 3,
+    "kana": "むかえます",
+    "kanji": "迎えます",
+    "romaji": "mukaemasu",
+    "sinoVietnamese": "NGHINH",
+    "meaning": "đón",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/mukaemasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 4,
+    "kana": "つかれます",
+    "kanji": "疲れます",
+    "romaji": "tsukaremasu",
+    "sinoVietnamese": "BÌ",
+    "meaning": "mệt",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/tsukaremasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 5,
+    "kana": "[てがみを～]だします",
+    "kanji": "[手紙を～]出します",
+    "romaji": "[tegamiwo～]dashimasu",
+    "sinoVietnamese": "THỦ CHỈ XUẤT",
+    "meaning": "gửi[thư]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/dashimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 6,
+    "kana": "[きっさてんに～]はいります",
+    "kanji": "[喫茶店に～]入ります",
+    "romaji": "[kissatenni～]hairimasu",
+    "sinoVietnamese": "KHIẾT TRÀ ĐIẾM NHẬP",
+    "meaning": "vào [quán giải khát]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/hairimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 7,
+    "kana": "[きっさてんを～]でます",
+    "kanji": "[喫茶店を～]出ます",
+    "romaji": "[kissatenwo～]demasu",
+    "sinoVietnamese": "KHIẾT TRÀ ĐIẾM XUẤT",
+    "meaning": "ra, ra khỏi [quán giải khát]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/demasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 8,
+    "kana": "けっこんします",
+    "kanji": "結婚します",
+    "romaji": "kekkonshimasu",
+    "sinoVietnamese": "KẾT HÔN",
+    "meaning": "kết hôn, lập gia đình, cưới",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/kekkonshimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 9,
+    "kana": "かいものします",
+    "kanji": "買い物します",
+    "romaji": "kaimonoshimasu",
+    "sinoVietnamese": "MÃI VẬT",
+    "meaning": "mua hàng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/kaimonoshimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 10,
+    "kana": "しょくじします",
+    "kanji": "食事します",
+    "romaji": "shokujishimasu",
+    "sinoVietnamese": "THỰC SỰ",
+    "meaning": "ăn cơm",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/syokujishimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 11,
+    "kana": "[こうえんを～]さんぽします",
+    "kanji": "[公園を～]散歩します",
+    "romaji": "[kouenwo～]sanposhimasu",
+    "sinoVietnamese": "CÔNG VIÊN TÁN BỘ",
+    "meaning": "đi dạo [ở công viên]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/sanposhimasu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 12,
+    "kana": "たいへん「な」",
+    "kanji": "大変「な」",
+    "romaji": "taihen｢na｣",
+    "sinoVietnamese": "ĐẠI BIẾN",
+    "meaning": "vất vả, khó khăn, khổ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/taihen.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 13,
+    "kana": "ほしい",
+    "kanji": "欲しい",
+    "romaji": "hoshii",
+    "sinoVietnamese": "DỤC",
+    "meaning": "muốn có",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/hoshii.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 14,
+    "kana": "さびしい",
+    "kanji": "寂しい",
+    "romaji": "sabishii",
+    "sinoVietnamese": "TỊCH",
+    "meaning": "buồn, cô đơn",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/sabishii.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 15,
+    "kana": "ひろい",
+    "kanji": "広い",
+    "romaji": "hiroi",
+    "sinoVietnamese": "QUẢNG",
+    "meaning": "rộng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/hiroi.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 16,
+    "kana": "せまい",
+    "kanji": "狭い",
+    "romaji": "semai",
+    "sinoVietnamese": "HIỆP",
+    "meaning": "chật, hẹp",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/semai.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 17,
+    "kana": "しやくしょ",
+    "kanji": "市役所",
+    "romaji": "shiyakusho",
+    "sinoVietnamese": "THỊ DỊCH SỞ",
+    "meaning": "văn phòng hành chính quận, thành phố",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/shiyakusyo.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 18,
+    "kana": "プール",
+    "kanji": "",
+    "romaji": "puｰru",
+    "sinoVietnamese": "",
+    "meaning": "bể bơi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/k_puuruu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 19,
+    "kana": "かわ",
+    "kanji": "川",
+    "romaji": "kawa",
+    "sinoVietnamese": "XUYÊN",
+    "meaning": "sông",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/kawa.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 20,
+    "kana": "けいざい",
+    "kanji": "経済",
+    "romaji": "keizai",
+    "sinoVietnamese": "KINH TẾ",
+    "meaning": "kinh tế",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/keizai.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 21,
+    "kana": "びじゅつ",
+    "kanji": "美術",
+    "romaji": "bijutsu",
+    "sinoVietnamese": "MỸ THUẬT",
+    "meaning": "mỹ thuật",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/bijutsu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 22,
+    "kana": "つり",
+    "kanji": "釣り",
+    "romaji": "tsuri",
+    "sinoVietnamese": "ĐIẾU",
+    "meaning": "việc câu cá (~をします：câu cá)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/tsuri.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 23,
+    "kana": "スキー",
+    "kanji": "",
+    "romaji": "sukiｰ",
+    "sinoVietnamese": "",
+    "meaning": "việc trượt tuyết (~をします：trượt tuyết)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/k_sukii.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 24,
+    "kana": "かいぎ",
+    "kanji": "会議",
+    "romaji": "kaigi",
+    "sinoVietnamese": "HỘI NGHỊ",
+    "meaning": "họp, cuộc họp (~をします: họp, tổ chức cuộc họp)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/kaigi.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 25,
+    "kana": "とうろく",
+    "kanji": "登録",
+    "romaji": "touroku",
+    "sinoVietnamese": "ĐĂNG LỤC",
+    "meaning": "việc đăng ký (~をします：đăng ký)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/touroku.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 26,
+    "kana": "しゅうまつ",
+    "kanji": "週末",
+    "romaji": "shuumatsu",
+    "sinoVietnamese": "CHU MẠT",
+    "meaning": "cuối tuần",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/syuumatsu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 27,
+    "kana": "～ごろ",
+    "kanji": "",
+    "romaji": "～goro",
+    "sinoVietnamese": "",
+    "meaning": "khoảng ~ (dùng cho thời gian)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/goro.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 28,
+    "kana": "なにか",
+    "kanji": "何か",
+    "romaji": "nanika",
+    "sinoVietnamese": "HÀ",
+    "meaning": "cái gì đó",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/nanika.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 29,
+    "kana": "どこか",
+    "kanji": "",
+    "romaji": "dokoka",
+    "sinoVietnamese": "",
+    "meaning": "đâu đó, chỗ nào đó",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/dokoka.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 30,
+    "kana": "おなかが　すきました。",
+    "kanji": "",
+    "romaji": "onakaga sukimashita｡",
+    "sinoVietnamese": "",
+    "meaning": "(tôi) đói rồi.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/onakagasukimashita.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 31,
+    "kana": "おなかが　いっぱいです。",
+    "kanji": "",
+    "romaji": "onakaga ippaidesu｡",
+    "sinoVietnamese": "",
+    "meaning": "(tôi) no rồi.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/onakagaippaidesu.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 32,
+    "kana": "のどが　かわきました。",
+    "kanji": "",
+    "romaji": "nodoga kawakimashita｡",
+    "sinoVietnamese": "",
+    "meaning": "(tôi) khát.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/nodogakawakimashita.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 33,
+    "kana": "そうですね。",
+    "kanji": "",
+    "romaji": "soudesune｡",
+    "sinoVietnamese": "",
+    "meaning": "Thế à. Như vậy nhỉ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/soudesune.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 34,
+    "kana": "そうしましょう。",
+    "kanji": "",
+    "romaji": "soushimashou｡",
+    "sinoVietnamese": "",
+    "meaning": "Nhất trí./ Chúng ta thống nhất như thế.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/soushimasyou.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 35,
+    "kana": "ごちゅうもん",
+    "kanji": "ご注文は？",
+    "romaji": "gochuumon",
+    "sinoVietnamese": "CHÚ VĂN",
+    "meaning": "Anh/Chị dùng món gì ạ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/gochuumonha.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 36,
+    "kana": "ていしょく",
+    "kanji": "",
+    "romaji": "teishoku",
+    "sinoVietnamese": "",
+    "meaning": "cơm suất, cơm phần",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/teisyoku.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 37,
+    "kana": "ぎゅうどん",
+    "kanji": "牛どん",
+    "romaji": "gyuudon",
+    "sinoVietnamese": "NGƯU",
+    "meaning": "món cơm thịt bò",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/gyuudon.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 38,
+    "kana": "「しょうしょう」おまちください",
+    "kanji": "[少々] お待ちください。",
+    "romaji": "｢shoushou｣omachikudasai",
+    "sinoVietnamese": "THIỂU ĐÃI",
+    "meaning": "Xin anh/chị vui lòng đợi [một chút].",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/syousyouomachikudasai.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 39,
+    "kana": "べつべつに",
+    "kanji": "別々に",
+    "romaji": "betsubetsuni",
+    "sinoVietnamese": "BIỆT",
+    "meaning": "riêng ra/ để riêng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/betsubetsuni.mp3"
+  },
+  {
+    "lesson": 13,
+    "order": 40,
+    "kana": "ロシア",
+    "kanji": "",
+    "romaji": "roshia",
+    "sinoVietnamese": "",
+    "meaning": "Nga",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/roshia.wav"
+  },
+  {
+    "lesson": 13,
+    "order": 41,
+    "kana": "つるや",
+    "kanji": "",
+    "romaji": "tsuruya",
+    "sinoVietnamese": "",
+    "meaning": "tên một nhà hàng (giả tưởng)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/tsuruya.wav"
+  },
+  {
+    "lesson": 13,
+    "order": 42,
+    "kana": "おはようテレビ",
+    "kanji": "",
+    "romaji": "ohayouterebi",
+    "sinoVietnamese": "",
+    "meaning": "tên một chương trình truyền hình (giả tưởng)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai13/ohayouterebi.wav"
+  }
+]

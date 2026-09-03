@@ -1,0 +1,292 @@
+[
+  {
+    "lesson": 20,
+    "order": 1,
+    "kana": "[ビザが～]いります",
+    "kanji": "[ビザが～]要ります",
+    "romaji": "[bizaga～]irimasu",
+    "sinoVietnamese": "YẾU",
+    "meaning": "cần [thị thực (visa)]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/irimasu.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 2,
+    "kana": "しらべます",
+    "kanji": "調べます",
+    "romaji": "shirabemasu",
+    "sinoVietnamese": "ĐIỀU",
+    "meaning": "tìm hiểu, điều tra, xem",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/shirabemasu.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 3,
+    "kana": "なおします",
+    "kanji": "直します",
+    "romaji": "naoshimasu",
+    "sinoVietnamese": "TRỰC",
+    "meaning": "sửa, chữa",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/naoshimasu.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 4,
+    "kana": "しゅうりします",
+    "kanji": "修理します",
+    "romaji": "shuurishimasu",
+    "sinoVietnamese": "TU LÝ",
+    "meaning": "sửa chữa, tu sửa",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/shuurishimasu.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 5,
+    "kana": "でんわします",
+    "kanji": "電話します",
+    "romaji": "denwashimasu",
+    "sinoVietnamese": "ĐIỆN THOẠI",
+    "meaning": "gọi điện thoại",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/denwashimasu.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 6,
+    "kana": "ぼく",
+    "kanji": "僕",
+    "romaji": "boku",
+    "sinoVietnamese": "BỘC",
+    "meaning": "tớ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/boku.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 7,
+    "kana": "きみ",
+    "kanji": "君",
+    "romaji": "kimi",
+    "sinoVietnamese": "QUÂN",
+    "meaning": "cậu, bạn",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kimi.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 8,
+    "kana": "～くん",
+    "kanji": "～君",
+    "romaji": "～kun",
+    "sinoVietnamese": "QUÂN",
+    "meaning": "(hậu tố thêm vào sau tên của em trai)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kun.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 9,
+    "kana": "うん",
+    "kanji": "",
+    "romaji": "un",
+    "sinoVietnamese": "",
+    "meaning": "ừ (cách nói thân mật của 「はい」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/un.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 10,
+    "kana": "ううん",
+    "kanji": "",
+    "romaji": "uun",
+    "sinoVietnamese": "",
+    "meaning": "không (cách nói thân mật của 「いいえ」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/uun.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 11,
+    "kana": "サラリーマン",
+    "kanji": "",
+    "romaji": "sarariｰman",
+    "sinoVietnamese": "",
+    "meaning": "người làm việc cho các công ty",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/k_sarariiman.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 12,
+    "kana": "ことば",
+    "kanji": "",
+    "romaji": "kotoba",
+    "sinoVietnamese": "",
+    "meaning": "từ, tiếng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kotoba.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 13,
+    "kana": "ぶっか",
+    "kanji": "物価",
+    "romaji": "bukka",
+    "sinoVietnamese": "VẬT GIÁ",
+    "meaning": "giá cả, mức giá, vật giá",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/bukka.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 14,
+    "kana": "きもの",
+    "kanji": "着物",
+    "romaji": "kimono",
+    "sinoVietnamese": "TRƯỚC VẬT",
+    "meaning": "Kimono (trang phục truyền thống của Nhật Bản)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kimono.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 15,
+    "kana": "ビザ",
+    "kanji": "",
+    "romaji": "biza",
+    "sinoVietnamese": "",
+    "meaning": "thị thực, Visa",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/k_biza.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 16,
+    "kana": "はじめ",
+    "kanji": "始め",
+    "romaji": "hajime",
+    "sinoVietnamese": "THỦY",
+    "meaning": "ban đầu, đầu tiên",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/hajime.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 17,
+    "kana": "おわり",
+    "kanji": "終わり",
+    "romaji": "owari",
+    "sinoVietnamese": "CHUNG",
+    "meaning": "kết thúc",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/owari.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 18,
+    "kana": "こっち",
+    "kanji": "",
+    "romaji": "kotchi",
+    "sinoVietnamese": "",
+    "meaning": "phía này, chỗ này (cách nói thân mật của 「こちら」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kocchi.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 19,
+    "kana": "そっち",
+    "kanji": "",
+    "romaji": "sotchi",
+    "sinoVietnamese": "",
+    "meaning": "phía đó, chỗ đó (cách nói thân mật của 「そちら」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/socchi.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 20,
+    "kana": "あっち",
+    "kanji": "",
+    "romaji": "atchi",
+    "sinoVietnamese": "",
+    "meaning": "phía kia, chỗ kia (cách nói thân mật của 「あちら」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/acchi.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 21,
+    "kana": "どっち",
+    "kanji": "",
+    "romaji": "dotchi",
+    "sinoVietnamese": "",
+    "meaning": "cái nào, phía nào, đâu (cách nói thân mật của 「どちら」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/docchi.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 22,
+    "kana": "このあいだ",
+    "kanji": "この間",
+    "romaji": "konoaida",
+    "sinoVietnamese": "GIAN",
+    "meaning": "vừa rồi, hôm nọ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/konoaida.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 23,
+    "kana": "みんなで",
+    "kanji": "",
+    "romaji": "minnade",
+    "sinoVietnamese": "",
+    "meaning": "mọi người cùng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/minnade.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 24,
+    "kana": "～けど",
+    "kanji": "",
+    "romaji": "～kedo",
+    "sinoVietnamese": "",
+    "meaning": "nhưng (cách nói thân mật của 「が」)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kedo.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 25,
+    "kana": "くにへかえるの？",
+    "kanji": "国へ帰るの？",
+    "romaji": "kunihekaeruno?",
+    "sinoVietnamese": "QUỐC QUY",
+    "meaning": "Anh/chị có về nước không?",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/kunihekaeruno.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 26,
+    "kana": "どうするの？",
+    "kanji": "",
+    "romaji": "dousuruno?",
+    "sinoVietnamese": "",
+    "meaning": "Anh/ chị tính sao? Anh/chị sẽ làm gì?",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/dousuruno.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 27,
+    "kana": "どうしようかな。",
+    "kanji": "",
+    "romaji": "doushiyoukana｡",
+    "sinoVietnamese": "",
+    "meaning": "Tính sao đây nhỉ?/để tôi xem.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/doushiyoukana.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 28,
+    "kana": "よかったら",
+    "kanji": "",
+    "romaji": "yokattara",
+    "sinoVietnamese": "",
+    "meaning": "Nếu anh/chị thích thì",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/yokattara.mp3"
+  },
+  {
+    "lesson": 20,
+    "order": 29,
+    "kana": "いろいろ",
+    "kanji": "",
+    "romaji": "iroiro",
+    "sinoVietnamese": "",
+    "meaning": "nhiều thứ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai20/iroiro.mp3"
+  }
+]

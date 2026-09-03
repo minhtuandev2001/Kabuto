@@ -1,0 +1,342 @@
+[
+  {
+    "lesson": 45,
+    "order": 1,
+    "kana": "あやまります",
+    "kanji": "謝ります",
+    "romaji": "ayamarimasu",
+    "sinoVietnamese": "TẠ",
+    "meaning": "xin lỗi, tạ lỗi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/ayamarimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 2,
+    "kana": "[じこに～] あいます",
+    "kanji": "[事故に～]遭います",
+    "romaji": "［jikoni～］　aimasu",
+    "sinoVietnamese": "SỰ CỐ TAO",
+    "meaning": "gặp [tai nạn]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/aimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 3,
+    "kana": "しんじます",
+    "kanji": "信じます",
+    "romaji": "shinjimasu",
+    "sinoVietnamese": "TÍN",
+    "meaning": "tin, tin tưởng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/shinjimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 4,
+    "kana": "よういします",
+    "kanji": "用意します",
+    "romaji": "youishimasu",
+    "sinoVietnamese": "DỤNG Ý",
+    "meaning": "chuẩn bị",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/youishimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 5,
+    "kana": "キャンセルします",
+    "kanji": "",
+    "romaji": "kyanserushimasu",
+    "sinoVietnamese": "",
+    "meaning": "hủy bỏ, hủy",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/k_kyanserushimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 6,
+    "kana": "うまくいきます",
+    "kanji": "",
+    "romaji": "umakuikimasu",
+    "sinoVietnamese": "",
+    "meaning": "tốt, thuận lợi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/umakuikimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 7,
+    "kana": "ほしょうしょ",
+    "kanji": "保証書",
+    "romaji": "hoshousho",
+    "sinoVietnamese": "BẢO CHỨNG THƯ",
+    "meaning": "giấy bảo hành",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/hoshousyo.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 8,
+    "kana": "りょうしゅうしょ",
+    "kanji": "領収書",
+    "romaji": "ryoushuusho",
+    "sinoVietnamese": "LÃNH THÂU THƯ",
+    "meaning": "hóa đơn",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/ryousyuusyo.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 9,
+    "kana": "おくりもの",
+    "kanji": "贈り物",
+    "romaji": "okurimono",
+    "sinoVietnamese": "TẶNG VẬT",
+    "meaning": "quà tặng (～をします)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/okurimono.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 10,
+    "kana": "まちがいでんわ",
+    "kanji": "まちがい電話",
+    "romaji": "machigaidenwa",
+    "sinoVietnamese": "ĐIỆN THOẠI",
+    "meaning": "điện thoại nhầm",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/machigaidenwa.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 11,
+    "kana": "キャンプ",
+    "kanji": "",
+    "romaji": "kyanpu",
+    "sinoVietnamese": "",
+    "meaning": "trại",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/k_kyanpu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 12,
+    "kana": "かかり",
+    "kanji": "",
+    "romaji": "kakari",
+    "sinoVietnamese": "",
+    "meaning": "nhân viên, người phụ trách",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/kakari.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 13,
+    "kana": "ちゅうし",
+    "kanji": "中止",
+    "romaji": "chuushi",
+    "sinoVietnamese": "TRUNG CHỈ",
+    "meaning": "dừng, đình chỉ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/chuushi.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 14,
+    "kana": "てん",
+    "kanji": "点",
+    "romaji": "ten",
+    "sinoVietnamese": "ĐIỂM",
+    "meaning": "điểm",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/ten.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 15,
+    "kana": "レバー",
+    "kanji": "",
+    "romaji": "reba-",
+    "sinoVietnamese": "",
+    "meaning": "tay bẻ, tay số, cần gạt",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/k_rebaa.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 16,
+    "kana": "[－えん]さつ",
+    "kanji": "[－円]札",
+    "romaji": "［－en］satsu",
+    "sinoVietnamese": "VIÊN TRÁT",
+    "meaning": "tờ tiền giấy [-yên]",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/ensatsu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 17,
+    "kana": "ちゃんと",
+    "kanji": "",
+    "romaji": "chanto",
+    "sinoVietnamese": "",
+    "meaning": "đúng, hẳn hoi",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/chanto.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 18,
+    "kana": "きゅうに",
+    "kanji": "急に",
+    "romaji": "kyuuni",
+    "sinoVietnamese": "CẤP",
+    "meaning": "gấp",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/kyuni.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 19,
+    "kana": "たのしみにしています",
+    "kanji": "楽しみにしています",
+    "romaji": "tanoshiminishiteimasu",
+    "sinoVietnamese": "NHẠC/LẠC",
+    "meaning": "mong đợi, lấy làm vui",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/tanoshiminishiteimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 20,
+    "kana": "いじょうです。",
+    "kanji": "以上です。",
+    "romaji": "ijoudesu",
+    "sinoVietnamese": "",
+    "meaning": "Xin hết.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/ijoudesu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 21,
+    "kana": "かかりいん",
+    "kanji": "係員",
+    "romaji": "kakariin",
+    "sinoVietnamese": "HỆ VIÊN",
+    "meaning": "nhân viên",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/kakariin.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 22,
+    "kana": "コース",
+    "kanji": "",
+    "romaji": "ko-su",
+    "sinoVietnamese": "",
+    "meaning": "đường chạy (ma ra tông)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/k_koosu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 23,
+    "kana": "スタート",
+    "kanji": "",
+    "romaji": "suta-to",
+    "sinoVietnamese": "",
+    "meaning": "xuất phát",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/k_sutaato.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 24,
+    "kana": "―い",
+    "kanji": "－位",
+    "romaji": "-i",
+    "sinoVietnamese": "VỊ",
+    "meaning": "thứ ―, vị trí thứ －, giải ―",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/i.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 25,
+    "kana": "ゆうしょうします",
+    "kanji": "優勝します",
+    "romaji": "yuushoushimasu",
+    "sinoVietnamese": "ƯU THẮNG",
+    "meaning": "vô địch, đoạt giải nhất",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/yuusyoushimasu.mp3"
+  },
+  {
+    "lesson": 45,
+    "order": 26,
+    "kana": "なやみ",
+    "kanji": "悩み",
+    "romaji": "nayami",
+    "sinoVietnamese": "NÃO",
+    "meaning": "(điều/sự) lo nghĩ, trăn trở, phiền muộn",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/nayami.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 27,
+    "kana": "めざまし「どけい」",
+    "kanji": "目覚まし[時計]",
+    "romaji": "mezamashi「dokei」",
+    "sinoVietnamese": "MỤC GIÁC THỜI KẾ",
+    "meaning": "đồng hồ báo thức",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/mezamashi.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 28,
+    "kana": "ねむります",
+    "kanji": "眠ります",
+    "romaji": "nemurimasu",
+    "sinoVietnamese": "MIÊN",
+    "meaning": "ngủ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/nemurimasu.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 29,
+    "kana": "めがさめます",
+    "kanji": "目が覚めます",
+    "romaji": "megasamemasu",
+    "sinoVietnamese": "MỤC GIÁC",
+    "meaning": "tỉnh giấc",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/megasamemasu.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 30,
+    "kana": "だいがくせい",
+    "kanji": "大学生",
+    "romaji": "daigakusei",
+    "sinoVietnamese": "ĐẠI HỌC SINH",
+    "meaning": "sinh viên đại học",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/daigakusei.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 31,
+    "kana": "かいとう",
+    "kanji": "回答",
+    "romaji": "kaitou",
+    "sinoVietnamese": "HỒI ĐÁP",
+    "meaning": "câu trả lời, lời giải",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/kaitou.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 32,
+    "kana": "なります",
+    "kanji": "鳴ります",
+    "romaji": "narimasu",
+    "sinoVietnamese": "MINH",
+    "meaning": "reo, kêu",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/narimasu.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 33,
+    "kana": "セットします",
+    "kanji": "",
+    "romaji": "settoshimasu",
+    "sinoVietnamese": "",
+    "meaning": "cài, đặt",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/settoshimasu.wav"
+  },
+  {
+    "lesson": 45,
+    "order": 34,
+    "kana": "それでも",
+    "kanji": "",
+    "romaji": "soredemo",
+    "sinoVietnamese": "",
+    "meaning": "tuy thế, mặc dù thế",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai45/soredemo.wav"
+  }
+]

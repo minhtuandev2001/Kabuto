@@ -1,0 +1,322 @@
+[
+  {
+    "lesson": 48,
+    "order": 1,
+    "kana": "おろします",
+    "kanji": "降ろします,下ろします",
+    "romaji": "oroshimasu",
+    "sinoVietnamese": "GIÁNG, HẠ",
+    "meaning": "cho xuống, hạ xuống",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/oroshimasu.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 2,
+    "kana": "とどけます",
+    "kanji": "届けます",
+    "romaji": "todokemasu",
+    "sinoVietnamese": "GIỚI",
+    "meaning": "gởi đến, chuyển đến",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/todokemasu.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 3,
+    "kana": "せわをします",
+    "kanji": "世話をします",
+    "romaji": "sewawoshimasu",
+    "sinoVietnamese": "THẾ THOẠI",
+    "meaning": "chăm sóc",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/sewawoshimasu.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 4,
+    "kana": "いや[な]",
+    "kanji": "嫌[な]",
+    "romaji": "iya［na］",
+    "sinoVietnamese": "HIỀM",
+    "meaning": "ngán, không thích",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/iya.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 5,
+    "kana": "きびしい",
+    "kanji": "厳しい",
+    "romaji": "kibishii",
+    "sinoVietnamese": "NGHIÊM",
+    "meaning": "nghiêm, nghiêm khắc, nghiêm ngặt",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/kibishii.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 6,
+    "kana": "じゅく",
+    "kanji": "塾",
+    "romaji": "juku",
+    "sinoVietnamese": "THỤC",
+    "meaning": "cơ sở học thêm",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/juku.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 7,
+    "kana": "スケジュール",
+    "kanji": "",
+    "romaji": "sukeju-ru",
+    "sinoVietnamese": "",
+    "meaning": "thời khóa biểu, lịch làm việc",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/k_sukejuuru.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 8,
+    "kana": "せいと",
+    "kanji": "生徒",
+    "romaji": "seito",
+    "sinoVietnamese": "SINH ĐỒ",
+    "meaning": "học sinh, học trò",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/seito.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 9,
+    "kana": "もの",
+    "kanji": "者",
+    "romaji": "mono",
+    "sinoVietnamese": "GIẢ",
+    "meaning": "người (là người thân hoặc cấp dưới)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/mono.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 10,
+    "kana": "にゅうかん",
+    "kanji": "入管",
+    "romaji": "nyuukan",
+    "sinoVietnamese": "NHẬP QUẢN",
+    "meaning": "Cục quản lý nhập cảnh",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/nyuukan.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 11,
+    "kana": "さいにゅうこくビザ",
+    "kanji": "再入国ビザ",
+    "romaji": "sainyuukokubiza",
+    "sinoVietnamese": "TÁI NHẬP QUỐC",
+    "meaning": "Thị thực tái nhập cảnh",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/sainyuukokubiza.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 12,
+    "kana": "じゆうに",
+    "kanji": "自由に",
+    "romaji": "jiyuuni",
+    "sinoVietnamese": "TỰ DO",
+    "meaning": "tự do",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/jiyuuni.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 13,
+    "kana": "～かん",
+    "kanji": "～間",
+    "romaji": "～kan",
+    "sinoVietnamese": "GIAN",
+    "meaning": "trong ~ (dùng để chỉ khoảng thời gian)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/kan.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 14,
+    "kana": "いいことですね。",
+    "kanji": "",
+    "romaji": "iikotodesune",
+    "sinoVietnamese": "",
+    "meaning": "Hay nhỉ./ Được đấy nhỉ.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/iikotodesune.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 15,
+    "kana": "おいそがしいですか",
+    "kanji": "お忙しいですか。",
+    "romaji": "oisogashiidesuka",
+    "sinoVietnamese": "MANG",
+    "meaning": "Anh/chị có bận không? (được dùng khi nói với người trên)",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/oisogashiidesuka.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 16,
+    "kana": "ひさしぶり",
+    "kanji": "久しぶり",
+    "romaji": "hisashiburi",
+    "sinoVietnamese": "CỬU",
+    "meaning": "lâu",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/hisashiburi.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 17,
+    "kana": "えいぎょう",
+    "kanji": "営業",
+    "romaji": "eigyou",
+    "sinoVietnamese": "DOANH NGHIỆP",
+    "meaning": "kinh doanh, bán hàng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/eigyou.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 18,
+    "kana": "それまでに",
+    "kanji": "",
+    "romaji": "soremadeni",
+    "sinoVietnamese": "",
+    "meaning": "trước thời điểm đó",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/soremadeni.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 19,
+    "kana": "かまいません",
+    "kanji": "",
+    "romaji": "kamaimasen",
+    "sinoVietnamese": "",
+    "meaning": "Không sao./ Không có vấn đề gì.",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/kamaimasen.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 20,
+    "kana": "たのしみます",
+    "kanji": "楽しみます",
+    "romaji": "tanoshimimasu",
+    "sinoVietnamese": "LẠC/NHẠC",
+    "meaning": "vui, vui thích",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/tanoshimimasu.mp3"
+  },
+  {
+    "lesson": 48,
+    "order": 21,
+    "kana": "もともと",
+    "kanji": "",
+    "romaji": "motomoto",
+    "sinoVietnamese": "",
+    "meaning": "vốn dĩ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/motomoto.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 22,
+    "kana": "―せいき",
+    "kanji": "―世紀",
+    "romaji": "-seiki",
+    "sinoVietnamese": "THẾ KỶ",
+    "meaning": "thế kỷ -",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/seiki.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 23,
+    "kana": "かわりをします",
+    "kanji": "代わりをします",
+    "romaji": "kawariwoshimasu",
+    "sinoVietnamese": "ĐẠI",
+    "meaning": "thay thế",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/kawariwoshimasu.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 24,
+    "kana": "スピード",
+    "kanji": "",
+    "romaji": "supi-do",
+    "sinoVietnamese": "",
+    "meaning": "tốc độ",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/supido.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 25,
+    "kana": "きょうそうします",
+    "kanji": "競走します",
+    "romaji": "kyousoushimasu",
+    "sinoVietnamese": "CẠNH TẨU",
+    "meaning": "chạy đua, thi chạy",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/kyousoushimasu.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 26,
+    "kana": "サーカス",
+    "kanji": "",
+    "romaji": "sa-kasu",
+    "sinoVietnamese": "",
+    "meaning": "xiếc",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/sakasu.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 27,
+    "kana": "げい",
+    "kanji": "芸",
+    "romaji": "gei",
+    "sinoVietnamese": "NGHỆ",
+    "meaning": "trò diễn, tiết mục, tài năng",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/gei.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 28,
+    "kana": "うつくしい",
+    "kanji": "美しい",
+    "romaji": "utsukushii",
+    "sinoVietnamese": "MỸ",
+    "meaning": "đẹp",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/utsukushii.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 29,
+    "kana": "すがた",
+    "kanji": "姿",
+    "romaji": "sugata",
+    "sinoVietnamese": "TƯ",
+    "meaning": "dáng điệu, tư thế",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/sugata.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 30,
+    "kana": "こころ",
+    "kanji": "心",
+    "romaji": "kokoro",
+    "sinoVietnamese": "TÂM",
+    "meaning": "trái tim, tấm lòng, cảm tình",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/kokoro.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 31,
+    "kana": "とらえます",
+    "kanji": "",
+    "romaji": "toraemasu",
+    "sinoVietnamese": "",
+    "meaning": "giành được",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/toraemasu.wav"
+  },
+  {
+    "lesson": 48,
+    "order": 32,
+    "kana": "～にとって",
+    "kanji": "",
+    "romaji": "～nitotte",
+    "sinoVietnamese": "",
+    "meaning": "đối với ~",
+    "audioUrl": "https://jls.vnjpclub.com/audio/minna/bai48/nitotte.wav"
+  }
+]

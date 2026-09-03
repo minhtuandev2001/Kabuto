@@ -1,0 +1,54 @@
+001	にげます	chạy trốn, bỏ chạy
+002	さわぎます	làm ồn, làm rùm beng
+003	あきらめます	từ bỏ, đầu hàng
+004	なげます	ném
+005	まもります	bảo vệ, tuân thủ, giữ
+006	あげます	nâng, nâng lên, tăng lên
+007	さげます	hạ, hạ xuống, giảm xuống
+008	つたえます	truyền, truyền đạt
+009	[くるまに～]ちゅういします	chú ý [ô tô]
+010	[せきを～] はずします	rời, không có ở [chỗ ngồi]
+011	だめ[な]	hỏng, không được, không thể
+012	せき	chỗ ngồi, ghế
+013	ファイト	“quyết chiến”, “cố lên”
+014	マーク	ký hiệu (Mark)
+015	ボール	quả bóng
+016	せんたくき	máy giặt
+017	～き	máy ~
+018	きそく	quy tắc, kỷ luật
+019	しようきんし	cấm sử dụng
+020	たちいりきんし	cấm vào
+021	いりぐち	cửa vào
+022	でぐち	cửa ra
+023	ひじょうぐち	cửa thoát hiểm
+024	むりょう	miễn phí
+025	ほんじつきゅうぎょう	hôm nay đóng cửa, hôm nay nghỉ
+026	えいぎょうちゅう	đang mở cửa
+027	しようちゅう	đang sử dụng
+028	～ちゅう	đang ~
+029	どういう～	~ gì, ~ thế nào
+030	もう	không ~ nữa
+031	あと～	còn ~
+032	ちゅうしゃいはん	đỗ xe trái phép
+033	そりゃあ	thế thì, ồ
+034	～いない	trong khoảng ~, trong vòng ~
+035	けいさつ	cảnh sát
+036	ばっきん	tiền phạt
+037	でんぽう	bức điện, điện báo
+038	ひとびと	người, những người
+039	きゅうよう	việc gấp, việc khẩn
+040	うちます	gửi [bức điện]
+041	でんぽうだい	tiền cước điện báo
+042	できるだけ	cố gắng, trong khả năng có thể
+043	みじかく	ngắn gọn, đơn giản
+044	また	thêm nữa
+045	たとえば	ví dụ
+046	キトク	tình trạng hiểm nghèo
+047	おもいびょうき	bệnh nặng
+048	あす	ngày mai
+049	るす	vắng nhà
+050	るすばん	trông nhà, giữ nhà
+051	「お」いわい	việc mừng, vật mừng
+052	なくなります	chết, mất
+053	かなしみ	buồn
+054	りようします	sử dụng, lợi dụng, tận dụng, dùng

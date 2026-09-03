@@ -1,0 +1,55 @@
+001	はります	dán, dán lên
+002	かけます	treo
+003	かざります	trang trí
+004	ならべます	xếp thành hàng
+005	うえます	trồng (cây)
+006	もどします	đưa về, trả về, để lại vị trí ban đầu
+007	まとめます	nhóm lại, tóm tắt
+008	かたづけます	dọn dẹp, sắp xếp
+009	しまいます	cất vào, để vào
+010	きめます	quyết định
+011	しらせます	thông báo, báo
+012	そうだんします	trao đổi, bàn bạc, tư vấn
+013	よしゅうします	chuẩn bị bài mới
+014	ふくしゅうします	ôn bài cũ
+015	そのままにします	để nguyên như thế
+016	おこさん	con (dùng đối với người khác)
+017	じゅぎょう	giờ học
+018	こうぎ	bài giảng
+019	ミーティング	cuộc họp
+020	よてい	kế hoạch, dự định
+021	おしらせ	bản thông báo
+022	あんないしょ	sách/tài liệu hướng dẫn
+023	カレンダー	lịch, tờ lịch
+024	ポスター	tờ pa-nô, áp phích, tờ quảng cáo
+025	ごみばこ	thùng rác
+026	にんぎょう	con búp bê, con rối
+027	かびん	lọ hoa
+028	かがみ	cái gương
+029	ひきだし	ngăn kéo
+030	げんかん	cửa vào
+031	ろうか	hành lang
+032	かべ	bức tường
+033	いけ	cái ao
+034	こうばん	trạm/bốt cảnh sát
+035	もとのところ	địa điểm ban đầu, địa điểm gốc
+036	まわり	xung quanh
+037	まんなか	giữa, trung tâm
+038	すみ	góc
+039	まだ	chưa
+040	～ほど	khoảng ~, chừng ~
+041	よていひょう	lịch, thời khóa biểu
+042	ごくろうさま	Anh/chị đã làm việc vất vả./cám ơn anh/chị. (câu nói dùng để bày tỏ sự cám ơn hoặc thông cảm với sự vất vả khi ai đó làm xong một việc gì)
+043	きぼう	hi vọng, nguyện vọng
+044	なにかごきぼうがありますか	Anh/chị có nguyện vọng gì không?/ anh/chị có yêu cầu gì không?
+045	ミュージカル	ca kịch
+046	それはいいですね。	Điều đó được đấy nhỉ./ Hay quá nhỉ
+047	ブロードウェイ	Broadway
+048	まるい	tròn
+049	つき	mặt trăng, trăng
+050	ある～	có ~, một ~
+051	ちきゅう	trái đất
+052	うれしい	vui
+053	いや「な」	chán, ghét, không chấp nhận được
+054	すると	sau đó, tiếp đó, rồi, khi ~ như vậy thì
+055	めが　さめます	tỉnh giấc, mở mắt
