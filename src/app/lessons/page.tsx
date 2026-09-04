@@ -8,10 +8,11 @@ import { HScroll } from "@/components/HScroll";
 import { LessonCard } from "@/components/LessonCard";
 import { useCatalog } from "@/context/CatalogProvider";
 import { usePlayer } from "@/context/PlayerProvider";
+import { JLPT_LEVELS, type JlptLevel } from "@/lib/grammar";
 
 gsap.registerPlugin(useGSAP);
 
-type Filter = "all" | "N5" | "N4" | "custom";
+type Filter = "all" | "custom" | JlptLevel;
 
 export default function LessonsPage() {
   const root = useRef<HTMLDivElement>(null);
@@ -54,23 +55,22 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      <div className="lessons-hero relative mt-4 overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-white md:p-7">
-        <p className="text-[11px] font-bold tracking-wider text-white/80">THƯ VIỆN TỪ VỰNG</p>
-        <p className="mt-1 text-2xl font-extrabold">{lessons.length} bài học</p>
-        <p className="mt-1 text-sm font-semibold text-white/85">{allWords.length.toLocaleString("vi-VN")} từ có phát âm</p>
+      <div className="lessons-hero relative mt-4 overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-white md:flex md:min-h-[148px] md:items-center md:justify-between md:p-7">
+        <div className="relative z-[1] max-w-[22rem] pr-16 md:pr-4">
+          <p className="text-[11px] font-bold tracking-wider text-white/80">THƯ VIỆN TỪ VỰNG</p>
+          <p className="mt-1 text-2xl font-extrabold md:text-[28px]">{lessons.length} bài học</p>
+          <p className="mt-1 text-sm font-semibold text-white/85">{allWords.length.toLocaleString("vi-VN")} từ vựng</p>
+        </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/mascot-cat.png" alt="" className="absolute -bottom-3 -right-2 h-28 w-28 object-contain" />
+        <img
+          src="/mascot-cat.png"
+          alt=""
+          className="pointer-events-none absolute -bottom-3 -right-2 h-28 w-28 object-contain md:static md:h-32 md:w-32"
+        />
       </div>
 
       <HScroll className="mt-4">
-        {(
-          [
-            ["all", "Tất cả"],
-            ["N5", "N5 · Sơ cấp 1"],
-            ["N4", "N4 · Sơ cấp 2"],
-            ["custom", "Tự soạn"],
-          ] as const
-        ).map(([id, label]) => (
+        {([...JLPT_LEVELS, "custom", "all"] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -79,12 +79,16 @@ export default function LessonsPage() {
               filter === id ? "bg-[#7C5CFC] text-white" : "bg-white/55 text-[#4A4470]"
             }`}
           >
-            {label}
+            {id === "all"
+              ? "Tất cả"
+              : id === "custom"
+                ? "Tự soạn"
+                : `${id} · ${lessons.filter((item) => item.jlpt === id).length} bài`}
           </button>
         ))}
       </HScroll>
 
-      <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((item) => (
           <LessonCard
             key={item.lesson}

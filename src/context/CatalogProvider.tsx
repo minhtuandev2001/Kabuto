@@ -57,7 +57,7 @@ type CatalogContextValue = CatalogIndex & {
 };
 
 const CatalogContext = createContext<CatalogContextValue | null>(null);
-const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v3";
+const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v5";
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const [lessons, setLessons] = useState<LessonInfo[]>([]);

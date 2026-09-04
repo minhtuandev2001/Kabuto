@@ -27,12 +27,31 @@ export type GrammarPointRow = {
   source: string;
 };
 
+const JLPT_CATALOG = [
+  { jlpt: "N5", offset: 0, count: 25 },
+  { jlpt: "N4", offset: 25, count: 25 },
+  { jlpt: "N3", offset: 50, count: 15 },
+  { jlpt: "N2", offset: 65, count: 20 },
+  { jlpt: "N1", offset: 85, count: 15 },
+] as const;
+
 export function catalogLessonForBuiltin(jlpt: string, lesson: number): number | null {
-  if (jlpt === "N5") {
-    return lesson;
+  const band = JLPT_CATALOG.find((item) => item.jlpt === jlpt);
+  if (!band || !Number.isInteger(lesson) || lesson < 1 || lesson > band.count) {
+    return null;
   }
-  if (jlpt === "N4") {
-    return lesson + 25;
+  return lesson + band.offset;
+}
+
+export function builtinSlotFromCatalog(catalogLesson: number) {
+  if (!Number.isInteger(catalogLesson) || catalogLesson < 1) {
+    return null;
+  }
+  for (const band of JLPT_CATALOG) {
+    const lesson = catalogLesson - band.offset;
+    if (lesson >= 1 && lesson <= band.count) {
+      return { jlpt: band.jlpt, lesson, catalogLesson };
+    }
   }
   return null;
 }

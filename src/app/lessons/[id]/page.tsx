@@ -64,6 +64,7 @@ export default function WordListPage() {
       </div>
       <p className="mt-3 text-sm font-semibold text-[#7C7A9C]">
         {info ? formatLessonSubtitle(info) : ""} · {words.length} từ
+        {info?.book?.startsWith("OpenJLPT") ? ` · ${info.book}` : ""}
         {grammar ? ` · ${grammar.points.length} mẫu` : ""}
       </p>
       {grammar?.points.length ? (
@@ -88,7 +89,7 @@ export default function WordListPage() {
           <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">Bấm để thêm mẫu cho bài này</span>
         </button>
       )}
-      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {words.length === 0 ? (
           <button
             type="button"

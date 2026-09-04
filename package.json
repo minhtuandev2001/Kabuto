@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:grammar": "tsx scripts/check-grammar.ts"
+    "check:grammar": "tsx scripts/check-grammar.ts",
+    "seed:jlpt-vocab": "tsx --env-file=.env scripts/seed-jlpt-vocab-neon.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -33,8 +33,8 @@ export default function WelcomePage() {
   );
 
   return (
-    <div ref={root} className="flex min-h-full flex-1 flex-col lg:min-h-[calc(100lvh-4rem)] lg:flex-row lg:items-center lg:justify-center lg:gap-16 lg:py-8">
-      <div className="lg:flex-1">
+    <div ref={root} className="mx-auto flex min-h-full w-full max-w-5xl flex-1 flex-col md:min-h-[calc(100lvh-4rem)] md:flex-row md:items-center md:justify-center md:gap-10 md:py-8 lg:gap-16">
+      <div className="md:flex-1">
         <div className="welcome-brand glass-strong inline-flex w-fit items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#7C5CFC] text-sm font-extrabold text-white">
           あ
@@ -52,7 +52,7 @@ export default function WelcomePage() {
         {[
           [String(lessons.length), "bài học"],
           [allWords.length.toLocaleString("vi-VN"), "từ vựng"],
-          ["N5→N4", "trình độ"],
+          ["N5→N1", "trình độ"],
         ].map(([value, label]) => (
           <div key={label} className="welcome-stat glass rounded-[22px] px-2 py-3 text-center">
             <div className="text-lg font-extrabold text-[#1E1B4B]">{value}</div>
@@ -62,8 +62,8 @@ export default function WelcomePage() {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col lg:max-w-md">
-        <div className="welcome-copy mt-8 lg:mt-0">
+      <div className="flex flex-1 flex-col md:max-w-md">
+        <div className="welcome-copy mt-8 md:mt-0">
         <h1 className="text-[32px] font-extrabold leading-10 text-[#1E1B4B] md:text-[40px] md:leading-[48px]">
           Học từ vựng
           <br />
@@ -77,7 +77,7 @@ export default function WelcomePage() {
       <button
         type="button"
         disabled={!catalogReady || lessons.length === 0}
-        className="welcome-cta mt-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#A78BFA] to-[#7C5CFC] py-4 text-base font-extrabold text-white shadow-[0_14px_24px_rgba(124,92,252,0.32)] disabled:opacity-60 lg:mt-8"
+        className="welcome-cta mt-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#A78BFA] to-[#7C5CFC] py-4 text-base font-extrabold text-white shadow-[0_14px_24px_rgba(124,92,252,0.32)] disabled:opacity-60 md:mt-8"
         onClick={() => {
           playLesson(lessons[0]?.lesson ?? 1, 0);
           router.push("/listen");

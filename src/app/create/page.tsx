@@ -29,11 +29,11 @@ export default function CreatePage() {
         Tạo bài học trước, rồi gắn từ vựng hoặc ngữ pháp vào bài đó.
       </p>
 
-      <div className="mt-5 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3">
         <button
           type="button"
           onClick={() => router.push("/create/lesson")}
-          className="glass-strong flex items-center gap-3 rounded-[24px] p-3.5 text-left"
+          className="glass-strong flex items-center gap-3 rounded-[24px] p-3.5 text-left md:min-h-[108px] md:p-5"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC]">
             <BookPlus size={22} />
@@ -54,7 +54,7 @@ export default function CreatePage() {
             }
             router.push("/create/lesson");
           }}
-          className="glass flex items-center gap-3 rounded-[24px] p-3.5 text-left"
+          className="glass flex items-center gap-3 rounded-[24px] p-3.5 text-left md:min-h-[108px] md:p-5"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#7C5CFC]">
             <Plus size={22} />
@@ -77,7 +77,7 @@ export default function CreatePage() {
             }
             router.push("/create/lesson?next=grammar");
           }}
-          className="glass flex items-center gap-3 rounded-[24px] p-3.5 text-left"
+          className="glass flex items-center gap-3 rounded-[24px] p-3.5 text-left md:min-h-[108px] md:p-5"
         >
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#7C5CFC]">
             <BookType size={22} />
@@ -95,7 +95,7 @@ export default function CreatePage() {
       {customLessons.length ? (
         <div className="mt-6">
           <p className="text-[12.5px] font-bold text-[#7C7A9C]">Bài tự soạn</p>
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
             {customLessons.map((item) => (
               <div key={item.lesson} className="glass flex items-center gap-2 rounded-[22px] p-3">
                 <button
@@ -143,7 +143,7 @@ export default function CreatePage() {
       {customGrammar.length ? (
         <div className="mt-5">
           <p className="text-[12.5px] font-bold text-[#7C7A9C]">Ngữ pháp vừa thêm</p>
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
             {customGrammar
               .slice()
               .reverse()
@@ -179,7 +179,7 @@ export default function CreatePage() {
       {customWords.length ? (
         <div className="mt-5">
           <p className="text-[12.5px] font-bold text-[#7C7A9C]">Từ vừa thêm</p>
-          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
             {customWords
               .slice()
               .reverse()

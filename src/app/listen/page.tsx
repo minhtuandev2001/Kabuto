@@ -119,115 +119,115 @@ export default function ListenPage() {
   );
 
   return (
-    <div ref={root} className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-start lg:gap-8">
-      <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:w-full md:max-w-[440px] lg:sticky lg:top-4 lg:mx-0 lg:max-w-[420px] lg:flex-none">
-      <div className="glass-strong flex items-center gap-3 rounded-[20px] p-2.5">
-        <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[13.5px] font-extrabold text-white">
-          {String(lesson?.lesson ?? 1).padStart(2, "0")}
-        </div>
-        <div className="min-w-0 flex-1 text-center">
-          <div className="text-[9.5px] font-bold tracking-[1.6px] text-[#7C5CFC]">ĐANG PHÁT</div>
-          <div className="truncate text-[13.5px] font-extrabold text-[#1E1B4B]">
-            {lesson ? formatLessonTitle(lesson) : ""}
+    <div ref={root} className="flex min-h-0 flex-1 flex-col md:flex-row md:gap-4 lg:gap-5">
+      <div className="glass-strong flex min-h-0 min-w-0 flex-1 flex-col rounded-[28px] p-3 md:w-1/2 md:flex-none xl:w-[480px] md:p-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[13.5px] font-extrabold text-white">
+            {String(lesson?.lesson ?? 1).padStart(2, "0")}
           </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push(`/lessons/${lessonId}`)}
-          className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] border border-white/70 bg-white/70"
-        >
-          <List size={18} className="text-[#7C5CFC]" />
-        </button>
-      </div>
-
-      <div className="flex min-h-[140px] flex-1 flex-col items-center justify-center py-3 lg:flex-none lg:py-6">
-        <h1
-          className={`player-word text-center font-extrabold text-[#1E1B4B] ${headline.length > 8 ? "text-2xl" : "text-[34px] leading-[42px]"}`}
-        >
-          {headline}
-        </h1>
-        {showKana ? <p className="mt-1 text-[15px] font-bold text-[#7C7A9C]">{currentWord?.kana}</p> : null}
-        <div className="player-art mt-3 flex h-[min(42vw,220px)] w-[min(42vw,220px)] items-center justify-center rounded-[36px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] shadow-[0_14px_24px_rgba(124,92,252,0.32)]">
-          {imgOk && displaySrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={displaySrc} alt="" className="h-[86%] w-[86%] object-contain" decoding="async" />
-          ) : (
-            <span className="text-6xl font-extrabold text-white">あ</span>
-          )}
-        </div>
-      </div>
-
-      <div className="glass-strong mb-3 rounded-[28px] px-4 pb-3 pt-4">
-        <p className="text-center text-xl font-extrabold leading-7 text-[#1E1B4B]">
-          {currentWord?.meaning || "Chọn một từ để nghe"}
-        </p>
-        <p className="mt-1.5 text-center text-[13.5px] font-semibold text-[#7C7A9C]">
-          {currentWord?.romaji}
-          {currentWord?.sinoVietnamese ? ` · ${currentWord.sinoVietnamese}` : ""}
-        </p>
-        <div className="mt-4 h-1.5 overflow-visible rounded-full bg-[rgba(30,27,75,0.1)]">
-          <div className="relative h-full rounded-full bg-[#7C5CFC]" style={{ width: `${progress * 100}%` }}>
-            <span className="absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-[3px] border-[#7C5CFC] bg-white" />
+          <div className="min-w-0 flex-1 text-center">
+            <div className="text-[9.5px] font-bold tracking-[1.6px] text-[#7C5CFC]">ĐANG PHÁT</div>
+            <div className="truncate text-[13.5px] font-extrabold text-[#1E1B4B]">
+              {lesson ? formatLessonTitle(lesson) : ""}
+            </div>
           </div>
-        </div>
-        <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-[#7C7A9C]">
-          <span>{formatTime(position)}</span>
-          <span className="font-bold text-[#7C5CFC]">
-            {index + 1} / {words.length}
-          </span>
-          <span>{formatTime(duration)}</span>
-        </div>
-
-        <div className="mt-2 flex items-center justify-between">
-          <button type="button" onClick={toggleLoop} className="flex h-11 w-11 items-center justify-center">
-            <Repeat size={22} className={loopLesson ? "text-[#7C5CFC]" : "text-[#B9B6D4]"} />
-          </button>
-          <button type="button" onClick={prev} className="flex h-11 w-11 items-center justify-center">
-            <SkipBack size={24} className="text-[#1E1B4B]" />
-          </button>
-          <button
-            type="button"
-            onClick={togglePlay}
-            className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-gradient-to-br from-[#A78BFA] to-[#7C5CFC] text-white shadow-[0_10px_20px_rgba(124,92,252,0.35)]"
-          >
-            {isLoading ? (
-              <span>···</span>
-            ) : isWaiting || isPlaying ? (
-              <Pause size={28} fill="currentColor" />
-            ) : (
-              <Play size={28} className="ml-0.5" fill="currentColor" />
-            )}
-          </button>
-          <button type="button" onClick={next} className="flex h-11 w-11 items-center justify-center">
-            <SkipForward size={24} className="text-[#1E1B4B]" />
-          </button>
           <button
             type="button"
             onClick={() => router.push(`/lessons/${lessonId}`)}
-            className="flex h-11 w-11 items-center justify-center"
+            className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] border border-white/70 bg-white/70"
           >
-            <List size={20} className="text-[#B9B6D4]" />
+            <List size={18} className="text-[#7C5CFC]" />
           </button>
         </div>
+
+        <div className="flex min-h-[120px] flex-1 flex-col items-center justify-center py-3">
+          <h1
+            className={`player-word text-center font-extrabold text-[#1E1B4B] ${headline.length > 8 ? "text-2xl" : "text-[34px] leading-[42px]"}`}
+          >
+            {headline}
+          </h1>
+          {showKana ? <p className="mt-1 text-[15px] font-bold text-[#7C7A9C]">{currentWord?.kana}</p> : null}
+          <div className="player-art mt-3 flex h-[min(42vw,220px)] w-[min(42vw,220px)] items-center justify-center rounded-[36px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] shadow-[0_14px_24px_rgba(124,92,252,0.32)] md:h-[180px] md:w-[180px]">
+            {imgOk && displaySrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={displaySrc} alt="" className="h-[86%] w-[86%] object-contain" decoding="async" />
+            ) : (
+              <span className="text-6xl font-extrabold text-white">あ</span>
+            )}
+          </div>
+        </div>
+
+        <div className="px-1 pb-1 pt-2">
+          <p className="text-center text-xl font-extrabold leading-7 text-[#1E1B4B]">
+            {currentWord?.meaning || "Chọn một từ để nghe"}
+          </p>
+          <p className="mt-1.5 text-center text-[13.5px] font-semibold text-[#7C7A9C]">
+            {currentWord?.romaji}
+            {currentWord?.sinoVietnamese ? ` · ${currentWord.sinoVietnamese}` : ""}
+          </p>
+          <div className="mt-4 h-1.5 overflow-visible rounded-full bg-[rgba(30,27,75,0.1)]">
+            <div className="relative h-full rounded-full bg-[#7C5CFC]" style={{ width: `${progress * 100}%` }}>
+              <span className="absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-[3px] border-[#7C5CFC] bg-white" />
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-[#7C7A9C]">
+            <span>{formatTime(position)}</span>
+            <span className="font-bold text-[#7C5CFC]">
+              {index + 1} / {words.length}
+            </span>
+            <span>{formatTime(duration)}</span>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between">
+            <button type="button" onClick={toggleLoop} className="flex h-11 w-11 items-center justify-center">
+              <Repeat size={22} className={loopLesson ? "text-[#7C5CFC]" : "text-[#B9B6D4]"} />
+            </button>
+            <button type="button" onClick={prev} className="flex h-11 w-11 items-center justify-center">
+              <SkipBack size={24} className="text-[#1E1B4B]" />
+            </button>
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="flex h-[62px] w-[62px] items-center justify-center rounded-full bg-gradient-to-br from-[#A78BFA] to-[#7C5CFC] text-white shadow-[0_10px_20px_rgba(124,92,252,0.35)]"
+            >
+              {isLoading ? (
+                <span>···</span>
+              ) : isWaiting || isPlaying ? (
+                <Pause size={28} fill="currentColor" />
+              ) : (
+                <Play size={28} className="ml-0.5" fill="currentColor" />
+              )}
+            </button>
+            <button type="button" onClick={next} className="flex h-11 w-11 items-center justify-center">
+              <SkipForward size={24} className="text-[#1E1B4B]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push(`/lessons/${lessonId}`)}
+              className="flex h-11 w-11 items-center justify-center"
+            >
+              <List size={20} className="text-[#B9B6D4]" />
+            </button>
+          </div>
+        </div>
+
+        {nextWord ? (
+          <button
+            type="button"
+            onClick={() => router.push(`/lessons/${lessonId}`)}
+            className="mt-2 flex items-center gap-2 rounded-[20px] bg-white/50 px-3.5 py-2.5 text-left md:hidden"
+          >
+            <span className="text-[11.5px] font-bold text-[#7C5CFC]">Tiếp theo</span>
+            <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#4A4470]">
+              {getHeadline(nextWord)} · {nextWord.meaning}
+            </span>
+          </button>
+        ) : null}
       </div>
 
-      {nextWord ? (
-        <button
-          type="button"
-          onClick={() => router.push(`/lessons/${lessonId}`)}
-          className="mb-2 flex items-center gap-2 rounded-[20px] border border-white/50 bg-white/40 px-3.5 py-2.5 text-left lg:hidden"
-        >
-          <span className="text-[11.5px] font-bold text-[#7C5CFC]">Tiếp theo</span>
-          <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#4A4470]">
-            {getHeadline(nextWord)} · {nextWord.meaning}
-          </span>
-        </button>
-      ) : null}
-      </div>
-
-      <aside className="hidden min-h-0 min-w-0 flex-1 flex-col lg:flex lg:max-h-[calc(100lvh-5rem)]">
-        <p className="text-[12.5px] font-bold text-[#7C7A9C]">{words.length} từ trong bài</p>
-        <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
+      <aside className="glass-strong hidden min-h-0 min-w-0 flex-1 flex-col rounded-[28px] p-3 md:flex md:max-h-[calc(100lvh-2rem)]">
+        <p className="px-1 text-[12.5px] font-bold text-[#7C7A9C]">{words.length} từ trong bài</p>
+        <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto xl:grid-cols-2">
           {words.map((word, wordIndex) => {
             const active = wordIndex === index;
             return (

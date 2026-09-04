@@ -2,7 +2,7 @@ import { formatLessonSubtitle, formatLessonTitle } from "@/lib/catalog";
 import { ensureSchema, getSql } from "@/lib/db";
 import {
   assembleGrammarLessons,
-  catalogLessonForBuiltin,
+  builtinSlotFromCatalog,
   toGrammarPoint,
   type GrammarExample,
   type GrammarInput,
@@ -55,18 +55,14 @@ function cleanPoint(input: {
 }
 
 function slotFromCatalog(info: LessonInfo) {
-  const n = info.lesson;
-  if (n >= 1 && n <= 25) {
-    return { jlpt: "N5", lesson: n, catalogLesson: catalogLessonForBuiltin("N5", n), source: "seed" as const };
-  }
-  if (n >= 26 && n <= 50) {
-    const lesson = n - 25;
-    return { jlpt: "N4", lesson, catalogLesson: catalogLessonForBuiltin("N4", lesson), source: "seed" as const };
+  const builtin = builtinSlotFromCatalog(info.lesson);
+  if (builtin) {
+    return { ...builtin, source: "seed" as const };
   }
   return {
     jlpt: info.jlpt?.trim() || "Tự soạn",
-    lesson: n,
-    catalogLesson: n,
+    lesson: info.lesson,
+    catalogLesson: info.lesson,
     source: "user" as const,
   };
 }

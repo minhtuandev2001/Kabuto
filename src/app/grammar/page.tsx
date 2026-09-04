@@ -91,16 +91,21 @@ export default function GrammarPage() {
       <button
         type="button"
         onClick={() => continueItem && router.push(grammarHref(continueItem))}
-        className="grammar-hero relative mt-4 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-left text-white md:p-7"
+        className="grammar-hero relative mt-4 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-left text-white md:flex md:min-h-[132px] md:items-center md:justify-between md:p-7"
       >
-        <span className="text-[11px] font-bold tracking-wider text-white/80">
-          {last ? "TIẾP TỤC HỌC" : "BẮT ĐẦU HỌC"}
+        <span className="relative z-[1] block min-w-0 md:max-w-[70%]">
+          <span className="text-[11px] font-bold tracking-wider text-white/80">
+            {last ? "TIẾP TỤC HỌC" : "BẮT ĐẦU HỌC"}
+          </span>
+          <span className="mt-1 block text-2xl font-extrabold leading-8">
+            {continueItem ? `${continueItem.jlpt} · Bài ${String(continueItem.lesson).padStart(2, "0")}` : "N5 · Bài 01"}
+          </span>
+          <span className="mt-1 block truncate text-sm font-semibold text-white/90">
+            {continueItem?.title ?? "です・は・の"}
+          </span>
         </span>
-        <span className="mt-1 block text-2xl font-extrabold leading-8">
-          {continueItem ? `${continueItem.jlpt} · Bài ${String(continueItem.lesson).padStart(2, "0")}` : "N5 · Bài 01"}
-        </span>
-        <span className="mt-1 block truncate text-sm font-semibold text-white/90">
-          {continueItem?.title ?? "です・は・の"}
+        <span className="mt-4 hidden h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-white/15 text-2xl font-extrabold md:mt-0 md:flex">
+          あ
         </span>
       </button>
 
@@ -125,7 +130,7 @@ export default function GrammarPage() {
 
       <p className="mt-4 text-[12.5px] font-bold text-[#7C7A9C]">{visible.length} bài ngữ pháp</p>
 
-      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((item) => (
           <GrammarLessonCard
             key={`${item.custom ? "c" : "b"}-${item.jlpt}-${item.lesson}`}
