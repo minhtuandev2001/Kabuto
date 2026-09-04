@@ -83,8 +83,8 @@ export default function WelcomePage() {
           router.push("/listen");
         }}
       >
-        Bắt đầu học
-        <ArrowRight size={18} />
+        {!catalogReady ? "Đang tải..." : "Bắt đầu học"}
+        {catalogReady ? <ArrowRight size={18} /> : null}
       </button>
         <p className="welcome-cta mt-3 mb-2 text-center text-xs font-semibold text-[#7C7A9C]">
           Thêm ra màn hình chính để dùng như app

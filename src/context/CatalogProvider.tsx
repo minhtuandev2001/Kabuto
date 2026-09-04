@@ -43,6 +43,7 @@ type NewWordInput = {
 
 type CatalogContextValue = CatalogIndex & {
   catalogReady: boolean;
+  catalogBusy: boolean;
   customLessons: LessonInfo[];
   customWords: VocabWord[];
   grammarLessons: GrammarLesson[];
@@ -63,6 +64,16 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [words, setWords] = useState<VocabWord[]>([]);
   const [grammarLessons, setGrammarLessons] = useState<GrammarLesson[]>([]);
   const [catalogReady, setCatalogReady] = useState(false);
+  const [busy, setBusy] = useState(0);
+
+  const runBusy = useCallback(async <T,>(job: () => Promise<T>) => {
+    setBusy((n) => n + 1);
+    try {
+      return await job();
+    } finally {
+      setBusy((n) => Math.max(0, n - 1));
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,17 +95,21 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore stale cache
     }
+    setBusy((n) => n + 1);
     fetchCustomCatalog()
       .then((catalog) => {
         if (!cancelled) {
           setLessons(catalog.lessons);
           setWords(catalog.words);
           setGrammarLessons(catalog.grammarLessons ?? []);
-          setCatalogReady(true);
         }
       })
       .catch(() => {
+        // keep cache if fetch fails
+      })
+      .finally(() => {
         if (!cancelled) {
+          setBusy((n) => Math.max(0, n - 1));
           setCatalogReady(true);
         }
       });
@@ -127,56 +142,75 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     setGrammarLessons(await fetchGrammarLessons());
   }, []);
 
-  const addLesson = useCallback(async (input: NewLessonInput) => {
-    const lesson = await createLessonApi(input);
-    setLessons((current) => [...current.filter((item) => item.lesson !== lesson.lesson), lesson]);
-    return lesson;
-  }, []);
+  const addLesson = useCallback(
+    (input: NewLessonInput) =>
+      runBusy(async () => {
+        const lesson = await createLessonApi(input);
+        setLessons((current) => [...current.filter((item) => item.lesson !== lesson.lesson), lesson]);
+        return lesson;
+      }),
+    [runBusy],
+  );
 
-  const addWord = useCallback(async (input: NewWordInput) => {
-    const word = await createWordApi(input);
-    setWords((current) => [
-      ...current.filter((item) => !(item.lesson === word.lesson && item.order === word.order)),
-      word,
-    ]);
-    return word;
-  }, []);
+  const addWord = useCallback(
+    (input: NewWordInput) =>
+      runBusy(async () => {
+        const word = await createWordApi(input);
+        setWords((current) => [
+          ...current.filter((item) => !(item.lesson === word.lesson && item.order === word.order)),
+          word,
+        ]);
+        return word;
+      }),
+    [runBusy],
+  );
 
   const saveGrammar = useCallback(
-    async (input: GrammarPayload, dbId?: number) => {
-      const point = await saveGrammarApi(input, dbId);
-      await refreshGrammar();
-      return point;
-    },
-    [refreshGrammar],
+    (input: GrammarPayload, dbId?: number) =>
+      runBusy(async () => {
+        const point = await saveGrammarApi(input, dbId);
+        await refreshGrammar();
+        return point;
+      }),
+    [refreshGrammar, runBusy],
   );
 
   const removeGrammar = useCallback(
-    async (dbId: number) => {
-      await deleteGrammarApi(dbId);
-      await refreshGrammar();
-    },
-    [refreshGrammar],
+    (dbId: number) =>
+      runBusy(async () => {
+        await deleteGrammarApi(dbId);
+        await refreshGrammar();
+      }),
+    [refreshGrammar, runBusy],
   );
 
-  const removeCustomLesson = useCallback(async (lesson: number) => {
-    await deleteLessonApi(lesson);
-    setLessons((current) => current.filter((item) => item.lesson !== lesson));
-    setWords((current) => current.filter((item) => item.lesson !== lesson));
-    setGrammarLessons((current) =>
-      current.filter((item) => !(item.custom && (item.catalogLesson === lesson || item.lesson === lesson))),
-    );
-  }, []);
+  const removeCustomLesson = useCallback(
+    (lesson: number) =>
+      runBusy(async () => {
+        await deleteLessonApi(lesson);
+        setLessons((current) => current.filter((item) => item.lesson !== lesson));
+        setWords((current) => current.filter((item) => item.lesson !== lesson));
+        setGrammarLessons((current) =>
+          current.filter((item) => !(item.custom && (item.catalogLesson === lesson || item.lesson === lesson))),
+        );
+      }),
+    [runBusy],
+  );
 
-  const removeCustomWord = useCallback(async (lesson: number, order: number) => {
-    await deleteWordApi(lesson, order);
-    setWords((current) => current.filter((item) => !(item.custom && item.lesson === lesson && item.order === order)));
-  }, []);
+  const removeCustomWord = useCallback(
+    (lesson: number, order: number) =>
+      runBusy(async () => {
+        await deleteWordApi(lesson, order);
+        setWords((current) => current.filter((item) => !(item.custom && item.lesson === lesson && item.order === order)));
+      }),
+    [runBusy],
+  );
 
   const value = useMemo(
     () => ({
       ...index,
       catalogReady,
+      catalogBusy: busy > 0,
       customLessons,
       customWords,
       grammarLessons,
@@ -191,6 +225,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     [
       addLesson,
       addWord,
+      busy,
       catalogReady,
       customLessons,
       customWords,

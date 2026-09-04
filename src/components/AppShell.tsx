@@ -2,7 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { BookOpen, BookType, Headphones, Plus, Settings } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { BusyBar, BusyOverlay, Spinner } from "./Busy";
 import { MiniPlayer } from "./MiniPlayer";
+import { useCatalog } from "@/context/CatalogProvider";
 import type { ReactNode } from "react";
 
 const TABS = [
@@ -21,15 +24,18 @@ function tabActive(pathname: string, href: string) {
 
 function NavButtons({
   pathname,
+  pendingHref,
   onGo,
   rail,
 }: {
   pathname: string;
+  pendingHref: string | null;
   onGo: (href: string) => void;
   rail?: boolean;
 }) {
   return TABS.map((tab) => {
     const active = tabActive(pathname, tab.href);
+    const pending = pendingHref === tab.href;
     const Icon = tab.icon;
     return (
       <button
@@ -39,14 +45,18 @@ function NavButtons({
         className={
           rail
             ? `flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-[13px] font-bold ${
-                active ? "bg-[#EFEAFF] text-[#7C5CFC]" : "text-[#7C7A9C]"
+                active || pending ? "bg-[#EFEAFF] text-[#7C5CFC]" : "text-[#7C7A9C]"
               }`
             : `flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-2xl px-0.5 py-1.5 text-[10px] font-bold transition ${
-                active ? "text-[#7C5CFC]" : "text-[#7C7A9C]"
+                active || pending ? "text-[#7C5CFC]" : "text-[#7C7A9C]"
               }`
         }
       >
-        <Icon size={rail ? 20 : 22} strokeWidth={active ? 2.4 : 1.8} />
+        {pending ? (
+          <Spinner size={rail ? 20 : 22} />
+        ) : (
+          <Icon size={rail ? 20 : 22} strokeWidth={active ? 2.4 : 1.8} />
+        )}
         {tab.label}
       </button>
     );
@@ -56,12 +66,45 @@ function NavButtons({
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { catalogReady, catalogBusy, lessons } = useCatalog();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [navOverlay, setNavOverlay] = useState(false);
+  const [, startNav] = useTransition();
   const showChrome = pathname !== "/";
   const hideMini = pathname === "/listen";
-  const go = (href: string) => router.push(href);
+  const navigating = Boolean(pendingHref);
+  const blocking = navOverlay || (!catalogReady && lessons.length === 0);
+  const showBar = navigating || catalogBusy || !catalogReady;
+
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!pendingHref) {
+      setNavOverlay(false);
+      return;
+    }
+    const show = window.setTimeout(() => setNavOverlay(true), 180);
+    // ponytail: hung router.push never updates pathname; drop when Next exposes nav pending.
+    const stop = window.setTimeout(() => setPendingHref(null), 12_000);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(stop);
+    };
+  }, [pendingHref]);
+
+  function go(href: string) {
+    if (pathname === href) {
+      return;
+    }
+    setPendingHref(href);
+    startNav(() => router.push(href));
+  }
 
   return (
     <div className={`relative flex min-h-lvh flex-col bg-[#f6f3ff] ${SHELL_MAX} lg:max-w-[1120px] lg:flex-row`}>
+      <BusyBar show={showBar} />
       <div className="aurora" />
       {showChrome ? (
         <aside className="relative z-20 hidden w-[220px] shrink-0 flex-col py-6 pl-4 pr-2 lg:flex">
@@ -72,7 +115,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="text-[15px] font-extrabold text-[#1E1B4B]">Learn Japan</span>
           </div>
           <nav className="glass-strong flex flex-1 flex-col gap-1 rounded-[24px] p-2">
-            <NavButtons pathname={pathname} onGo={go} rail />
+            <NavButtons pathname={pathname} pendingHref={pendingHref} onGo={go} rail />
           </nav>
           <div className="mt-3">
             <MiniPlayer hidden={hideMini} className="w-full" />
@@ -87,8 +130,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] lg:pb-8"
           }`}
           style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+          aria-busy={blocking || catalogBusy}
         >
           {children}
+          <BusyOverlay show={blocking} />
         </main>
         {showChrome ? (
           <div
@@ -97,7 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <MiniPlayer hidden={hideMini} />
             <nav className="glass-strong mx-3 flex items-center justify-around rounded-[22px] px-2 py-2">
-              <NavButtons pathname={pathname} onGo={go} />
+              <NavButtons pathname={pathname} pendingHref={pendingHref} onGo={go} />
             </nav>
           </div>
         ) : null}

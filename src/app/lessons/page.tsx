@@ -17,7 +17,7 @@ export default function LessonsPage() {
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { playLesson } = usePlayer();
-  const { lessons, allWords, catalogReady } = useCatalog();
+  const { lessons, allWords } = useCatalog();
   const [filter, setFilter] = useState<Filter>("all");
   const visible = useMemo(() => {
     if (filter === "all") {
@@ -85,7 +85,6 @@ export default function LessonsPage() {
       </HScroll>
 
       <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-2">
-        {!catalogReady ? <p className="text-sm font-semibold text-[#7C7A9C]">Đang tải bài học...</p> : null}
         {visible.map((item) => (
           <LessonCard
             key={item.lesson}

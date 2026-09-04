@@ -88,6 +88,26 @@ body {
   display: none;
 }
 
+@keyframes busy-indeterminate {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
+.busy-indeterminate {
+  animation: busy-indeterminate 1.05s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .busy-indeterminate {
+    animation: none;
+    width: 100%;
+  }
+}
+
 @keyframes aurora-drift {
   from {
     transform: translate3d(-4%, -2%, 0) scale(1);
