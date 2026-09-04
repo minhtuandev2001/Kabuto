@@ -79,6 +79,15 @@ body {
   }
 }
 
+.no-h-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-h-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes aurora-drift {
   from {
     transform: translate3d(-4%, -2%, 0) scale(1);

@@ -6,6 +6,7 @@ import { BookType, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GrammarLessonCard } from "@/components/GrammarLessonCard";
+import { HScroll } from "@/components/HScroll";
 import { useCatalog } from "@/context/CatalogProvider";
 import { grammarHref, isJlptLevel, JLPT_LEVELS, LAST_GRAMMAR_KEY, type JlptLevel } from "@/lib/grammar";
 
@@ -70,7 +71,7 @@ export default function GrammarPage() {
       <div className="grammar-head flex items-center justify-between">
         <div>
           <p className="text-[13.5px] font-semibold text-[#7C7A9C]">Mẫu câu</p>
-          <h1 className="text-[26px] font-extrabold text-[#1E1B4B]">Ngữ pháp</h1>
+          <h1 className="text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Ngữ pháp</h1>
         </div>
         <div className="flex gap-2">
           <div className="glass-strong flex h-11 w-11 items-center justify-center rounded-2xl text-[#7C5CFC]">
@@ -90,7 +91,7 @@ export default function GrammarPage() {
       <button
         type="button"
         onClick={() => continueItem && router.push(grammarHref(continueItem))}
-        className="grammar-hero relative mt-4 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-left text-white"
+        className="grammar-hero relative mt-4 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-left text-white md:p-7"
       >
         <span className="text-[11px] font-bold tracking-wider text-white/80">
           {last ? "TIẾP TỤC HỌC" : "BẮT ĐẦU HỌC"}
@@ -103,7 +104,7 @@ export default function GrammarPage() {
         </span>
       </button>
 
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+      <HScroll className="mt-4">
         {([...JLPT_LEVELS, "custom", "all"] as const).map((id) => (
           <button
             key={id}
@@ -120,11 +121,11 @@ export default function GrammarPage() {
                 : `${id} · ${grammarLessons.filter((item) => item.jlpt === id).length} bài`}
           </button>
         ))}
-      </div>
+      </HScroll>
 
       <p className="mt-4 text-[12.5px] font-bold text-[#7C7A9C]">{visible.length} bài ngữ pháp</p>
 
-      <div className="mt-2 flex flex-col gap-2">
+      <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
         {visible.map((item) => (
           <GrammarLessonCard
             key={`${item.custom ? "c" : "b"}-${item.jlpt}-${item.lesson}`}

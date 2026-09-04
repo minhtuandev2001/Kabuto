@@ -4,6 +4,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
+import { HScroll } from "@/components/HScroll";
 import { LessonCard } from "@/components/LessonCard";
 import { useCatalog } from "@/context/CatalogProvider";
 import { usePlayer } from "@/context/PlayerProvider";
@@ -46,14 +47,14 @@ export default function LessonsPage() {
       <div className="lessons-head flex items-center justify-between">
         <div>
           <p className="text-[13.5px] font-semibold text-[#7C7A9C]">Xin chào 👋</p>
-          <h1 className="text-[26px] font-extrabold text-[#1E1B4B]">Chọn bài học</h1>
+          <h1 className="text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Chọn bài học</h1>
         </div>
         <div className="glass-strong flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-extrabold text-[#7C5CFC]">
           あ
         </div>
       </div>
 
-      <div className="lessons-hero relative mt-4 overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-white">
+      <div className="lessons-hero relative mt-4 overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-white md:p-7">
         <p className="text-[11px] font-bold tracking-wider text-white/80">THƯ VIỆN TỪ VỰNG</p>
         <p className="mt-1 text-2xl font-extrabold">{lessons.length} bài học</p>
         <p className="mt-1 text-sm font-semibold text-white/85">{allWords.length.toLocaleString("vi-VN")} từ có phát âm</p>
@@ -61,7 +62,7 @@ export default function LessonsPage() {
         <img src="/mascot-cat.png" alt="" className="absolute -bottom-3 -right-2 h-28 w-28 object-contain" />
       </div>
 
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+      <HScroll className="mt-4">
         {(
           [
             ["all", "Tất cả"],
@@ -81,9 +82,9 @@ export default function LessonsPage() {
             {label}
           </button>
         ))}
-      </div>
+      </HScroll>
 
-      <div className="mt-3 flex flex-col gap-2.5">
+      <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-2">
         {!catalogReady ? <p className="text-sm font-semibold text-[#7C7A9C]">Đang tải bài học...</p> : null}
         {visible.map((item) => (
           <LessonCard

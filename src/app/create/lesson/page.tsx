@@ -19,7 +19,7 @@ function CreateLessonForm() {
   const goGrammar = next === "grammar";
 
   return (
-    <div className="pb-4">
+    <div className="pb-4 md:mx-auto md:w-full md:max-w-[520px]">
       <div className="glass-strong flex items-center gap-2 rounded-[20px] p-2">
         <button
           type="button"

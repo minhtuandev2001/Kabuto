@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { hScrollStep } from "../src/components/HScroll";
 import { assembleGrammarLessons, JLPT_LEVELS } from "../src/lib/grammar";
 
 assert.equal(JLPT_LEVELS.join(), "N5,N4,N3,N2,N1");
@@ -53,4 +54,13 @@ assert.equal(lessons[0].points.map((item) => item.pattern).join(), "P1,P2");
 assert.equal(lessons[0].points[0].custom, true);
 assert.equal(lessons[0].points[0].examples.length, 0);
 assert.equal(lessons[0].points[1].examples[0]?.jp, "x");
+
+const chips = [
+  { offsetLeft: 0, offsetWidth: 80 },
+  { offsetLeft: 88, offsetWidth: 100 },
+];
+assert.equal(hScrollStep(0, 100, chips, 1), 120);
+assert.equal(hScrollStep(88, 100, chips, -1), -100);
+assert.equal(hScrollStep(0, 400, chips, 1), 100);
+assert.equal(hScrollStep(0, 100, [], 1), 0);
 console.log("grammar assemble ok");

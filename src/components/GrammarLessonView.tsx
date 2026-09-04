@@ -78,6 +78,7 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
       </div>
       <p className="-mt-1 px-1 text-[13px] font-semibold text-[#7C7A9C]">{item.subtitle}</p>
 
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {item.points.map((point, index) => (
         <GrammarPointCard
           key={point.id || `${point.pattern}-${index}`}
@@ -88,6 +89,7 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
           }}
         />
       ))}
+      </div>
 
       <button
         type="button"

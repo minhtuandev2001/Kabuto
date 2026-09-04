@@ -6,7 +6,7 @@ import { usePlayer } from "@/context/PlayerProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
 import { WORD_IMAGE_THUMB } from "@/lib/media";
 
-export function MiniPlayer({ hidden }: { hidden: boolean }) {
+export function MiniPlayer({ hidden, className }: { hidden: boolean; className?: string }) {
   const router = useRouter();
   const { currentWord, lesson, isPlaying, isLoading, isWaiting, position, duration, togglePlay, next } = usePlayer();
 
@@ -22,7 +22,9 @@ export function MiniPlayer({ hidden }: { hidden: boolean }) {
     <button
       type="button"
       onClick={() => router.push("/listen")}
-      className="glass-strong relative mx-3 mb-2 flex h-16 w-[calc(100%-1.5rem)] items-center gap-2.5 overflow-hidden rounded-[18px] px-2.5 text-left shadow-[0_6px_16px_rgba(91,63,214,0.12)]"
+      className={`glass-strong relative flex h-16 items-center gap-2.5 overflow-hidden rounded-[18px] px-2.5 text-left shadow-[0_6px_16px_rgba(91,63,214,0.12)] ${
+        className ?? "mx-3 mb-2 w-[calc(100%-1.5rem)]"
+      }`}
     >
       <span className="absolute left-0 top-0 h-0.5 bg-[#7C5CFC]" style={{ width: `${progress * 100}%` }} />
       {artSrc ? (

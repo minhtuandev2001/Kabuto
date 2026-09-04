@@ -10,10 +10,10 @@ export default function SettingsPage() {
   return (
     <div>
       <p className="text-[11px] font-bold tracking-wider text-[#7C5CFC]">TÙY CHỈNH</p>
-      <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B]">Cài đặt</h1>
+      <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Cài đặt</h1>
       <p className="mt-1 text-sm font-semibold text-[#4A4470]">Chỉnh nhịp nghe cho vừa tốc độ học của bạn.</p>
 
-      <div className="glass-strong mt-6 rounded-[28px] p-4">
+      <div className="glass-strong mt-6 max-w-xl rounded-[28px] p-4 md:p-6">
         <p className="text-[15px] font-extrabold text-[#1E1B4B]">Nghỉ giữa các từ</p>
         <p className="mt-1 text-[12.5px] font-semibold leading-5 text-[#7C7A9C]">
           Sau khi phát xong một từ, đợi rồi mới sang từ kế. Khi khóa màn hình, app bỏ khoảng nghỉ để nghe không bị đứt.
@@ -53,7 +53,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div className="glass mt-4 rounded-[28px] p-4 text-[12.5px] font-semibold leading-5 text-[#4A4470]">
+      <div className="glass mt-4 max-w-xl rounded-[28px] p-4 text-[12.5px] font-semibold leading-5 text-[#4A4470]">
         Trên iPhone: mở Safari → nút Chia sẻ → <span className="font-extrabold text-[#1E1B4B]">Thêm vào màn hình chính</span>
         . App hiện icon riêng, nghe được khi Safari/PWA còn mở.
       </div>

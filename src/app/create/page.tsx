@@ -24,12 +24,12 @@ export default function CreatePage() {
   return (
     <div className="pb-4">
       <p className="text-[11px] font-bold tracking-wider text-[#7C5CFC]">NỘI DUNG</p>
-      <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B]">Tạo mới</h1>
+      <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Tạo mới</h1>
       <p className="mt-1 text-sm font-semibold text-[#4A4470]">
         Tạo bài học trước, rồi gắn từ vựng hoặc ngữ pháp vào bài đó.
       </p>
 
-      <div className="mt-5 flex flex-col gap-2.5">
+      <div className="mt-5 grid grid-cols-1 gap-2.5 lg:grid-cols-3">
         <button
           type="button"
           onClick={() => router.push("/create/lesson")}
@@ -95,7 +95,7 @@ export default function CreatePage() {
       {customLessons.length ? (
         <div className="mt-6">
           <p className="text-[12.5px] font-bold text-[#7C7A9C]">Bài tự soạn</p>
-          <div className="mt-2 flex flex-col gap-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
             {customLessons.map((item) => (
               <div key={item.lesson} className="glass flex items-center gap-2 rounded-[22px] p-3">
                 <button
@@ -143,7 +143,7 @@ export default function CreatePage() {
       {customGrammar.length ? (
         <div className="mt-5">
           <p className="text-[12.5px] font-bold text-[#7C7A9C]">Ngữ pháp vừa thêm</p>
-          <div className="mt-2 flex flex-col gap-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
             {customGrammar
               .slice()
               .reverse()
@@ -179,7 +179,7 @@ export default function CreatePage() {
       {customWords.length ? (
         <div className="mt-5">
           <p className="text-[12.5px] font-bold text-[#7C7A9C]">Từ vừa thêm</p>
-          <div className="mt-2 flex flex-col gap-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
             {customWords
               .slice()
               .reverse()

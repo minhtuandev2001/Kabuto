@@ -88,7 +88,7 @@ export default function WordListPage() {
           <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">Bấm để thêm mẫu cho bài này</span>
         </button>
       )}
-      <div className="mt-3 flex flex-col gap-2">
+      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
         {words.length === 0 ? (
           <button
             type="button"

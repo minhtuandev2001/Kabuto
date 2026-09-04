@@ -33,8 +33,9 @@ export default function WelcomePage() {
   );
 
   return (
-    <div ref={root} className="flex min-h-full flex-1 flex-col">
-      <div className="welcome-brand glass-strong inline-flex w-fit items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4">
+    <div ref={root} className="flex min-h-full flex-1 flex-col lg:min-h-[calc(100lvh-4rem)] lg:flex-row lg:items-center lg:justify-center lg:gap-16 lg:py-8">
+      <div className="lg:flex-1">
+        <div className="welcome-brand glass-strong inline-flex w-fit items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#7C5CFC] text-sm font-extrabold text-white">
           あ
         </span>
@@ -42,9 +43,9 @@ export default function WelcomePage() {
       </div>
 
       <div className="welcome-hero relative mx-auto my-6 flex justify-center">
-        <div className="absolute h-56 w-56 rounded-full bg-[#7C5CFC]/25 blur-3xl" />
+        <div className="absolute h-56 w-56 rounded-full bg-[#7C5CFC]/25 blur-3xl md:h-64 md:w-64" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hero-listening.png" alt="" className="relative z-10 h-56 w-56 object-contain" />
+        <img src="/hero-listening.png" alt="" className="relative z-10 h-56 w-56 object-contain md:h-64 md:w-64" />
       </div>
 
       <div className="grid grid-cols-3 gap-2.5">
@@ -58,10 +59,12 @@ export default function WelcomePage() {
             <div className="text-[11px] font-semibold text-[#7C7A9C]">{label}</div>
           </div>
         ))}
+        </div>
       </div>
 
-      <div className="welcome-copy mt-8">
-        <h1 className="text-[32px] font-extrabold leading-10 text-[#1E1B4B]">
+      <div className="flex flex-1 flex-col lg:max-w-md">
+        <div className="welcome-copy mt-8 lg:mt-0">
+        <h1 className="text-[32px] font-extrabold leading-10 text-[#1E1B4B] md:text-[40px] md:leading-[48px]">
           Học từ vựng
           <br />
           bằng đôi tai.
@@ -74,7 +77,7 @@ export default function WelcomePage() {
       <button
         type="button"
         disabled={!catalogReady || lessons.length === 0}
-        className="welcome-cta mt-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#A78BFA] to-[#7C5CFC] py-4 text-base font-extrabold text-white shadow-[0_14px_24px_rgba(124,92,252,0.32)] disabled:opacity-60"
+        className="welcome-cta mt-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#A78BFA] to-[#7C5CFC] py-4 text-base font-extrabold text-white shadow-[0_14px_24px_rgba(124,92,252,0.32)] disabled:opacity-60 lg:mt-8"
         onClick={() => {
           playLesson(lessons[0]?.lesson ?? 1, 0);
           router.push("/listen");
@@ -83,9 +86,10 @@ export default function WelcomePage() {
         Bắt đầu học
         <ArrowRight size={18} />
       </button>
-      <p className="welcome-cta mt-3 mb-2 text-center text-xs font-semibold text-[#7C7A9C]">
-        Thêm ra màn hình chính để dùng như app
-      </p>
+        <p className="welcome-cta mt-3 mb-2 text-center text-xs font-semibold text-[#7C7A9C]">
+          Thêm ra màn hình chính để dùng như app
+        </p>
+      </div>
     </div>
   );
 }

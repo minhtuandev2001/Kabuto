@@ -33,6 +33,7 @@ export default function ListenPage() {
     position,
     duration,
     loopLesson,
+    playLesson,
     togglePlay,
     next,
     prev,
@@ -118,7 +119,8 @@ export default function ListenPage() {
   );
 
   return (
-    <div ref={root} className="flex min-h-0 flex-1 flex-col">
+    <div ref={root} className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-start lg:gap-8">
+      <div className="flex min-h-0 flex-1 flex-col md:mx-auto md:w-full md:max-w-[440px] lg:sticky lg:top-4 lg:mx-0 lg:max-w-[420px] lg:flex-none">
       <div className="glass-strong flex items-center gap-3 rounded-[20px] p-2.5">
         <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[13.5px] font-extrabold text-white">
           {String(lesson?.lesson ?? 1).padStart(2, "0")}
@@ -138,7 +140,7 @@ export default function ListenPage() {
         </button>
       </div>
 
-      <div className="flex min-h-[140px] flex-1 flex-col items-center justify-center py-3">
+      <div className="flex min-h-[140px] flex-1 flex-col items-center justify-center py-3 lg:flex-none lg:py-6">
         <h1
           className={`player-word text-center font-extrabold text-[#1E1B4B] ${headline.length > 8 ? "text-2xl" : "text-[34px] leading-[42px]"}`}
         >
@@ -213,7 +215,7 @@ export default function ListenPage() {
         <button
           type="button"
           onClick={() => router.push(`/lessons/${lessonId}`)}
-          className="mb-2 flex items-center gap-2 rounded-[20px] border border-white/50 bg-white/40 px-3.5 py-2.5 text-left"
+          className="mb-2 flex items-center gap-2 rounded-[20px] border border-white/50 bg-white/40 px-3.5 py-2.5 text-left lg:hidden"
         >
           <span className="text-[11.5px] font-bold text-[#7C5CFC]">Tiếp theo</span>
           <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#4A4470]">
@@ -221,6 +223,40 @@ export default function ListenPage() {
           </span>
         </button>
       ) : null}
+      </div>
+
+      <aside className="hidden min-h-0 min-w-0 flex-1 flex-col lg:flex lg:max-h-[calc(100lvh-5rem)]">
+        <p className="text-[12.5px] font-bold text-[#7C7A9C]">{words.length} từ trong bài</p>
+        <div className="mt-2 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto pr-1">
+          {words.map((word, wordIndex) => {
+            const active = wordIndex === index;
+            return (
+              <button
+                key={`${word.order}-${wordIndex}`}
+                type="button"
+                onClick={() => playLesson(lessonId, wordIndex)}
+                className={`flex items-center gap-3 rounded-[18px] px-3 py-2.5 text-left ${
+                  active ? "bg-[#EFEAFF]" : "bg-white/50"
+                }`}
+              >
+                <span
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[11.5px] font-extrabold ${
+                    active ? "bg-[#7C5CFC] text-white" : "bg-white/80 text-[#7C7A9C]"
+                  }`}
+                >
+                  {word.order}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block truncate text-[14px] font-extrabold ${active ? "text-[#7C5CFC]" : "text-[#1E1B4B]"}`}>
+                    {getHeadline(word)}
+                  </span>
+                  <span className="block truncate text-[12px] font-semibold text-[#7C7A9C]">{word.meaning}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
     </div>
   );
 }

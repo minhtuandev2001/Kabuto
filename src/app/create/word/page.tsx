@@ -51,7 +51,7 @@ function CreateWordForm() {
 
   if (!lessons.length) {
     return (
-      <div className="pb-4">
+      <div className="pb-4 md:mx-auto md:w-full md:max-w-[520px]">
         <div className="glass-strong rounded-[24px] p-5">
           <h1 className="text-[20px] font-extrabold text-[#1E1B4B]">Chưa có bài học</h1>
           <p className="mt-2 text-sm font-semibold leading-5 text-[#7C7A9C]">
@@ -70,7 +70,7 @@ function CreateWordForm() {
   }
 
   return (
-    <div className="pb-4">
+    <div className="pb-4 md:mx-auto md:w-full md:max-w-[520px]">
       <div className="glass-strong flex items-center gap-2 rounded-[20px] p-2">
         <button
           type="button"
