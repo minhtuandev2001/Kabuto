@@ -1,18 +1,21 @@
 "use client";
 
 import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useCatalog } from "@/context/CatalogProvider";
 
-export default function CreateLessonPage() {
+function CreateLessonForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next");
   const { addLesson, nextLessonNumber } = useCatalog();
   const [title, setTitle] = useState("");
   const [book, setBook] = useState("Tự soạn");
   const [jlpt, setJlpt] = useState("Tự soạn");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const goGrammar = next === "grammar";
 
   return (
     <div className="pb-4">
@@ -38,7 +41,7 @@ export default function CreateLessonPage() {
           setSaving(true);
           try {
             const lesson = await addLesson({ title, book, jlpt });
-            router.push(`/create/word?lesson=${lesson.lesson}`);
+            router.push(goGrammar ? `/create/grammar?lesson=${lesson.lesson}` : `/create/word?lesson=${lesson.lesson}`);
           } catch (err) {
             setError(err instanceof Error ? err.message : "Không tạo được bài");
             setSaving(false);
@@ -74,6 +77,8 @@ export default function CreateLessonPage() {
             <option value="N5">N5</option>
             <option value="N4">N4</option>
             <option value="N3">N3</option>
+            <option value="N2">N2</option>
+            <option value="N1">N1</option>
           </select>
         </label>
         {error ? <p className="text-sm font-semibold text-[#F472B6]">{error}</p> : null}
@@ -82,9 +87,17 @@ export default function CreateLessonPage() {
           disabled={saving}
           className="mt-2 flex w-full items-center justify-center rounded-full bg-gradient-to-r from-[#A78BFA] to-[#7C5CFC] py-4 text-base font-extrabold text-white disabled:opacity-60"
         >
-          {saving ? "Đang lưu..." : "Tạo bài rồi thêm từ"}
+          {saving ? "Đang lưu..." : goGrammar ? "Tạo bài rồi thêm ngữ pháp" : "Tạo bài rồi thêm từ"}
         </button>
       </form>
     </div>
+  );
+}
+
+export default function CreateLessonPage() {
+  return (
+    <Suspense fallback={<p className="text-sm font-semibold text-[#7C7A9C]">Đang mở form...</p>}>
+      <CreateLessonForm />
+    </Suspense>
   );
 }

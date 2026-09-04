@@ -48,6 +48,37 @@ export async function ensureSchema() {
           PRIMARY KEY (lesson, "order")
         )
       `;
+      await client`
+        CREATE TABLE IF NOT EXISTS grammar_lessons (
+          jlpt TEXT NOT NULL,
+          lesson INTEGER NOT NULL,
+          title TEXT NOT NULL,
+          subtitle TEXT NOT NULL DEFAULT '',
+          catalog_lesson INTEGER,
+          source TEXT NOT NULL DEFAULT 'user',
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (jlpt, lesson)
+        )
+      `;
+      await client`
+        CREATE TABLE IF NOT EXISTS grammar_points (
+          id SERIAL PRIMARY KEY,
+          jlpt TEXT NOT NULL,
+          lesson INTEGER NOT NULL,
+          sort INTEGER NOT NULL DEFAULT 0,
+          pattern TEXT NOT NULL,
+          meaning TEXT NOT NULL,
+          form TEXT NOT NULL DEFAULT '',
+          note TEXT NOT NULL DEFAULT '',
+          examples JSONB NOT NULL DEFAULT '[]'::jsonb,
+          source TEXT NOT NULL DEFAULT 'user',
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `;
+      await client`
+        CREATE INDEX IF NOT EXISTS grammar_points_lesson_idx
+        ON grammar_points (jlpt, lesson, sort, id)
+      `;
     })().catch((error) => {
       schemaReady = null;
       throw error;

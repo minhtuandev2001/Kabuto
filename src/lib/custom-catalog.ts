@@ -1,3 +1,4 @@
+import { deleteGrammarForCatalogLesson } from "@/lib/custom-grammar";
 import { ensureSchema, getSql } from "@/lib/db";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 
@@ -170,6 +171,7 @@ export async function deleteCustomLesson(lesson: number) {
     throw new Error("Không tìm thấy bài tự soạn");
   }
   await sql`DELETE FROM custom_words WHERE lesson = ${lesson}`;
+  await deleteGrammarForCatalogLesson(lesson);
 }
 
 export async function deleteCustomWord(lesson: number, order: number) {

@@ -2,20 +2,25 @@
 
 import { ChevronLeft, Play, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { usePlayer } from "@/context/PlayerProvider";
 import { useCatalog } from "@/context/CatalogProvider";
 import { formatLessonSubtitle, formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
 import { PRELOAD_IMAGE_COUNT, WORD_IMAGE_THUMB, preloadImages } from "@/lib/media";
+import { findGrammarByCatalogLesson, grammarHref } from "@/lib/grammar";
 
 export default function WordListPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { playLesson, lessonId, index, isPlaying } = usePlayer();
-  const { getLesson, getWordsForLesson } = useCatalog();
+  const { getLesson, getWordsForLesson, grammarLessons } = useCatalog();
   const lesson = Number(params.id);
   const info = getLesson(lesson);
   const words = getWordsForLesson(lesson);
+  const grammar = useMemo(
+    () => findGrammarByCatalogLesson(grammarLessons, lesson),
+    [grammarLessons, lesson],
+  );
 
   useEffect(() => {
     preloadImages(words.slice(0, PRELOAD_IMAGE_COUNT).map((word) => wordImageSrc(word)));
@@ -59,7 +64,30 @@ export default function WordListPage() {
       </div>
       <p className="mt-3 text-sm font-semibold text-[#7C7A9C]">
         {info ? formatLessonSubtitle(info) : ""} · {words.length} từ
+        {grammar ? ` · ${grammar.points.length} mẫu` : ""}
       </p>
+      {grammar?.points.length ? (
+        <button
+          type="button"
+          onClick={() => router.push(grammarHref(grammar))}
+          className="glass mt-3 w-full rounded-[22px] px-4 py-3 text-left"
+        >
+          <span className="block text-[14px] font-extrabold text-[#1E1B4B]">Ngữ pháp bài này</span>
+          <span className="mt-0.5 block truncate text-[12.5px] font-semibold text-[#7C7A9C]">
+            {grammar.points[0]?.pattern}
+            {grammar.points.length > 1 ? ` · +${grammar.points.length - 1} mẫu` : ""}
+          </span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => router.push(`/create/grammar?lesson=${lesson}`)}
+          className="glass mt-3 w-full rounded-[22px] px-4 py-3 text-left"
+        >
+          <span className="block text-[14px] font-extrabold text-[#1E1B4B]">Chưa có ngữ pháp tự thêm</span>
+          <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">Bấm để thêm mẫu cho bài này</span>
+        </button>
+      )}
       <div className="mt-3 flex flex-col gap-2">
         {words.length === 0 ? (
           <button

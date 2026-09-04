@@ -1,47 +1,144 @@
-import { n3Lessons } from "./n3";
-import { n4Lessons } from "./n4";
-import { n5Lessons } from "./n5";
-import type { GrammarLesson, JlptLevel } from "./types";
+import type { GrammarExample, GrammarLesson, GrammarPoint, JlptLevel } from "./types";
 
 export type { GrammarExample, GrammarLesson, GrammarPoint, JlptLevel } from "./types";
 
-const BY_LEVEL: Record<JlptLevel, GrammarLesson[]> = {
-  N5: n5Lessons,
-  N4: n4Lessons,
-  N3: n3Lessons,
+export const LAST_GRAMMAR_KEY = "lj-last-grammar";
+
+export type GrammarLessonRow = {
+  jlpt: string;
+  lesson: number;
+  title: string;
+  subtitle: string;
+  catalog_lesson: number | null;
+  source: string;
 };
 
-export const GRAMMAR_LEVELS: JlptLevel[] = ["N5", "N4", "N3"];
+export type GrammarPointRow = {
+  id: number;
+  jlpt: string;
+  lesson: number;
+  sort: number;
+  pattern: string;
+  meaning: string;
+  form: string;
+  note: string;
+  examples: GrammarExample[] | string;
+  source: string;
+};
 
-export function parseJlptParam(raw: string | undefined): JlptLevel | null {
-  const value = raw?.trim().toUpperCase();
-  if (value === "N5" || value === "N4" || value === "N3") {
-    return value;
+export function catalogLessonForBuiltin(jlpt: string, lesson: number): number | null {
+  if (jlpt === "N5") {
+    return lesson;
+  }
+  if (jlpt === "N4") {
+    return lesson + 25;
   }
   return null;
 }
 
-export function getGrammarLessons(level: JlptLevel): GrammarLesson[] {
-  return BY_LEVEL[level];
+export function isJlptLevel(value: string): value is JlptLevel {
+  return value === "N5" || value === "N4" || value === "N3";
 }
 
-export function getGrammarLesson(level: JlptLevel, lesson: number): GrammarLesson | undefined {
-  return BY_LEVEL[level].find((item) => item.lesson === lesson);
+export function parseJlptParam(raw: string | undefined): JlptLevel | null {
+  const value = raw?.trim().toUpperCase() ?? "";
+  return isJlptLevel(value) ? value : null;
 }
 
-export function getAdjacentGrammarLesson(level: JlptLevel, lesson: number, delta: 1 | -1) {
-  const list = BY_LEVEL[level];
-  const at = list.findIndex((item) => item.lesson === lesson);
-  if (at < 0) {
-    return undefined;
+export function grammarHref(item: GrammarLesson) {
+  if (item.custom) {
+    return `/grammar/custom/${item.catalogLesson ?? item.lesson}`;
   }
-  return list[at + delta];
+  return `/grammar/${item.jlpt.toLowerCase()}/${item.lesson}`;
 }
 
-export function grammarLessonCount(level: JlptLevel) {
-  return BY_LEVEL[level].length;
+export function findGrammarLesson(list: GrammarLesson[], jlpt: string, lesson: number) {
+  const jlptKey = jlpt.trim().toUpperCase();
+  return list.find((item) => item.jlpt.toUpperCase() === jlptKey && item.lesson === lesson);
 }
 
-export function allGrammarLessons() {
-  return [...n5Lessons, ...n4Lessons, ...n3Lessons];
+export function findGrammarByCatalogLesson(list: GrammarLesson[], catalogLesson: number) {
+  return list.find(
+    (item) => item.catalogLesson === catalogLesson || (item.custom && item.lesson === catalogLesson),
+  );
+}
+
+export function adjacentGrammarLesson(list: GrammarLesson[], current: GrammarLesson, delta: 1 | -1) {
+  const same = list.filter((item) => item.jlpt === current.jlpt && Boolean(item.custom) === Boolean(current.custom));
+  const at = same.findIndex((item) => item.lesson === current.lesson);
+  return at < 0 ? undefined : same[at + delta];
+}
+
+function parseExamples(value: GrammarExample[] | string): GrammarExample[] {
+  try {
+    const parsed = typeof value === "string" ? (JSON.parse(value) as unknown) : value;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+        const row = item as { jp?: unknown; vi?: unknown };
+        const jp = typeof row.jp === "string" ? row.jp.trim() : "";
+        const vi = typeof row.vi === "string" ? row.vi.trim() : "";
+        return jp ? { jp, vi } : null;
+      })
+      .filter((item): item is GrammarExample => Boolean(item));
+  } catch {
+    return [];
+  }
+}
+
+export function toGrammarPoint(row: GrammarPointRow): GrammarPoint {
+  return {
+    id: String(row.id),
+    dbId: Number(row.id),
+    pattern: row.pattern,
+    meaning: row.meaning,
+    form: row.form || undefined,
+    note: row.note || undefined,
+    examples: parseExamples(row.examples),
+    custom: row.source !== "seed",
+  };
+}
+
+function jlptRank(jlpt: string) {
+  if (jlpt === "N5") {
+    return 1;
+  }
+  if (jlpt === "N4") {
+    return 2;
+  }
+  if (jlpt === "N3") {
+    return 3;
+  }
+  return 4;
+}
+
+export function assembleGrammarLessons(lessonRows: GrammarLessonRow[], pointRows: GrammarPointRow[]): GrammarLesson[] {
+  const pointsByKey = new Map<string, GrammarPointRow[]>();
+  for (const row of pointRows) {
+    const key = `${row.jlpt}:${row.lesson}`;
+    const list = pointsByKey.get(key) ?? [];
+    list.push(row);
+    pointsByKey.set(key, list);
+  }
+  return [...lessonRows]
+    .sort((a, b) => jlptRank(a.jlpt) - jlptRank(b.jlpt) || a.lesson - b.lesson)
+    .map((row) => {
+      const points = (pointsByKey.get(`${row.jlpt}:${row.lesson}`) ?? []).sort(
+        (a, b) => a.sort - b.sort || a.id - b.id,
+      );
+      return {
+        jlpt: row.jlpt,
+        lesson: Number(row.lesson),
+        title: row.title,
+        subtitle: row.subtitle || "",
+        catalogLesson: row.catalog_lesson == null ? null : Number(row.catalog_lesson),
+        custom: row.source !== "seed",
+        points: points.map(toGrammarPoint),
+      };
+    });
 }

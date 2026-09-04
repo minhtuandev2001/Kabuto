@@ -21,3 +21,5 @@ yarn-error.*
 *.pem
 # generated seed cache (Cloudinary URLs)
 scripts/.seed-minna-state.json
+
+.cursor

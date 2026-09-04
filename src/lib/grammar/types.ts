@@ -6,17 +6,22 @@ export type GrammarExample = {
 };
 
 export type GrammarPoint = {
+  id?: string;
+  dbId?: number;
   pattern: string;
   meaning: string;
   form?: string;
   note?: string;
   examples: GrammarExample[];
+  custom?: boolean;
 };
 
 export type GrammarLesson = {
-  jlpt: JlptLevel;
+  jlpt: string;
   lesson: number;
   title: string;
   subtitle: string;
   points: GrammarPoint[];
+  catalogLesson?: number | null;
+  custom?: boolean;
 };

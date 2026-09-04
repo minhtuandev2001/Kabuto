@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:grammar": "tsx scripts/check-grammar.ts",
+    "seed:grammar": "node --env-file=.env scripts/seed-grammar-neon.js"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -28,6 +30,7 @@
     "eslint-config-next": "15.5.9",
     "pngjs": "^7.0.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }
