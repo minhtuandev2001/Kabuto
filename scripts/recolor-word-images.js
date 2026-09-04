@@ -1,6 +1,6 @@
 /**
  * Recolor purple-heavy vocab illustrations using the word meaning.
- * Originals: assets/words-src/  →  output: assets/words/
+ * Originals: words-src/  →  output: public/words/
  *
  * One coherent object color (plus trim/accent), not spatial color patches.
  *
@@ -13,9 +13,9 @@ const path = require('path');
 const { PNG } = require('pngjs');
 
 const ROOT = path.join(__dirname, '..');
-const OUT_DIR = path.join(ROOT, 'assets', 'words');
-const SRC_DIR = path.join(ROOT, 'assets', 'words-src');
-const LESSON_DIR = path.join(ROOT, 'data', 'lessons');
+const OUT_DIR = path.join(ROOT, 'public', 'words');
+const SRC_DIR = path.join(ROOT, 'words-src');
+const VOCAB_PATH = path.join(ROOT, 'src', 'data', 'minna-vocabulary.json');
 const STATE_PATH = path.join(__dirname, '.recolor-state.json');
 const FILE_RE = /^l\d{2}-\d{3}\.png$/;
 const ALGO = 'semantic-v3';
@@ -115,14 +115,11 @@ function S(partial) {
 
 function loadVocab() {
   const map = new Map();
-  if (!fs.existsSync(LESSON_DIR)) return map;
-  for (const file of fs.readdirSync(LESSON_DIR)) {
-    if (!/^bai-\d+\.json$/.test(file)) continue;
-    const words = JSON.parse(fs.readFileSync(path.join(LESSON_DIR, file), 'utf8'));
-    for (const w of words) {
-      const name = `l${String(w.lesson).padStart(2, '0')}-${String(w.order).padStart(3, '0')}.png`;
-      map.set(name, w);
-    }
+  if (!fs.existsSync(VOCAB_PATH)) return map;
+  const words = JSON.parse(fs.readFileSync(VOCAB_PATH, 'utf8'));
+  for (const w of words) {
+    const name = `l${String(w.lesson).padStart(2, '0')}-${String(w.order).padStart(3, '0')}.png`;
+    map.set(name, w);
   }
   return map;
 }

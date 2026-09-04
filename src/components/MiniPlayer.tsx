@@ -1,140 +1,76 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { usePlayer } from '../context/PlayerContext';
-import { formatLessonTitle, getHeadline } from '../data/catalog';
-import { getWordImage } from '../data/wordImages';
-import { colors, font, glass, shadows } from '../theme';
+"use client";
 
-export const MINI_PLAYER_HEIGHT = 64;
+import { Pause, Play, SkipForward } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { usePlayer } from "@/context/PlayerProvider";
+import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
 
-type Props = {
-  visible: boolean;
-  onOpenPlayer: () => void;
-};
+export function MiniPlayer({ hidden }: { hidden: boolean }) {
+  const router = useRouter();
+  const { currentWord, lesson, isPlaying, isLoading, isWaiting, position, duration, togglePlay, next } = usePlayer();
 
-export function MiniPlayer({ visible, onOpenPlayer }: Props) {
-  const {
-    currentWord,
-    lesson,
-    isPlaying,
-    isLoading,
-    isWaiting,
-    position,
-    duration,
-    togglePlay,
-    next,
-  } = usePlayer();
-
-  if (!visible || !currentWord) {
+  if (hidden || !currentWord) {
     return null;
   }
 
-  const headline = getHeadline(currentWord);
-  const wordImage = getWordImage(currentWord);
   const progress = Math.min(1, position / Math.max(duration, 1));
   const busy = isWaiting || isPlaying;
 
   return (
-    <View style={styles.wrap}>
-      <Pressable onPress={onOpenPlayer} style={styles.bar}>
-        <View style={[styles.progress, { width: `${progress * 100}%` }]} />
-        <View style={styles.art}>
-          {wordImage ? (
-            <Image source={wordImage} style={styles.artImage} resizeMode="contain" />
-          ) : (
-            <Text style={styles.artFallback}>あ</Text>
-          )}
-        </View>
-        <View style={styles.copy}>
-          <Text style={styles.title} numberOfLines={1}>
-            {headline}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {currentWord.meaning}
-            {lesson ? ` · ${formatLessonTitle(lesson)}` : ''}
-          </Text>
-        </View>
-        <Pressable onPress={() => void togglePlay()} style={styles.ctrl} hitSlop={8}>
-          <Ionicons
-            name={isLoading ? 'ellipsis-horizontal' : busy ? 'pause' : 'play'}
-            size={22}
-            color={colors.text}
-            style={!busy && !isLoading ? styles.playIcon : undefined}
-          />
-        </Pressable>
-        <Pressable onPress={next} style={styles.ctrl} hitSlop={8}>
-          <Ionicons name="play-skip-forward" size={20} color={colors.text} />
-        </Pressable>
-      </Pressable>
-    </View>
+    <button
+      type="button"
+      onClick={() => router.push("/listen")}
+      className="glass-strong relative mx-3 mb-2 flex h-16 w-[calc(100%-1.5rem)] items-center gap-2.5 overflow-hidden rounded-[18px] px-2.5 text-left shadow-[0_6px_16px_rgba(91,63,214,0.12)]"
+    >
+      <span className="absolute left-0 top-0 h-0.5 bg-[#7C5CFC]" style={{ width: `${progress * 100}%` }} />
+      {wordImageSrc(currentWord) ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={wordImageSrc(currentWord)}
+          alt=""
+          className="h-11 w-11 rounded-xl bg-[#EFEAFF] object-contain"
+          onError={(event) => {
+            event.currentTarget.style.opacity = "0";
+          }}
+        />
+      ) : (
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EFEAFF] text-[15px] font-extrabold text-[#7C5CFC]">
+          {getHeadline(currentWord).slice(0, 1)}
+        </span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-extrabold text-[#1E1B4B]">{getHeadline(currentWord)}</span>
+        <span className="mt-0.5 block truncate text-[11.5px] font-semibold text-[#7C7A9C]">
+          {currentWord.meaning}
+          {lesson ? ` · ${formatLessonTitle(lesson)}` : ""}
+        </span>
+      </span>
+      <span
+        role="presentation"
+        onClick={(event) => {
+          event.stopPropagation();
+          togglePlay();
+        }}
+        className="flex h-9 w-9 items-center justify-center"
+      >
+        {isLoading ? (
+          <span className="text-[#1E1B4B]">···</span>
+        ) : busy ? (
+          <Pause size={20} className="text-[#1E1B4B]" />
+        ) : (
+          <Play size={20} className="ml-0.5 text-[#1E1B4B]" />
+        )}
+      </span>
+      <span
+        role="presentation"
+        onClick={(event) => {
+          event.stopPropagation();
+          next();
+        }}
+        className="flex h-9 w-9 items-center justify-center"
+      >
+        <SkipForward size={18} className="text-[#1E1B4B]" />
+      </span>
+    </button>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    paddingHorizontal: 10,
-    paddingBottom: 6,
-  },
-  bar: {
-    height: MINI_PLAYER_HEIGHT,
-    borderRadius: 18,
-    backgroundColor: glass.fillStrong,
-    borderWidth: 1,
-    borderColor: glass.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    overflow: 'hidden',
-    ...shadows.card,
-  },
-  progress: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    height: 2,
-    backgroundColor: colors.primary,
-  },
-  art: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  artImage: {
-    width: '88%',
-    height: '88%',
-  },
-  artFallback: {
-    color: colors.primary,
-    fontFamily: font.extra,
-    fontSize: 18,
-  },
-  copy: {
-    flex: 1,
-    marginLeft: 10,
-    marginRight: 6,
-  },
-  title: {
-    fontFamily: font.extra,
-    fontSize: 14,
-    color: colors.text,
-  },
-  subtitle: {
-    fontFamily: font.semi,
-    fontSize: 11.5,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  ctrl: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playIcon: {
-    marginLeft: 2,
-  },
-});

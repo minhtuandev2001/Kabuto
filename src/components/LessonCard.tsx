@@ -1,9 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { formatLessonSubtitle, formatLessonTitle, getWordsForLesson } from '../data/catalog';
-import { colors, font, glass, lessonAccents, radius, shadows } from '../theme';
-import type { LessonInfo } from '../types';
+"use client";
+
+import { Play } from "lucide-react";
+import { useCatalog } from "@/context/CatalogProvider";
+import { formatLessonSubtitle, formatLessonTitle } from "@/lib/catalog";
+import { lessonAccents } from "@/lib/theme";
+import type { LessonInfo } from "@/lib/types";
 
 type Props = {
   lesson: LessonInfo;
@@ -12,123 +13,43 @@ type Props = {
 };
 
 export function LessonCard({ lesson, onOpen, onPlay }: Props) {
+  const { getWordsForLesson } = useCatalog();
   const accent = lessonAccents[(lesson.lesson - 1) % lessonAccents.length];
   const count = getWordsForLesson(lesson.lesson).length;
 
   return (
-    <Pressable onPress={onOpen} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-      <LinearGradient colors={[...accent]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.badge}>
-        <Text style={styles.badgeNum}>{String(lesson.lesson).padStart(2, '0')}</Text>
-        <Text style={styles.badgeLabel}>BÀI</Text>
-      </LinearGradient>
-
-      <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={1}>
-          {formatLessonTitle(lesson)}
-        </Text>
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {formatLessonSubtitle(lesson)}
-        </Text>
-        <View style={styles.metaRow}>
-          <View style={styles.chip}>
-            <Text style={styles.chipText}>{lesson.jlpt}</Text>
-          </View>
-          <Ionicons name="musical-notes-outline" size={12} color={colors.muted} />
-          <Text style={styles.count}>{count} từ</Text>
-        </View>
-      </View>
-
-      <Pressable onPress={onPlay} hitSlop={10} style={({ pressed }) => [styles.play, pressed && styles.playPressed]}>
-        <Ionicons name="play" size={16} color={colors.white} style={styles.playIcon} />
-      </Pressable>
-    </Pressable>
+    <article className="lesson-card glass flex items-center gap-3 rounded-[28px] p-3">
+      <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+        <span
+          className="flex h-[54px] w-[54px] shrink-0 flex-col items-center justify-center rounded-[18px] text-white"
+          style={{ background: `linear-gradient(135deg, ${accent[0]}, ${accent[1]})` }}
+        >
+          <span className="text-lg font-extrabold leading-5">{String(lesson.lesson).padStart(2, "0")}</span>
+          <span className="text-[8px] font-bold tracking-[1.2px] text-white/80">BÀI</span>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[15.5px] font-extrabold text-[#1E1B4B]">{formatLessonTitle(lesson)}</span>
+          <span className="mt-0.5 block truncate text-[12.5px] font-semibold text-[#7C7A9C]">
+            {formatLessonSubtitle(lesson)}
+          </span>
+          <span className="mt-2 flex items-center gap-1.5">
+            <span className="rounded-full bg-[#EFEAFF] px-2 py-0.5 text-[10.5px] font-bold text-[#7C5CFC]">{lesson.jlpt}</span>
+            {lesson.custom ? (
+              <span className="rounded-full bg-[#FDE68A] px-2 py-0.5 text-[10.5px] font-bold text-[#92400E]">Tự soạn</span>
+            ) : null}
+            <span className="text-[11.5px] font-semibold text-[#7C7A9C]">{count} từ</span>
+          </span>
+        </span>
+      </button>
+      <button
+        type="button"
+        disabled={count === 0}
+        onClick={onPlay}
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5CFC] text-white shadow-[0_6px_16px_rgba(91,63,214,0.2)] disabled:opacity-35"
+        aria-label={`Phát bài ${lesson.lesson}`}
+      >
+        <Play size={16} className="ml-0.5" fill="currentColor" />
+      </button>
+    </article>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: glass.fill,
-    borderWidth: 1,
-    borderColor: glass.border,
-    borderRadius: radius.lg,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    ...shadows.card,
-  },
-  pressed: {
-    backgroundColor: glass.fillStrong,
-    transform: [{ scale: 0.995 }],
-  },
-  badge: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeNum: {
-    color: colors.white,
-    fontFamily: font.extra,
-    fontSize: 18,
-    lineHeight: 22,
-  },
-  badgeLabel: {
-    color: 'rgba(255,255,255,0.78)',
-    fontFamily: font.bold,
-    fontSize: 8,
-    letterSpacing: 1.2,
-  },
-  body: {
-    flex: 1,
-  },
-  title: {
-    fontWeight: '800',
-    fontSize: 15.5,
-    color: colors.text,
-  },
-  subtitle: {
-    fontFamily: font.semi,
-    fontSize: 12.5,
-    color: colors.muted,
-    marginTop: 2,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-  },
-  chip: {
-    backgroundColor: colors.primarySoft,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-  },
-  chipText: {
-    fontFamily: font.bold,
-    fontSize: 10.5,
-    color: colors.primary,
-  },
-  count: {
-    fontFamily: font.semi,
-    fontSize: 11.5,
-    color: colors.muted,
-  },
-  play: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadows.card,
-  },
-  playPressed: {
-    opacity: 0.8,
-  },
-  playIcon: {
-    marginLeft: 2,
-  },
-});

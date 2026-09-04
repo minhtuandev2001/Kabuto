@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6f3ff;
+  --foreground: #1e1b4b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-nunito);
+}
+
+html {
+  height: 100%;
+  background: #f6f3ff;
+}
+
+html,
+body {
+  min-height: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+  min-height: 100lvh;
+  min-height: -webkit-fill-available;
+  background: #f6f3ff;
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-nunito), "Nunito", system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 22px rgba(46, 42, 92, 0.08);
+  backdrop-filter: blur(18px);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 22px rgba(46, 42, 92, 0.08);
+  backdrop-filter: blur(20px);
+}
+
+.aurora {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  /* Overscan past the home-indicator so iOS PWA does not flash a white strip. */
+  bottom: calc(-1 * env(safe-area-inset-bottom, 0px) - 64px);
+  z-index: 0;
+  width: 100%;
+  min-height: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+  min-height: 100lvh;
+  min-height: -webkit-fill-available;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(167, 139, 250, 0.45), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 10%, rgba(244, 114, 182, 0.28), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(56, 189, 248, 0.22), transparent 50%),
+    #f6f3ff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .aurora::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(circle at 30% 20%, rgba(124, 92, 252, 0.18), transparent 40%);
+    animation: aurora-drift 14s ease-in-out infinite alternate;
+  }
+}
+
+.lecture-wrap {
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-mask-image: linear-gradient(#fff, #fff);
+  mask-image: linear-gradient(#fff, #fff);
+}
+
+.lecture-frame,
+.lecture-frame iframe {
+  pointer-events: none !important;
+}
+
+.lecture-frame iframe {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  /* Crop YouTube's title / share / related / logo that sit on the video edges. */
+  top: -18%;
+  height: 142%;
+  border: 0;
+}
+
+.lecture-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border: 0;
+  /* iOS lets taps through a fully transparent overlay into the iframe. */
+  background: rgba(255, 255, 255, 0.02);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transform: translateZ(1px);
+}
+
+@keyframes aurora-drift {
+  from {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(6%, 4%, 0) scale(1.08);
+  }
+}

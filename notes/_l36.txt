@@ -1,0 +1,49 @@
+001	[にもつが～] とどきます	được gởi đến, được chuyển đến [hành lý ~]
+002	[しあいに～]　でます	tham gia, tham dự [trận đấu]
+003	[ワープロを～]うちます	đánh [máy chữ]
+004	ちょきんします	tiết kiệm tiền, để dành tiền
+005	ふとります	béo lên, tăng cân
+006	やせます	gầy đi, giảm cân
+007	[７じを～] すぎます	quá, qua [7 giờ]
+008	[しゅうかんに～] なれます	làm quen với [tập quán]
+009	かたい	cứng
+010	やわらかい	mềm
+011	でんし～	~ điện tử
+012	けいたい～	cầm tay
+013	こうじょう	nhà máy, phân xưởng
+014	けんこう	sức khỏe
+015	けんどう	kiếm đạo
+016	まいしゅう	hàng tuần
+017	まいつき	hàng tháng
+018	まいとし（まいねん）	hàng năm
+019	やっと	cuối cùng thì
+020	かなり	khá, tương đối
+021	かならず	nhất định
+022	ぜったいに	nhất định, tuyệt đối
+023	じょうずに	giỏi, khéo
+024	できるだけ	cố gắng
+025	このごろ	gần đây, dạo này
+026	～ずつ	từng ~, ~ một
+027	そのほうが～	cái đó ~ hơn, như thế ~ hơn
+028	ショパン	Sô-panh, nhà soạn nhạc người Ba Lan (1810-1849)
+029	おきゃくさま	quý khách, khách hàng
+030	とくべつ「な」	đặc biệt
+031	していらっしゃいます	đang làm (tôn kính ngữ của しています)
+032	すいえい	bơi, môn bơi
+033	～とか、～とか	~ v.v.
+034	タンゴ	tăng-gô
+035	チャレンジします	thử, thử thách, dám làm (challenge)
+036	きもち	cảm giác, tâm trạng, tinh thần
+037	のりもの	phương tiện đi lại
+038	れきし	lịch sử
+039	―せいき	thế kỷ -
+040	とおく	xa, ở xa
+041	きしゃ	tàu hỏa chạy bằng hơi nước
+042	きせん	thuyền chạy bằng hơi nước
+043	おおぜいの～	nhiều (người)
+044	はこびます	mang, chở, vận chuyển
+045	とびます	bay
+046	あんぜん	an toàn
+047	うちゅう	vũ trụ
+048	ちきゅう	địa cầu, trái đất
+049	ライトきょうだい	anh em nhà Wright
