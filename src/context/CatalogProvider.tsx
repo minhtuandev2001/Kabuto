@@ -48,6 +48,7 @@ type CatalogContextValue = CatalogIndex & {
 };
 
 const CatalogContext = createContext<CatalogContextValue | null>(null);
+const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v1";
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const [lessons, setLessons] = useState<LessonInfo[]>([]);
@@ -56,6 +57,19 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    try {
+      const raw = sessionStorage.getItem(CATALOG_CACHE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { lessons?: LessonInfo[]; words?: VocabWord[] };
+        if (Array.isArray(parsed.lessons) && Array.isArray(parsed.words) && parsed.words.length) {
+          setLessons(parsed.lessons);
+          setWords(parsed.words);
+          setCatalogReady(true);
+        }
+      }
+    } catch {
+      // ignore stale cache
+    }
     fetchCustomCatalog()
       .then((catalog) => {
         if (!cancelled) {
@@ -73,6 +87,17 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!catalogReady || !words.length) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ lessons, words }));
+    } catch {
+      // quota
+    }
+  }, [catalogReady, lessons, words]);
 
   const customLessons = useMemo(() => lessons.filter((item) => item.custom), [lessons]);
   const customWords = useMemo(() => words.filter((item) => item.custom), [words]);

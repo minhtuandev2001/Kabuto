@@ -1,4 +1,5 @@
 import type { LessonInfo, VocabWord } from "./types";
+import { cloudinaryDisplayUrl, WORD_IMAGE_PLAYER } from "./media";
 
 export type CatalogIndex = {
   lessons: LessonInfo[];
@@ -7,7 +8,7 @@ export type CatalogIndex = {
   getWordsForLesson: (lesson: number) => VocabWord[];
   getAdjacentLesson: (current: number, delta: 1 | -1) => number | undefined;
   getUpcomingWord: (lessonId: number, index: number, loopLesson: boolean) => VocabWord | undefined;
-  getAdjacentVideoLesson: (current: number, delta: 1 | -1) => number | undefined;
+  getUpcomingWords: (lessonId: number, index: number, loopLesson: boolean, count: number) => VocabWord[];
 };
 
 export function createCatalogIndex(lessonList: LessonInfo[], wordList: VocabWord[]): CatalogIndex {
@@ -44,13 +45,38 @@ export function createCatalogIndex(lessonList: LessonInfo[], wordList: VocabWord
     const nextLesson = getAdjacentLesson(lessonId, 1);
     return nextLesson != null ? getWordsForLesson(nextLesson)[0] : undefined;
   };
-  const getAdjacentVideoLesson = (current: number, delta: 1 | -1) => {
-    const ids = lessons.map((item) => item.lesson);
-    const at = ids.indexOf(current);
-    if (at < 0) {
-      return undefined;
+  const getUpcomingWords = (lessonId: number, index: number, loopLesson: boolean, count: number) => {
+    const result: VocabWord[] = [];
+    if (count <= 0) {
+      return result;
     }
-    return ids[at + delta];
+    let lid = lessonId;
+    let i = index;
+    let hops = 0;
+    while (result.length < count && hops < 4000) {
+      hops += 1;
+      const list = getWordsForLesson(lid);
+      if (!list.length) {
+        break;
+      }
+      i += 1;
+      if (i < list.length) {
+        result.push(list[i]);
+        continue;
+      }
+      if (loopLesson) {
+        lid = lessonId;
+        i = -1;
+        continue;
+      }
+      const nextId = getAdjacentLesson(lid, 1);
+      if (nextId == null) {
+        break;
+      }
+      lid = nextId;
+      i = -1;
+    }
+    return result;
   };
 
   return {
@@ -60,7 +86,7 @@ export function createCatalogIndex(lessonList: LessonInfo[], wordList: VocabWord
     getWordsForLesson,
     getAdjacentLesson,
     getUpcomingWord,
-    getAdjacentVideoLesson,
+    getUpcomingWords,
   };
 }
 
@@ -78,15 +104,6 @@ export function formatLessonSubtitle(lesson: LessonInfo): string {
   return parts[1]?.trim() || lesson.book;
 }
 
-export function wordImageSrc(word: VocabWord): string {
-  return word.imageUrl?.trim() || "";
-}
-
-/** Temporary: one YouTube playlist until each lesson has its own lecture video. */
-export const LECTURE_PLAYLIST_ID = "PLbBhikLbVlB2oefhXhaUPxq8ECCjbgrx2";
-export const LECTURE_FALLBACK_VIDEO_ID = "YBI4nM5HC4c";
-
-export function lectureThumbUrl(kind: "mq" | "hq" | "hq720" = "mq"): string {
-  const file = kind === "hq720" ? "hq720.jpg" : kind === "hq" ? "hqdefault.jpg" : "mqdefault.jpg";
-  return `https://i.ytimg.com/vi/${LECTURE_FALLBACK_VIDEO_ID}/${file}`;
+export function wordImageSrc(word: VocabWord, width = WORD_IMAGE_PLAYER): string {
+  return cloudinaryDisplayUrl(word.imageUrl?.trim() || "", width);
 }

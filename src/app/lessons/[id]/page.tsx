@@ -2,9 +2,11 @@
 
 import { ChevronLeft, Play, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { usePlayer } from "@/context/PlayerProvider";
 import { useCatalog } from "@/context/CatalogProvider";
-import { formatLessonSubtitle, formatLessonTitle, getHeadline } from "@/lib/catalog";
+import { formatLessonSubtitle, formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
+import { PRELOAD_IMAGE_COUNT, WORD_IMAGE_THUMB, preloadImages } from "@/lib/media";
 
 export default function WordListPage() {
   const params = useParams<{ id: string }>();
@@ -14,6 +16,10 @@ export default function WordListPage() {
   const lesson = Number(params.id);
   const info = getLesson(lesson);
   const words = getWordsForLesson(lesson);
+
+  useEffect(() => {
+    preloadImages(words.slice(0, PRELOAD_IMAGE_COUNT).map((word) => wordImageSrc(word)));
+  }, [words]);
 
   return (
     <div className="pb-4">
@@ -82,9 +88,11 @@ export default function WordListPage() {
               {word.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={word.imageUrl}
+                  src={wordImageSrc(word, WORD_IMAGE_THUMB)}
                   alt=""
                   className={`h-8 w-8 rounded-xl bg-[#EFEAFF] object-cover ${active ? "ring-2 ring-[#7C5CFC]" : ""}`}
+                  loading={wordIndex < 12 ? "eager" : "lazy"}
+                  decoding="async"
                 />
               ) : (
                 <span

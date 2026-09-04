@@ -4,6 +4,7 @@ import { BookPlus, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCatalog } from "@/context/CatalogProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
+import { WORD_IMAGE_THUMB } from "@/lib/media";
 
 export default function CreatePage() {
   const router = useRouter();
@@ -111,7 +112,7 @@ export default function CreatePage() {
                 <div key={`${word.lesson}-${word.order}`} className="glass flex items-center gap-2 rounded-[20px] px-3 py-2.5">
                   {wordImageSrc(word) ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={wordImageSrc(word)} alt="" className="h-10 w-10 rounded-xl bg-[#EFEAFF] object-cover" />
+                    <img src={wordImageSrc(word, WORD_IMAGE_THUMB)} alt="" className="h-10 w-10 rounded-xl bg-[#EFEAFF] object-cover" decoding="async" />
                   ) : (
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFEAFF] text-[12px] font-extrabold text-[#7C5CFC]">
                       {getHeadline(word).slice(0, 1)}

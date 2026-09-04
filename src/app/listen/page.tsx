@@ -20,6 +20,7 @@ export default function ListenPage() {
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [imgOk, setImgOk] = useState(true);
+  const [displaySrc, setDisplaySrc] = useState("");
   const {
     lesson,
     lessonId,
@@ -58,8 +59,33 @@ export default function ListenPage() {
   })();
 
   useEffect(() => {
-    setImgOk(true);
-  }, [currentWord?.lesson, currentWord?.order, currentWord?.imageUrl]);
+    if (!artSrc) {
+      setDisplaySrc("");
+      setImgOk(false);
+      return;
+    }
+    let cancelled = false;
+    const probe = new Image();
+    const show = () => {
+      if (!cancelled) {
+        setDisplaySrc(artSrc);
+        setImgOk(true);
+      }
+    };
+    probe.onload = show;
+    probe.onerror = () => {
+      if (!cancelled) {
+        setImgOk(false);
+      }
+    };
+    probe.src = artSrc;
+    if (probe.complete && probe.naturalWidth > 0) {
+      show();
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [artSrc]);
 
   useGSAP(
     () => {
@@ -72,13 +98,23 @@ export default function ListenPage() {
         { y: 18, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" },
       );
+    },
+    { scope: root, dependencies: [currentWord?.kana, currentWord?.order, currentWord?.lesson] },
+  );
+
+  useGSAP(
+    () => {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) {
+        return;
+      }
       gsap.fromTo(
         ".player-art",
         { scale: 0.9, rotate: -4, opacity: 0.6 },
         { scale: 1, rotate: 0, opacity: 1, duration: 0.55, ease: "back.out(1.6)" },
       );
     },
-    { scope: root, dependencies: [currentWord?.kana, currentWord?.order, currentWord?.lesson] },
+    { scope: root, dependencies: [displaySrc] },
   );
 
   return (
@@ -110,16 +146,9 @@ export default function ListenPage() {
         </h1>
         {showKana ? <p className="mt-1 text-[15px] font-bold text-[#7C7A9C]">{currentWord?.kana}</p> : null}
         <div className="player-art mt-3 flex h-[min(42vw,220px)] w-[min(42vw,220px)] items-center justify-center rounded-[36px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] shadow-[0_14px_24px_rgba(124,92,252,0.32)]">
-          {currentWord && imgOk && artSrc ? (
+          {imgOk && displaySrc ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={`${currentWord.lesson}-${currentWord.order}-${artSrc}`}
-              src={artSrc}
-              alt=""
-              className="h-[86%] w-[86%] object-contain"
-              onError={() => setImgOk(false)}
-              onLoad={() => setImgOk(true)}
-            />
+            <img src={displaySrc} alt="" className="h-[86%] w-[86%] object-contain" decoding="async" />
           ) : (
             <span className="text-6xl font-extrabold text-white">あ</span>
           )}

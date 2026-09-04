@@ -4,6 +4,7 @@ import { Pause, Play, SkipForward } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePlayer } from "@/context/PlayerProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
+import { WORD_IMAGE_THUMB } from "@/lib/media";
 
 export function MiniPlayer({ hidden }: { hidden: boolean }) {
   const router = useRouter();
@@ -13,6 +14,7 @@ export function MiniPlayer({ hidden }: { hidden: boolean }) {
     return null;
   }
 
+  const artSrc = wordImageSrc(currentWord, WORD_IMAGE_THUMB);
   const progress = Math.min(1, position / Math.max(duration, 1));
   const busy = isWaiting || isPlaying;
 
@@ -23,16 +25,9 @@ export function MiniPlayer({ hidden }: { hidden: boolean }) {
       className="glass-strong relative mx-3 mb-2 flex h-16 w-[calc(100%-1.5rem)] items-center gap-2.5 overflow-hidden rounded-[18px] px-2.5 text-left shadow-[0_6px_16px_rgba(91,63,214,0.12)]"
     >
       <span className="absolute left-0 top-0 h-0.5 bg-[#7C5CFC]" style={{ width: `${progress * 100}%` }} />
-      {wordImageSrc(currentWord) ? (
+      {artSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={wordImageSrc(currentWord)}
-          alt=""
-          className="h-11 w-11 rounded-xl bg-[#EFEAFF] object-contain"
-          onError={(event) => {
-            event.currentTarget.style.opacity = "0";
-          }}
-        />
+        <img src={artSrc} alt="" className="h-11 w-11 rounded-xl bg-[#EFEAFF] object-contain" decoding="async" />
       ) : (
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EFEAFF] text-[15px] font-extrabold text-[#7C5CFC]">
           {getHeadline(currentWord).slice(0, 1)}

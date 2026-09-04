@@ -9,7 +9,7 @@ async function readJson<T>(res: Response): Promise<T> {
 }
 
 export async function fetchCustomCatalog() {
-  const res = await fetch("/api/catalog", { cache: "no-store" });
+  const res = await fetch("/api/catalog");
   return readJson<{ lessons: LessonInfo[]; words: VocabWord[] }>(res);
 }
 

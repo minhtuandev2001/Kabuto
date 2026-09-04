@@ -79,40 +79,6 @@ body {
   }
 }
 
-.lecture-wrap {
-  isolation: isolate;
-  transform: translateZ(0);
-  -webkit-mask-image: linear-gradient(#fff, #fff);
-  mask-image: linear-gradient(#fff, #fff);
-}
-
-.lecture-frame,
-.lecture-frame iframe {
-  pointer-events: none !important;
-}
-
-.lecture-frame iframe {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  /* Crop YouTube's title / share / related / logo that sit on the video edges. */
-  top: -18%;
-  height: 142%;
-  border: 0;
-}
-
-.lecture-shield {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  border: 0;
-  /* iOS lets taps through a fully transparent overlay into the iframe. */
-  background: rgba(255, 255, 255, 0.02);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  transform: translateZ(1px);
-}
-
 @keyframes aurora-drift {
   from {
     transform: translate3d(-4%, -2%, 0) scale(1);

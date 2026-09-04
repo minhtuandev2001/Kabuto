@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { getHeadline, wordImageSrc } from "@/lib/catalog";
+import { PRELOAD_AUDIO_COUNT, PRELOAD_IMAGE_COUNT, preloadAudio, preloadImages } from "@/lib/media";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 import { useCatalog } from "./CatalogProvider";
 import { useSettings } from "./SettingsProvider";
@@ -55,7 +56,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const catalogRef = useRef(catalog);
   catalogRef.current = catalog;
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const preloadRef = useRef<HTMLAudioElement | null>(null);
   const shouldPlayRef = useRef(false);
   const lessonIdRef = useRef(1);
   const indexRef = useRef(0);
@@ -96,17 +96,46 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
+      const art = wordImageSrc(word, 256);
       navigator.mediaSession.metadata = new MediaMetadata({
         title: getHeadline(word),
         artist: word.meaning,
         album: `Bài ${word.lesson} · Learn Japan`,
-        artwork: wordImageSrc(word)
-          ? [{ src: wordImageSrc(word), sizes: "512x512", type: "image/png" }]
-          : [],
+        artwork: art ? [{ src: art, sizes: "256x256", type: "image/webp" }] : [],
       });
     } catch {
       // Safari may reject artwork.
     }
+  }, []);
+
+  const warmAround = useCallback((lesson: number, wordIndex: number, loop: boolean) => {
+    const cat = catalogRef.current;
+    const list = cat.getWordsForLesson(lesson);
+    const current = list[wordIndex];
+    const ahead = cat.getUpcomingWords(lesson, wordIndex, loop, PRELOAD_IMAGE_COUNT);
+    const images: string[] = [];
+    if (current) {
+      images.push(wordImageSrc(current));
+    }
+    const previous = list[wordIndex - 1];
+    if (previous) {
+      images.push(wordImageSrc(previous));
+    }
+    for (const word of ahead) {
+      images.push(wordImageSrc(word));
+    }
+    preloadImages(images);
+
+    const audios: string[] = [];
+    if (current?.audioUrl) {
+      audios.push(current.audioUrl);
+    }
+    for (const word of ahead.slice(0, Math.max(0, PRELOAD_AUDIO_COUNT - 1))) {
+      if (word.audioUrl) {
+        audios.push(word.audioUrl);
+      }
+    }
+    preloadAudio(audios);
   }, []);
 
   const advanceRef = useRef<() => void>(() => undefined);
@@ -117,6 +146,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       clearDelay();
       setPosition(0);
       setDuration(1);
+      warmAround(lessonIdRef.current, indexRef.current, loopRef.current);
       const audio = audioRef.current;
       if (!audio) {
         return;
@@ -133,14 +163,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       audio.src = word.audioUrl;
       audio.load();
       syncMediaSession(word);
-      const upcoming = catalogRef.current.getUpcomingWord(lessonIdRef.current, indexRef.current, loopRef.current);
-      if (upcoming?.audioUrl && upcoming.audioUrl !== word.audioUrl) {
-        if (!preloadRef.current) {
-          preloadRef.current = new Audio();
-        }
-        preloadRef.current.src = upcoming.audioUrl;
-        preloadRef.current.preload = "auto";
-      }
       if (play) {
         shouldPlayRef.current = true;
         const start = audio.play();
@@ -153,7 +175,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setIsPlaying(false);
       }
     },
-    [clearDelay, syncMediaSession],
+    [clearDelay, syncMediaSession, warmAround],
   );
 
   const goToLessonWord = useCallback(
@@ -162,10 +184,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         loadWord(catalogRef.current.getWordsForLesson(nextLesson)[wordIndex], shouldPlayRef.current);
         return;
       }
+      warmAround(nextLesson, wordIndex, loopRef.current);
       setLessonId(nextLesson);
       setIndex(wordIndex);
     },
-    [loadWord],
+    [loadWord, warmAround],
   );
 
   advanceRef.current = () => {
@@ -311,6 +334,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     (nextLesson: number, wordIndex = 0) => {
       clearDelay();
       shouldPlayRef.current = true;
+      warmAround(nextLesson, wordIndex, loopRef.current);
       if (nextLesson === lessonIdRef.current && wordIndex === indexRef.current) {
         loadWord(catalogRef.current.getWordsForLesson(nextLesson)[wordIndex], true);
         return;
@@ -319,7 +343,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIndex(wordIndex);
       setIsPlaying(true);
     },
-    [clearDelay, loadWord],
+    [clearDelay, loadWord, warmAround],
   );
 
   const togglePlay = useCallback(() => {

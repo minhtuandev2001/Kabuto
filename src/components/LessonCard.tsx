@@ -2,7 +2,8 @@
 
 import { Play } from "lucide-react";
 import { useCatalog } from "@/context/CatalogProvider";
-import { formatLessonSubtitle, formatLessonTitle } from "@/lib/catalog";
+import { formatLessonSubtitle, formatLessonTitle, wordImageSrc } from "@/lib/catalog";
+import { PRELOAD_IMAGE_COUNT, preloadImages } from "@/lib/media";
 import { lessonAccents } from "@/lib/theme";
 import type { LessonInfo } from "@/lib/types";
 
@@ -17,9 +18,14 @@ export function LessonCard({ lesson, onOpen, onPlay }: Props) {
   const accent = lessonAccents[(lesson.lesson - 1) % lessonAccents.length];
   const count = getWordsForLesson(lesson.lesson).length;
 
+  function warmLesson() {
+    const list = getWordsForLesson(lesson.lesson);
+    preloadImages(list.slice(0, PRELOAD_IMAGE_COUNT).map((word) => wordImageSrc(word)));
+  }
+
   return (
     <article className="lesson-card glass flex items-center gap-3 rounded-[28px] p-3">
-      <button type="button" onClick={onOpen} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+      <button type="button" onClick={onOpen} onPointerEnter={warmLesson} className="flex min-w-0 flex-1 items-center gap-3 text-left">
         <span
           className="flex h-[54px] w-[54px] shrink-0 flex-col items-center justify-center rounded-[18px] text-white"
           style={{ background: `linear-gradient(135deg, ${accent[0]}, ${accent[1]})` }}
@@ -44,6 +50,7 @@ export function LessonCard({ lesson, onOpen, onPlay }: Props) {
       <button
         type="button"
         disabled={count === 0}
+        onPointerEnter={warmLesson}
         onClick={onPlay}
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5CFC] text-white shadow-[0_6px_16px_rgba(91,63,214,0.2)] disabled:opacity-35"
         aria-label={`Phát bài ${lesson.lesson}`}
