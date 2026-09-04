@@ -1,6 +1,7 @@
-import type { GrammarExample, GrammarLesson, GrammarPoint, JlptLevel } from "./types";
+import { JLPT_LEVELS, type GrammarExample, type GrammarLesson, type GrammarPoint, type JlptLevel } from "./types";
 
-export type { GrammarExample, GrammarLesson, GrammarPoint, JlptLevel } from "./types";
+export { JLPT_LEVELS } from "./types";
+export type { GrammarExample, GrammarInput, GrammarLesson, GrammarPoint, JlptLevel } from "./types";
 
 export const LAST_GRAMMAR_KEY = "lj-last-grammar";
 
@@ -37,7 +38,7 @@ export function catalogLessonForBuiltin(jlpt: string, lesson: number): number | 
 }
 
 export function isJlptLevel(value: string): value is JlptLevel {
-  return value === "N5" || value === "N4" || value === "N3";
+  return JLPT_LEVELS.some((level) => level === value);
 }
 
 export function parseJlptParam(raw: string | undefined): JlptLevel | null {
@@ -105,16 +106,8 @@ export function toGrammarPoint(row: GrammarPointRow): GrammarPoint {
 }
 
 function jlptRank(jlpt: string) {
-  if (jlpt === "N5") {
-    return 1;
-  }
-  if (jlpt === "N4") {
-    return 2;
-  }
-  if (jlpt === "N3") {
-    return 3;
-  }
-  return 4;
+  const index = JLPT_LEVELS.indexOf(jlpt as JlptLevel);
+  return index < 0 ? JLPT_LEVELS.length + 1 : index + 1;
 }
 
 export function assembleGrammarLessons(lessonRows: GrammarLessonRow[], pointRows: GrammarPointRow[]): GrammarLesson[] {

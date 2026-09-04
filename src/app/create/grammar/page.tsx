@@ -54,16 +54,23 @@ function CreateGrammarForm() {
     return undefined;
   }, [editingPoint, gLessonParam, grammarLessons, jlptParam]);
 
+  const vocabLesson = targetGrammar
+    ? (targetGrammar.catalogLesson ?? catalogLessonForBuiltin(targetGrammar.jlpt, targetGrammar.lesson))
+    : null;
+  const grammarOnly = Boolean(targetGrammar && vocabLesson == null);
+
   const defaultLesson = useMemo(() => {
     if (Number.isFinite(presetLesson) && getLesson(presetLesson)) {
       return presetLesson;
     }
-    const fromGrammar = targetGrammar?.catalogLesson ?? catalogLessonForBuiltin(targetGrammar?.jlpt ?? "", targetGrammar?.lesson ?? 0);
-    if (fromGrammar) {
-      return fromGrammar;
+    if (vocabLesson) {
+      return vocabLesson;
+    }
+    if (targetGrammar) {
+      return 0;
     }
     return lessons[0]?.lesson ?? 0;
-  }, [getLesson, lessons, presetLesson, targetGrammar]);
+  }, [getLesson, lessons, presetLesson, targetGrammar, vocabLesson]);
 
   const [lessonId, setLessonId] = useState(defaultLesson);
   const [pattern, setPattern] = useState(editingPoint?.point.pattern ?? "");
@@ -104,7 +111,6 @@ function CreateGrammarForm() {
   const editing = Boolean(editingPoint);
   const dbId = editingPoint?.point.dbId;
   const linked = getLesson(lessonId);
-  const grammarOnly = Boolean(targetGrammar && !targetGrammar.catalogLesson && !linked);
 
   const preview = {
     id: "preview",
@@ -191,11 +197,13 @@ function CreateGrammarForm() {
           }
         }}
       >
-        {grammarOnly ? (
+        {grammarOnly || lessonId < 1 ? (
           <p className="rounded-[18px] bg-white/70 px-3.5 py-3 text-[12.5px] font-semibold text-[#7C7A9C]">
-            {targetGrammar?.jlpt} · Bài {String(targetGrammar?.lesson).padStart(2, "0")} · {targetGrammar?.title}
+            {targetGrammar
+              ? `${targetGrammar.jlpt} · Bài ${String(targetGrammar.lesson).padStart(2, "0")} · ${targetGrammar.title}`
+              : "Chọn hoặc tạo bài học trước khi lưu mẫu."}
           </p>
-        ) : lessonId >= 1 ? (
+        ) : (
           <label className="block">
             <span className="mb-1.5 block text-[12px] font-bold text-[#7C7A9C]">Bài học</span>
             <select
@@ -218,12 +226,6 @@ function CreateGrammarForm() {
                 : "Chọn bài học có sẵn"}
             </span>
           </label>
-        ) : (
-          <p className="rounded-[18px] bg-white/70 px-3.5 py-3 text-[12.5px] font-semibold text-[#7C7A9C]">
-            {targetGrammar
-              ? `${targetGrammar.jlpt} · Bài ${String(targetGrammar.lesson).padStart(2, "0")} · ${targetGrammar.title}`
-              : "Chọn hoặc tạo bài học trước khi lưu mẫu."}
-          </p>
         )}
 
         <label className="block">

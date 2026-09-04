@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useCatalog } from "@/context/CatalogProvider";
+import { JLPT_LEVELS } from "@/lib/grammar";
 
 function CreateLessonForm() {
   const router = useRouter();
@@ -74,11 +75,11 @@ function CreateLessonForm() {
             className="w-full rounded-2xl border border-white/70 bg-white/70 px-3.5 py-3 text-[15px] font-semibold text-[#1E1B4B] outline-none"
           >
             <option value="Tự soạn">Tự soạn</option>
-            <option value="N5">N5</option>
-            <option value="N4">N4</option>
-            <option value="N3">N3</option>
-            <option value="N2">N2</option>
-            <option value="N1">N1</option>
+            {JLPT_LEVELS.map((level) => (
+              <option key={level} value={level}>
+                {level}
+              </option>
+            ))}
           </select>
         </label>
         {error ? <p className="text-sm font-semibold text-[#F472B6]">{error}</p> : null}

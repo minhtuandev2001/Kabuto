@@ -37,25 +37,17 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
     await removeGrammar(point.dbId);
   }
 
-  function editHref(point: GrammarPoint) {
+  function formHref(point?: GrammarPoint) {
     const params = new URLSearchParams();
     if (vocabLesson) {
       params.set("lesson", String(vocabLesson));
     }
     params.set("jlpt", item.jlpt);
     params.set("gLesson", String(item.lesson));
-    if (point.dbId) {
+    if (point?.dbId) {
       params.set("id", String(point.dbId));
     }
     return `/create/grammar?${params.toString()}`;
-  }
-
-  function goAdd() {
-    if (vocabLesson) {
-      router.push(`/create/grammar?lesson=${vocabLesson}&jlpt=${item.jlpt}&gLesson=${item.lesson}`);
-      return;
-    }
-    router.push(`/create/grammar?jlpt=${encodeURIComponent(item.jlpt)}&gLesson=${item.lesson}`);
   }
 
   return (
@@ -77,7 +69,7 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
         </div>
         <button
           type="button"
-          onClick={goAdd}
+          onClick={() => router.push(formHref())}
           className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC]"
           aria-label="Thêm mẫu ngữ pháp"
         >
@@ -90,7 +82,7 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
         <GrammarPointCard
           key={point.id || `${point.pattern}-${index}`}
           point={point}
-          onEdit={() => router.push(editHref(point))}
+          onEdit={() => router.push(formHref(point))}
           onDelete={() => {
             void removePoint(point);
           }}
@@ -99,7 +91,7 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
 
       <button
         type="button"
-        onClick={goAdd}
+        onClick={() => router.push(formHref())}
         className="glass flex items-center justify-center gap-2 rounded-[20px] py-3 text-[13px] font-extrabold text-[#7C5CFC]"
       >
         <Plus size={16} />

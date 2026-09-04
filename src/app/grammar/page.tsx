@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GrammarLessonCard } from "@/components/GrammarLessonCard";
 import { useCatalog } from "@/context/CatalogProvider";
-import { grammarHref, isJlptLevel, LAST_GRAMMAR_KEY, type JlptLevel } from "@/lib/grammar";
+import { grammarHref, isJlptLevel, JLPT_LEVELS, LAST_GRAMMAR_KEY, type JlptLevel } from "@/lib/grammar";
 
 gsap.registerPlugin(useGSAP);
 
@@ -104,15 +104,7 @@ export default function GrammarPage() {
       </button>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-        {(
-          [
-            ["N5", "N5"],
-            ["N4", "N4"],
-            ["N3", "N3"],
-            ["custom", "Tự soạn"],
-            ["all", "Tất cả"],
-          ] as const
-        ).map(([id, label]) => (
+        {([...JLPT_LEVELS, "custom", "all"] as const).map((id) => (
           <button
             key={id}
             type="button"
@@ -121,9 +113,11 @@ export default function GrammarPage() {
               filter === id ? "bg-[#7C5CFC] text-white" : "bg-white/55 text-[#4A4470]"
             }`}
           >
-            {id === "all" || id === "custom"
-              ? label
-              : `${label} · ${grammarLessons.filter((item) => item.jlpt === id).length} bài`}
+            {id === "all"
+              ? "Tất cả"
+              : id === "custom"
+                ? "Tự soạn"
+                : `${id} · ${grammarLessons.filter((item) => item.jlpt === id).length} bài`}
           </button>
         ))}
       </div>

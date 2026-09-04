@@ -2,26 +2,16 @@ import { formatLessonSubtitle, formatLessonTitle } from "@/lib/catalog";
 import { ensureSchema, getSql } from "@/lib/db";
 import {
   assembleGrammarLessons,
+  catalogLessonForBuiltin,
   toGrammarPoint,
+  type GrammarExample,
+  type GrammarInput,
   type GrammarLessonRow,
   type GrammarPointRow,
 } from "@/lib/grammar";
-import type { GrammarExample } from "@/lib/grammar/types";
 import type { LessonInfo } from "@/lib/types";
 
-type LessonRow = GrammarLessonRow;
-type PointRow = GrammarPointRow;
-
-export type GrammarInput = {
-  lesson?: number;
-  jlpt?: string;
-  grammarLesson?: number;
-  pattern: string;
-  meaning: string;
-  form?: string;
-  note?: string;
-  examples?: GrammarExample[];
-};
+export type { GrammarInput } from "@/lib/grammar";
 
 export async function listGrammarLessons() {
   await ensureSchema();
@@ -29,11 +19,11 @@ export async function listGrammarLessons() {
   const lessons = (await sql`
     SELECT jlpt, lesson, title, subtitle, catalog_lesson, source
     FROM grammar_lessons
-  `) as LessonRow[];
+  `) as GrammarLessonRow[];
   const points = (await sql`
     SELECT id, jlpt, lesson, sort, pattern, meaning, form, note, examples, source
     FROM grammar_points
-  `) as PointRow[];
+  `) as GrammarPointRow[];
   return assembleGrammarLessons(lessons, points);
 }
 
@@ -67,10 +57,11 @@ function cleanPoint(input: {
 function slotFromCatalog(info: LessonInfo) {
   const n = info.lesson;
   if (n >= 1 && n <= 25) {
-    return { jlpt: "N5", lesson: n, catalogLesson: n, source: "seed" as const };
+    return { jlpt: "N5", lesson: n, catalogLesson: catalogLessonForBuiltin("N5", n), source: "seed" as const };
   }
   if (n >= 26 && n <= 50) {
-    return { jlpt: "N4", lesson: n - 25, catalogLesson: n, source: "seed" as const };
+    const lesson = n - 25;
+    return { jlpt: "N4", lesson, catalogLesson: catalogLessonForBuiltin("N4", lesson), source: "seed" as const };
   }
   return {
     jlpt: info.jlpt?.trim() || "Tự soạn",
@@ -90,7 +81,7 @@ async function resolveTarget(input: GrammarInput) {
       FROM grammar_lessons
       WHERE jlpt = ${jlpt} AND lesson = ${grammarLesson}
       LIMIT 1
-    `) as LessonRow[];
+    `) as GrammarLessonRow[];
     if (!existing[0]) {
       throw new Error("Không tìm thấy bài ngữ pháp");
     }
@@ -115,7 +106,7 @@ async function resolveTarget(input: GrammarInput) {
     FROM grammar_lessons
     WHERE catalog_lesson = ${catalogLesson}
     LIMIT 1
-  `) as LessonRow[];
+  `) as GrammarLessonRow[];
   if (byCatalog[0]) {
     return byCatalog[0];
   }
@@ -140,7 +131,7 @@ async function resolveTarget(input: GrammarInput) {
     FROM grammar_lessons
     WHERE jlpt = ${slot.jlpt} AND lesson = ${slot.lesson}
     LIMIT 1
-  `) as LessonRow[];
+  `) as GrammarLessonRow[];
   return created[0];
 }
 
@@ -165,7 +156,7 @@ export async function insertGrammarPoint(input: GrammarInput) {
       ${data.form}, ${data.note}, ${examplesJson}::jsonb, 'user'
     )
     RETURNING id, jlpt, lesson, sort, pattern, meaning, form, note, examples, source
-  `) as PointRow[];
+  `) as GrammarPointRow[];
   return { point: toGrammarPoint(rows[0]), jlpt: target.jlpt, lesson: Number(target.lesson) };
 }
 
@@ -183,7 +174,7 @@ export async function updateGrammarPoint(id: number, input: GrammarInput) {
         examples = ${examplesJson}::jsonb
     WHERE id = ${id}
     RETURNING id, jlpt, lesson, sort, pattern, meaning, form, note, examples, source
-  `) as PointRow[];
+  `) as GrammarPointRow[];
   if (!rows[0]) {
     throw new Error("Không tìm thấy mẫu ngữ pháp");
   }

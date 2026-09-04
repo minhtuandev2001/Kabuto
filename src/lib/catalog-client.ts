@@ -1,4 +1,4 @@
-import type { GrammarExample, GrammarLesson, GrammarPoint } from "@/lib/grammar";
+import type { GrammarInput, GrammarLesson, GrammarPoint } from "@/lib/grammar";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 
 async function readJson<T>(res: Response): Promise<T> {
@@ -9,16 +9,7 @@ async function readJson<T>(res: Response): Promise<T> {
   return data;
 }
 
-export type GrammarPayload = {
-  lesson?: number;
-  jlpt?: string;
-  grammarLesson?: number;
-  pattern: string;
-  meaning: string;
-  form?: string;
-  note?: string;
-  examples: GrammarExample[];
-};
+export type GrammarPayload = GrammarInput;
 
 export async function fetchCustomCatalog() {
   const [catalogRes, grammarRes] = await Promise.all([fetch("/api/catalog"), fetch("/api/grammar")]);
