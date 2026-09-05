@@ -11,18 +11,24 @@ import {
 } from "react";
 import { createCatalogIndex, type CatalogIndex } from "@/lib/catalog";
 import {
+  addGrammarImageApi,
+  addLessonImageApi,
   createLessonApi,
   createWordApi,
   deleteGrammarApi,
+  deleteGrammarImageApi,
   deleteLessonApi,
+  deleteLessonImageApi,
   deleteWordApi,
   fetchCustomCatalog,
   fetchGrammarLessons,
+  moveGrammarImageApi,
+  moveLessonImageApi,
   saveGrammarApi,
   type GrammarPayload,
 } from "@/lib/catalog-client";
 import type { GrammarLesson, GrammarPoint } from "@/lib/grammar";
-import type { LessonInfo, VocabWord } from "@/lib/types";
+import type { GrammarImage, LessonImage, LessonInfo, VocabWord } from "@/lib/types";
 
 type NewLessonInput = {
   title: string;
@@ -46,22 +52,35 @@ type CatalogContextValue = CatalogIndex & {
   catalogBusy: boolean;
   customLessons: LessonInfo[];
   customWords: VocabWord[];
+  lessonImages: LessonImage[];
+  grammarImages: GrammarImage[];
   grammarLessons: GrammarLesson[];
   nextLessonNumber: number;
+  getImagesForLesson: (lesson: number) => LessonImage[];
+  getGrammarImages: (jlpt: string, lesson: number) => GrammarImage[];
   addLesson: (input: NewLessonInput) => Promise<LessonInfo>;
   addWord: (input: NewWordInput) => Promise<VocabWord>;
+  addLessonImage: (lesson: number, imageUrl: string) => Promise<LessonImage>;
+  removeLessonImage: (lesson: number, order: number) => Promise<void>;
+  moveLessonImage: (lesson: number, order: number, delta: -1 | 1) => Promise<void>;
+  addGrammarImage: (jlpt: string, lesson: number, imageUrl: string) => Promise<GrammarImage>;
+  removeGrammarImage: (jlpt: string, lesson: number, order: number) => Promise<void>;
+  moveGrammarImage: (jlpt: string, lesson: number, order: number, delta: -1 | 1) => Promise<void>;
   saveGrammar: (input: GrammarPayload, dbId?: number) => Promise<GrammarPoint>;
   removeGrammar: (dbId: number) => Promise<void>;
   removeCustomLesson: (lesson: number) => Promise<void>;
   removeCustomWord: (lesson: number, order: number) => Promise<void>;
+  reloadCatalog: () => Promise<void>;
 };
 
 const CatalogContext = createContext<CatalogContextValue | null>(null);
-const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v5";
+const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v8";
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const [lessons, setLessons] = useState<LessonInfo[]>([]);
   const [words, setWords] = useState<VocabWord[]>([]);
+  const [lessonImages, setLessonImages] = useState<LessonImage[]>([]);
+  const [grammarImages, setGrammarImages] = useState<GrammarImage[]>([]);
   const [grammarLessons, setGrammarLessons] = useState<GrammarLesson[]>([]);
   const [catalogReady, setCatalogReady] = useState(false);
   const [busy, setBusy] = useState(0);
@@ -83,11 +102,15 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         const parsed = JSON.parse(raw) as {
           lessons?: LessonInfo[];
           words?: VocabWord[];
+          lessonImages?: LessonImage[];
+          grammarImages?: GrammarImage[];
           grammarLessons?: GrammarLesson[];
         };
         if (Array.isArray(parsed.lessons) && Array.isArray(parsed.words) && parsed.words.length) {
           setLessons(parsed.lessons);
           setWords(parsed.words);
+          setLessonImages(Array.isArray(parsed.lessonImages) ? parsed.lessonImages : []);
+          setGrammarImages(Array.isArray(parsed.grammarImages) ? parsed.grammarImages : []);
           setGrammarLessons(Array.isArray(parsed.grammarLessons) ? parsed.grammarLessons : []);
           setCatalogReady(true);
         }
@@ -101,6 +124,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setLessons(catalog.lessons);
           setWords(catalog.words);
+          setLessonImages(catalog.lessonImages ?? []);
+          setGrammarImages(catalog.grammarImages ?? []);
           setGrammarLessons(catalog.grammarLessons ?? []);
         }
       })
@@ -123,15 +148,53 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ lessons, words, grammarLessons }));
+      sessionStorage.setItem(
+        CATALOG_CACHE_KEY,
+        JSON.stringify({ lessons, words, lessonImages, grammarImages, grammarLessons }),
+      );
     } catch {
       // quota
     }
-  }, [catalogReady, grammarLessons, lessons, words]);
+  }, [catalogReady, grammarImages, grammarLessons, lessonImages, lessons, words]);
 
   const customLessons = useMemo(() => lessons.filter((item) => item.custom), [lessons]);
   const customWords = useMemo(() => words.filter((item) => item.custom), [words]);
   const index = useMemo(() => createCatalogIndex(lessons, words), [lessons, words]);
+  const imagesByLesson = useMemo(() => {
+    const map = new Map<number, LessonImage[]>();
+    for (const image of lessonImages) {
+      const list = map.get(image.lesson) ?? [];
+      list.push(image);
+      map.set(image.lesson, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.order - b.order);
+    }
+    return map;
+  }, [lessonImages]);
+  const grammarImagesBySlot = useMemo(() => {
+    const map = new Map<string, GrammarImage[]>();
+    for (const image of grammarImages) {
+      const key = `${image.jlpt}:${image.lesson}`;
+      const list = map.get(key) ?? [];
+      list.push(image);
+      map.set(key, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.order - b.order);
+    }
+    return map;
+  }, [grammarImages]);
+
+  const getImagesForLesson = useCallback(
+    (lesson: number) => imagesByLesson.get(lesson) ?? [],
+    [imagesByLesson],
+  );
+
+  const getGrammarImages = useCallback(
+    (jlpt: string, lesson: number) => grammarImagesBySlot.get(`${jlpt}:${lesson}`) ?? [],
+    [grammarImagesBySlot],
+  );
 
   const nextLessonNumber = useMemo(() => {
     const max = lessons.reduce((high, item) => Math.max(high, item.lesson), 0);
@@ -139,8 +202,23 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   }, [lessons]);
 
   const refreshGrammar = useCallback(async () => {
-    setGrammarLessons(await fetchGrammarLessons());
+    const data = await fetchGrammarLessons();
+    setGrammarLessons(data.lessons);
+    setGrammarImages(data.images);
   }, []);
+
+  const reloadCatalog = useCallback(
+    () =>
+      runBusy(async () => {
+        const catalog = await fetchCustomCatalog();
+        setLessons(catalog.lessons);
+        setWords(catalog.words);
+        setLessonImages(catalog.lessonImages ?? []);
+        setGrammarImages(catalog.grammarImages ?? []);
+        setGrammarLessons(catalog.grammarLessons ?? []);
+      }),
+    [runBusy],
+  );
 
   const addLesson = useCallback(
     (input: NewLessonInput) =>
@@ -161,6 +239,82 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
           word,
         ]);
         return word;
+      }),
+    [runBusy],
+  );
+
+  const addLessonImage = useCallback(
+    (lesson: number, imageUrl: string) =>
+      runBusy(async () => {
+        const image = await addLessonImageApi(lesson, imageUrl);
+        setLessonImages((current) => [...current, image]);
+        return image;
+      }),
+    [runBusy],
+  );
+
+  const removeLessonImage = useCallback(
+    (lesson: number, order: number) =>
+      runBusy(async () => {
+        await deleteLessonImageApi(lesson, order);
+        setLessonImages((current) => {
+          const kept = current.filter((item) => item.lesson !== lesson);
+          const renumbered = current
+            .filter((item) => item.lesson === lesson && item.order !== order)
+            .sort((a, b) => a.order - b.order)
+            .map((item, i) => ({ ...item, order: i + 1 }));
+          return [...kept, ...renumbered];
+        });
+      }),
+    [runBusy],
+  );
+
+  const moveLessonImageFn = useCallback(
+    (lesson: number, order: number, delta: -1 | 1) =>
+      runBusy(async () => {
+        const { images } = await moveLessonImageApi(lesson, order, delta);
+        setLessonImages((current) => [
+          ...current.filter((item) => item.lesson !== lesson),
+          ...images,
+        ]);
+      }),
+    [runBusy],
+  );
+
+  const addGrammarImageFn = useCallback(
+    (jlpt: string, lesson: number, imageUrl: string) =>
+      runBusy(async () => {
+        const image = await addGrammarImageApi(jlpt, lesson, imageUrl);
+        setGrammarImages((current) => [...current, image]);
+        return image;
+      }),
+    [runBusy],
+  );
+
+  const removeGrammarImageFn = useCallback(
+    (jlpt: string, lesson: number, order: number) =>
+      runBusy(async () => {
+        await deleteGrammarImageApi(jlpt, lesson, order);
+        setGrammarImages((current) => {
+          const kept = current.filter((item) => !(item.jlpt === jlpt && item.lesson === lesson));
+          const renumbered = current
+            .filter((item) => item.jlpt === jlpt && item.lesson === lesson && item.order !== order)
+            .sort((a, b) => a.order - b.order)
+            .map((item, i) => ({ ...item, order: i + 1 }));
+          return [...kept, ...renumbered];
+        });
+      }),
+    [runBusy],
+  );
+
+  const moveGrammarImageFn = useCallback(
+    (jlpt: string, lesson: number, order: number, delta: -1 | 1) =>
+      runBusy(async () => {
+        const { images } = await moveGrammarImageApi(jlpt, lesson, order, delta);
+        setGrammarImages((current) => [
+          ...current.filter((item) => !(item.jlpt === jlpt && item.lesson === lesson)),
+          ...images,
+        ]);
       }),
     [runBusy],
   );
@@ -190,11 +344,24 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         await deleteLessonApi(lesson);
         setLessons((current) => current.filter((item) => item.lesson !== lesson));
         setWords((current) => current.filter((item) => item.lesson !== lesson));
+        setLessonImages((current) => current.filter((item) => item.lesson !== lesson));
+        setGrammarImages((current) => {
+          const removed = grammarLessons.filter(
+            (item) => item.custom && (item.catalogLesson === lesson || item.lesson === lesson),
+          );
+          if (!removed.length) {
+            return current;
+          }
+          return current.filter(
+            (image) =>
+              !removed.some((item) => item.jlpt === image.jlpt && item.lesson === image.lesson),
+          );
+        });
         setGrammarLessons((current) =>
           current.filter((item) => !(item.custom && (item.catalogLesson === lesson || item.lesson === lesson))),
         );
       }),
-    [runBusy],
+    [grammarLessons, runBusy],
   );
 
   const removeCustomWord = useCallback(
@@ -213,28 +380,50 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       catalogBusy: busy > 0,
       customLessons,
       customWords,
+      lessonImages,
+      grammarImages,
       grammarLessons,
       nextLessonNumber,
+      getImagesForLesson,
+      getGrammarImages,
       addLesson,
       addWord,
+      addLessonImage,
+      removeLessonImage,
+      moveLessonImage: moveLessonImageFn,
+      addGrammarImage: addGrammarImageFn,
+      removeGrammarImage: removeGrammarImageFn,
+      moveGrammarImage: moveGrammarImageFn,
       saveGrammar,
       removeGrammar,
       removeCustomLesson,
       removeCustomWord,
+      reloadCatalog,
     }),
     [
+      addGrammarImageFn,
       addLesson,
+      addLessonImage,
       addWord,
       busy,
       catalogReady,
       customLessons,
       customWords,
+      getGrammarImages,
+      getImagesForLesson,
+      grammarImages,
       grammarLessons,
       index,
+      lessonImages,
+      moveGrammarImageFn,
+      moveLessonImageFn,
       nextLessonNumber,
+      reloadCatalog,
       removeCustomLesson,
       removeCustomWord,
       removeGrammar,
+      removeGrammarImageFn,
+      removeLessonImage,
       saveGrammar,
     ],
   );

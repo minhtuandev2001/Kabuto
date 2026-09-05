@@ -1,5 +1,7 @@
 export const WORD_IMAGE_PLAYER = 480;
 export const WORD_IMAGE_THUMB = 96;
+export const LESSON_IMAGE_VIEW = 1400;
+export const LESSON_IMAGE_THUMB = 320;
 export const PRELOAD_IMAGE_COUNT = 10;
 export const PRELOAD_AUDIO_COUNT = 3;
 

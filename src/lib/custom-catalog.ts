@@ -1,5 +1,6 @@
 import { deleteGrammarForCatalogLesson } from "@/lib/custom-grammar";
 import { ensureSchema, getSql } from "@/lib/db";
+import { deleteLessonImagesForLesson, listLessonImages } from "@/lib/lesson-images";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 
 type LessonRow = {
@@ -84,10 +85,15 @@ export async function listMinnaCatalog() {
 }
 
 export async function listFullCatalog() {
-  const [minna, custom] = await Promise.all([listMinnaCatalog(), listCustomCatalog()]);
+  const [minna, custom, lessonImages] = await Promise.all([
+    listMinnaCatalog(),
+    listCustomCatalog(),
+    listLessonImages(),
+  ]);
   return {
     lessons: [...minna.lessons, ...custom.lessons],
     words: [...minna.words, ...custom.words],
+    lessonImages,
   };
 }
 
@@ -113,6 +119,61 @@ export async function insertCustomLesson(input: { title: string; book?: string; 
   return lesson;
 }
 
+export async function importCustomLessons(
+  inputs: { row?: number; title: string; book?: string; jlpt?: string; lesson?: number }[],
+) {
+  await ensureSchema();
+  if (!inputs.length) {
+    return { created: [] as LessonInfo[], errors: [] as { row: number; message: string }[] };
+  }
+  const sql = getSql();
+  const existing = (await sql`SELECT lesson FROM custom_lessons`) as { lesson: number }[];
+  for (const item of existing) {
+    await deleteCustomLesson(item.lesson);
+  }
+
+  const catalog = await listFullCatalog();
+  const taken = new Set(catalog.lessons.map((item) => item.lesson));
+  let next = (catalog.lessons.reduce((high, item) => Math.max(high, item.lesson), 0) || 0) + 1;
+  const created: LessonInfo[] = [];
+  const errors: { row: number; message: string }[] = [];
+  for (let i = 0; i < inputs.length; i += 1) {
+    const input = inputs[i];
+    const row = input.row ?? i + 2;
+    try {
+      const title = input.title.trim();
+      let num = input.lesson;
+      if (num != null) {
+        if (taken.has(num)) {
+          throw new Error(`Bài ${num} đã có`);
+        }
+      } else {
+        while (taken.has(next)) {
+          next += 1;
+        }
+        num = next;
+      }
+      const lesson: LessonInfo = {
+        lesson: num,
+        title,
+        book: input.book?.trim() || "Tự soạn",
+        jlpt: input.jlpt?.trim() || "Tự soạn",
+        custom: true,
+      };
+      await sql`
+        INSERT INTO custom_lessons (lesson, title, book, jlpt)
+        VALUES (${lesson.lesson}, ${lesson.title}, ${lesson.book}, ${lesson.jlpt})
+      `;
+      taken.add(num);
+      next = Math.max(next, num) + 1;
+      created.push(lesson);
+    } catch (error) {
+      errors.push({ row, message: error instanceof Error ? error.message : "Không thêm được bài" });
+    }
+  }
+  return { created, errors };
+}
+
 export async function insertCustomWord(input: {
   lesson: number;
   kana: string;
@@ -130,7 +191,7 @@ export async function insertCustomWord(input: {
   const kana = input.kana.trim();
   const meaning = input.meaning.trim();
   if (!kana || !meaning) {
-    throw new Error("Nhập kana và nghĩa");
+    throw new Error("Nhập hiragana/katakana và nghĩa");
   }
   const existing = catalog.words.filter((word) => word.lesson === input.lesson);
   const order = existing.reduce((high, word) => Math.max(high, word.order), 0) + 1;
@@ -159,6 +220,84 @@ export async function insertCustomWord(input: {
   return word;
 }
 
+export async function importCustomWords(
+  inputs: {
+    row?: number;
+    lesson: number;
+    kana: string;
+    meaning: string;
+    kanji?: string;
+    romaji?: string;
+    sinoVietnamese?: string;
+    audioUrl?: string;
+    imageUrl?: string;
+  }[],
+) {
+  await ensureSchema();
+  if (!inputs.length) {
+    return { created: [] as VocabWord[], errors: [] as { row: number; message: string }[] };
+  }
+  const sql = getSql();
+  const catalog = await listFullCatalog();
+  const lessonOk = new Set(catalog.lessons.map((item) => item.lesson));
+  const errors: { row: number; message: string }[] = [];
+  const byLesson = new Map<number, VocabWord[]>();
+
+  for (let i = 0; i < inputs.length; i += 1) {
+    const input = inputs[i];
+    const row = input.row ?? i + 2;
+    if (!lessonOk.has(input.lesson)) {
+      errors.push({ row, message: `Chưa có bài học ${input.lesson}` });
+      continue;
+    }
+    const kana = input.kana.trim();
+    const meaning = input.meaning.trim();
+    if (!kana || !meaning) {
+      errors.push({
+        row,
+        message: `Thiếu ${[!kana ? "hiragana/katakana" : "", !meaning ? "meaning" : ""].filter(Boolean).join(" và ")}`,
+      });
+      continue;
+    }
+    const list = byLesson.get(input.lesson) ?? [];
+    list.push({
+      lesson: input.lesson,
+      order: list.length + 1,
+      kana,
+      kanji: input.kanji?.trim() || "",
+      romaji: input.romaji?.trim() || "",
+      sinoVietnamese: input.sinoVietnamese?.trim() || "",
+      meaning,
+      audioUrl: input.audioUrl?.trim() || "",
+      imageUrl: input.imageUrl?.trim() || "",
+      custom: true,
+    });
+    byLesson.set(input.lesson, list);
+  }
+
+  const created: VocabWord[] = [];
+  for (const [lesson, words] of byLesson) {
+    // One HTTP transaction: avoid interleaved delete/insert from a second import request.
+    await sql.transaction((tx) => [
+      tx`DELETE FROM custom_words WHERE lesson = ${lesson}`,
+      tx`DELETE FROM minna_words WHERE lesson = ${lesson}`,
+      ...words.map(
+        (word) => tx`
+          INSERT INTO custom_words (
+            lesson, "order", kana, kanji, romaji, sino_vietnamese, meaning, audio_url, image_url
+          )
+          VALUES (
+            ${word.lesson}, ${word.order}, ${word.kana}, ${word.kanji}, ${word.romaji},
+            ${word.sinoVietnamese}, ${word.meaning}, ${word.audioUrl}, ${word.imageUrl}
+          )
+        `,
+      ),
+    ]);
+    created.push(...words);
+  }
+  return { created, errors };
+}
+
 export async function deleteCustomLesson(lesson: number) {
   await ensureSchema();
   const sql = getSql();
@@ -171,6 +310,7 @@ export async function deleteCustomLesson(lesson: number) {
     throw new Error("Không tìm thấy bài tự soạn");
   }
   await sql`DELETE FROM custom_words WHERE lesson = ${lesson}`;
+  await deleteLessonImagesForLesson(lesson);
   await deleteGrammarForCatalogLesson(lesson);
 }
 

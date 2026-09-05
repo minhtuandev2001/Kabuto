@@ -1,6 +1,6 @@
 "use client";
 
-import { Play } from "lucide-react";
+import { Images, Play } from "lucide-react";
 import { useCatalog } from "@/context/CatalogProvider";
 import { formatLessonSubtitle, formatLessonTitle, wordImageSrc } from "@/lib/catalog";
 import { PRELOAD_IMAGE_COUNT, preloadImages } from "@/lib/media";
@@ -14,9 +14,11 @@ type Props = {
 };
 
 export function LessonCard({ lesson, onOpen, onPlay }: Props) {
-  const { getWordsForLesson } = useCatalog();
+  const { getWordsForLesson, getImagesForLesson } = useCatalog();
   const accent = lessonAccents[(lesson.lesson - 1) % lessonAccents.length];
   const count = getWordsForLesson(lesson.lesson).length;
+  const imageCount = getImagesForLesson(lesson.lesson).length;
+  const imageLed = imageCount > 0;
 
   function warmLesson() {
     const list = getWordsForLesson(lesson.lesson);
@@ -43,19 +45,22 @@ export function LessonCard({ lesson, onOpen, onPlay }: Props) {
             {lesson.custom ? (
               <span className="rounded-full bg-[#FDE68A] px-2 py-0.5 text-[10.5px] font-bold text-[#92400E]">Tự soạn</span>
             ) : null}
-            <span className="text-[11.5px] font-semibold text-[#7C7A9C]">{count} từ</span>
+            <span className="text-[11.5px] font-semibold text-[#7C7A9C]">
+              {imageLed ? `${imageCount} ảnh` : `${count} từ`}
+              {imageLed && count ? ` · ${count} từ` : ""}
+            </span>
           </span>
         </span>
       </button>
       <button
         type="button"
-        disabled={count === 0}
+        disabled={!imageLed && count === 0}
         onPointerEnter={warmLesson}
         onClick={onPlay}
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5CFC] text-white shadow-[0_6px_16px_rgba(91,63,214,0.2)] disabled:opacity-35"
-        aria-label={`Phát bài ${lesson.lesson}`}
+        aria-label={imageLed ? `Xem ảnh bài ${lesson.lesson}` : `Phát bài ${lesson.lesson}`}
       >
-        <Play size={16} className="ml-0.5" fill="currentColor" />
+        {imageLed ? <Images size={16} /> : <Play size={16} className="ml-0.5" fill="currentColor" />}
       </button>
     </article>
   );

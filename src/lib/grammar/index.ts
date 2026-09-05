@@ -30,7 +30,8 @@ export type GrammarPointRow = {
 const JLPT_CATALOG = [
   { jlpt: "N5", offset: 0, count: 25 },
   { jlpt: "N4", offset: 25, count: 25 },
-  { jlpt: "N3", offset: 50, count: 15 },
+  { jlpt: "N3", offset: 50, count: 12 },
+  // ponytail: N2 stays at 66 — gap 63–65 from old N3 13–15. Shift N2/N1 if catalog must be dense.
   { jlpt: "N2", offset: 65, count: 20 },
   { jlpt: "N1", offset: 85, count: 15 },
 ] as const;
@@ -70,6 +71,16 @@ export function grammarHref(item: GrammarLesson) {
     return `/grammar/custom/${item.catalogLesson ?? item.lesson}`;
   }
   return `/grammar/${item.jlpt.toLowerCase()}/${item.lesson}`;
+}
+
+export function grammarImagesHref(item: GrammarLesson) {
+  return `${grammarHref(item)}/images`;
+}
+
+/** N3+ study from sheet images; N5/N4 stay text/audio. */
+export function isImageLedJlpt(jlpt: string) {
+  const key = jlpt.trim().toUpperCase();
+  return key === "N3" || key === "N2" || key === "N1";
 }
 
 export function findGrammarLesson(list: GrammarLesson[], jlpt: string, lesson: number) {

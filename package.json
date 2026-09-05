@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "check:grammar": "tsx scripts/check-grammar.ts",
+    "check:transfer": "tsx scripts/check-transfer.ts",
+    "check:lesson-images": "tsx scripts/check-lesson-images.ts",
     "seed:jlpt-vocab": "tsx --env-file=.env scripts/seed-jlpt-vocab-neon.ts"
   },
   "dependencies": {

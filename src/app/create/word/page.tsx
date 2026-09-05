@@ -178,12 +178,12 @@ function CreateWordForm() {
           )}
         </div>
         <label className="block">
-          <span className="mb-1.5 block text-[12px] font-bold text-[#7C7A9C]">Kana</span>
+          <span className="mb-1.5 block text-[12px] font-bold text-[#7C7A9C]">Hiragana / Katakana</span>
           <input
             required
             value={kana}
             onChange={(event) => setKana(event.target.value)}
-            placeholder="わたし"
+            placeholder="わたし / コーヒー"
             className="w-full rounded-2xl border border-white/70 bg-white/70 px-3.5 py-3 text-[15px] font-semibold text-[#1E1B4B] outline-none"
           />
         </label>

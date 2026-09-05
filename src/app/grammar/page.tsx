@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GrammarLessonCard } from "@/components/GrammarLessonCard";
 import { HScroll } from "@/components/HScroll";
+import { grammarHref, grammarImagesHref, isJlptLevel, JLPT_LEVELS, LAST_GRAMMAR_KEY, type JlptLevel } from "@/lib/grammar";
 import { useCatalog } from "@/context/CatalogProvider";
-import { grammarHref, isJlptLevel, JLPT_LEVELS, LAST_GRAMMAR_KEY, type JlptLevel } from "@/lib/grammar";
 
 gsap.registerPlugin(useGSAP);
 
@@ -30,7 +30,7 @@ function readLastKey() {
 export default function GrammarPage() {
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { grammarLessons } = useCatalog();
+  const { grammarLessons, getGrammarImages } = useCatalog();
   const [filter, setFilter] = useState<Filter>("N5");
   const [last, setLast] = useState<{ jlpt: string; lesson: number; custom: boolean } | null>(null);
   const visible = useMemo(() => {
@@ -90,7 +90,13 @@ export default function GrammarPage() {
 
       <button
         type="button"
-        onClick={() => continueItem && router.push(grammarHref(continueItem))}
+        onClick={() => {
+          if (!continueItem) {
+            return;
+          }
+          const imgs = getGrammarImages(continueItem.jlpt, continueItem.lesson);
+          router.push(imgs.length ? grammarImagesHref(continueItem) : grammarHref(continueItem));
+        }}
         className="grammar-hero relative mt-4 w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-left text-white md:flex md:min-h-[132px] md:items-center md:justify-between md:p-7"
       >
         <span className="relative z-[1] block min-w-0 md:max-w-[70%]">
@@ -136,7 +142,10 @@ export default function GrammarPage() {
             key={`${item.custom ? "c" : "b"}-${item.jlpt}-${item.lesson}`}
             item={item}
             active={last?.jlpt === item.jlpt && last.lesson === item.lesson && last.custom === Boolean(item.custom)}
-            onOpen={() => router.push(grammarHref(item))}
+            onOpen={() => {
+              const imgs = getGrammarImages(item.jlpt, item.lesson);
+              router.push(imgs.length ? grammarImagesHref(item) : grammarHref(item));
+            }}
           />
         ))}
       </div>

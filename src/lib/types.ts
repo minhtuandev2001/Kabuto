@@ -18,3 +18,18 @@ export type LessonInfo = {
   jlpt: string;
   custom?: boolean;
 };
+
+/** Full-page vocab sheet images for a lesson (N3+ Mimikara-style study). */
+export type LessonImage = {
+  lesson: number;
+  order: number;
+  imageUrl: string;
+};
+
+/** Full-page grammar sheet images keyed by grammar (jlpt, lesson). */
+export type GrammarImage = {
+  jlpt: string;
+  lesson: number;
+  order: number;
+  imageUrl: string;
+};

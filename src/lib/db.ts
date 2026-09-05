@@ -79,6 +79,25 @@ export async function ensureSchema() {
         CREATE INDEX IF NOT EXISTS grammar_points_lesson_idx
         ON grammar_points (jlpt, lesson, sort, id)
       `;
+      await client`
+        CREATE TABLE IF NOT EXISTS lesson_images (
+          lesson INTEGER NOT NULL,
+          "order" INTEGER NOT NULL,
+          image_url TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (lesson, "order")
+        )
+      `;
+      await client`
+        CREATE TABLE IF NOT EXISTS grammar_images (
+          jlpt TEXT NOT NULL,
+          lesson INTEGER NOT NULL,
+          "order" INTEGER NOT NULL,
+          image_url TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          PRIMARY KEY (jlpt, lesson, "order")
+        )
+      `;
     })().catch((error) => {
       schemaReady = null;
       throw error;

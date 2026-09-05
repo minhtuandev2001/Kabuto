@@ -1,14 +1,25 @@
 "use client";
 
-import { BookPlus, BookType, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { BookPlus, BookType, ChevronRight, Images, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { TransferPanel } from "@/components/TransferPanel";
 import { useCatalog } from "@/context/CatalogProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
 import { WORD_IMAGE_THUMB } from "@/lib/media";
 
 export default function CreatePage() {
   const router = useRouter();
-  const { lessons, customLessons, customWords, grammarLessons, getWordsForLesson, removeCustomLesson, removeCustomWord, removeGrammar } = useCatalog();
+  const {
+    lessons,
+    customLessons,
+    customWords,
+    grammarLessons,
+    getWordsForLesson,
+    reloadCatalog,
+    removeCustomLesson,
+    removeCustomWord,
+    removeGrammar,
+  } = useCatalog();
   const hasLessons = lessons.length > 0;
   const customGrammar = grammarLessons.flatMap((item) =>
     item.points
@@ -26,8 +37,14 @@ export default function CreatePage() {
       <p className="text-[11px] font-bold tracking-wider text-[#7C5CFC]">NỘI DUNG</p>
       <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Tạo mới</h1>
       <p className="mt-1 text-sm font-semibold text-[#4A4470]">
-        Tạo bài học trước, rồi gắn từ vựng hoặc ngữ pháp vào bài đó.
+        Tạo từng mục, hoặc nhập Excel. Xuất chỉ gồm nội dung tự soạn. Nhập từ vựng sẽ thay hết từ của các bài có trong file.
       </p>
+
+      <div className="mt-5 grid grid-cols-1 gap-2.5 md:grid-cols-3">
+        <TransferPanel kind="lessons" onImported={reloadCatalog} />
+        <TransferPanel kind="words" onImported={reloadCatalog} />
+        <TransferPanel kind="grammar" onImported={reloadCatalog} />
+      </div>
 
       <div className="mt-5 grid grid-cols-1 gap-2.5 md:grid-cols-2 lg:grid-cols-3">
         <button
@@ -63,6 +80,46 @@ export default function CreatePage() {
             <span className="block text-[16px] font-extrabold text-[#1E1B4B]">Tạo từ vựng</span>
             <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">
               {hasLessons ? "Bắt buộc chọn bài học đã có" : "Chưa có bài học — tạo bài trước"}
+            </span>
+          </span>
+          <ChevronRight size={18} className="text-[#B9B6D4]" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (hasLessons) {
+              router.push("/create/images");
+              return;
+            }
+            router.push("/create/lesson");
+          }}
+          className="glass flex items-center gap-3 rounded-[24px] p-3.5 text-left md:min-h-[108px] md:p-5"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#7C5CFC]">
+            <Images size={22} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[16px] font-extrabold text-[#1E1B4B]">Ảnh từ vựng (N3+)</span>
+            <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">
+              {hasLessons ? "Thêm / xóa / sắp xếp ảnh trang bảng từ" : "Chưa có bài học — tạo bài trước"}
+            </span>
+          </span>
+          <ChevronRight size={18} className="text-[#B9B6D4]" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/create/grammar-images")}
+          className="glass flex items-center gap-3 rounded-[24px] p-3.5 text-left md:min-h-[108px] md:p-5"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#7C5CFC]">
+            <Images size={22} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[16px] font-extrabold text-[#1E1B4B]">Ảnh ngữ pháp (N3+)</span>
+            <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">
+              Thêm / xóa / sắp xếp ảnh trang ngữ pháp
             </span>
           </span>
           <ChevronRight size={18} className="text-[#B9B6D4]" />

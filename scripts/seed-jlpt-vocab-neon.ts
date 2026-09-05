@@ -19,7 +19,7 @@ const OPENJLPT_CSV = {
   N1: "https://raw.githubusercontent.com/evanclan/OpenJLPT/main/data/csv/vocab-n1.csv",
 } as const;
 
-const LESSONS = { N3: 15, N2: 20, N1: 15 } as const;
+const LESSONS = { N3: 12, N2: 20, N1: 15 } as const;
 const BOOK = "OpenJLPT (CC BY-SA 4.0)";
 const BATCH = 200;
 
@@ -242,6 +242,16 @@ async function main() {
   await sql`DELETE FROM minna_words WHERE lesson BETWEEN 51 AND 100`;
   await sql`DELETE FROM minna_lessons WHERE lesson BETWEEN 51 AND 100`;
 
+  // Drop old seed grammar past the new N3 lesson count (was 15 → now 12).
+  await sql`
+    DELETE FROM grammar_points
+    WHERE source = 'seed' AND jlpt = 'N3' AND lesson > ${LESSONS.N3}
+  `;
+  await sql`
+    DELETE FROM grammar_lessons
+    WHERE source = 'seed' AND jlpt = 'N3' AND lesson > ${LESSONS.N3}
+  `;
+
   for (const lesson of lessons) {
     await sql`
       INSERT INTO minna_lessons (lesson, title, book, jlpt)
@@ -264,9 +274,23 @@ async function main() {
     }
   }
 
+  const n3Lessons = await sql`SELECT COUNT(*)::int AS n FROM minna_lessons WHERE jlpt = 'N3'`;
+  const n3Words = await sql`SELECT COUNT(*)::int AS n FROM minna_words WHERE lesson BETWEEN 51 AND 62`;
   const lessonCount = await sql`SELECT COUNT(*)::int AS n FROM minna_lessons WHERE lesson BETWEEN 51 AND 100`;
   const wordCount = await sql`SELECT COUNT(*)::int AS n FROM minna_words WHERE lesson BETWEEN 51 AND 100`;
-  console.log(JSON.stringify({ source: BOOK, lessons: lessonCount[0].n, words: wordCount[0].n }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        source: BOOK,
+        n3Lessons: n3Lessons[0].n,
+        n3Words: n3Words[0].n,
+        lessons: lessonCount[0].n,
+        words: wordCount[0].n,
+      },
+      null,
+      2,
+    ),
+  );
 }
 
 main().catch((error) => {

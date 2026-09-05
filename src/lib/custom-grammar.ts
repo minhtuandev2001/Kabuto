@@ -1,5 +1,6 @@
 import { formatLessonSubtitle, formatLessonTitle } from "@/lib/catalog";
 import { ensureSchema, getSql } from "@/lib/db";
+import { deleteGrammarImagesForSlot } from "@/lib/grammar-images";
 import {
   assembleGrammarLessons,
   builtinSlotFromCatalog,
@@ -156,6 +157,51 @@ export async function insertGrammarPoint(input: GrammarInput) {
   return { point: toGrammarPoint(rows[0]), jlpt: target.jlpt, lesson: Number(target.lesson) };
 }
 
+export async function importGrammarPoints(
+  inputs: {
+    row?: number;
+    lesson: number;
+    jlpt?: string;
+    grammarLesson?: number;
+    pattern: string;
+    meaning: string;
+    form?: string;
+    note?: string;
+    examples: { jp: string; vi: string }[];
+  }[],
+) {
+  if (!inputs.length) {
+    return { created: 0, errors: [] as { row: number; message: string }[] };
+  }
+  await ensureSchema();
+  const sql = getSql();
+  await sql`DELETE FROM grammar_points WHERE source = 'user'`;
+  await sql`DELETE FROM grammar_lessons WHERE source = 'user'`;
+
+  let created = 0;
+  const errors: { row: number; message: string }[] = [];
+  for (let i = 0; i < inputs.length; i += 1) {
+    const input = inputs[i];
+    const row = input.row ?? i + 2;
+    try {
+      await insertGrammarPoint({
+        lesson: input.lesson,
+        jlpt: input.jlpt,
+        grammarLesson: input.grammarLesson,
+        pattern: input.pattern,
+        meaning: input.meaning,
+        form: input.form,
+        note: input.note,
+        examples: input.examples,
+      });
+      created += 1;
+    } catch (error) {
+      errors.push({ row, message: error instanceof Error ? error.message : "Không thêm được mẫu" });
+    }
+  }
+  return { created, errors };
+}
+
 export async function updateGrammarPoint(id: number, input: GrammarInput) {
   const data = cleanPoint(input);
   await ensureSchema();
@@ -193,6 +239,11 @@ export async function deleteGrammarPoint(id: number) {
 export async function deleteGrammarForCatalogLesson(catalogLesson: number) {
   await ensureSchema();
   const sql = getSql();
+  const slots = (await sql`
+    SELECT jlpt, lesson
+    FROM grammar_lessons
+    WHERE catalog_lesson = ${catalogLesson} AND source = 'user'
+  `) as { jlpt: string; lesson: number }[];
   await sql`
     DELETE FROM grammar_points
     WHERE source = 'user'
@@ -204,4 +255,7 @@ export async function deleteGrammarForCatalogLesson(catalogLesson: number) {
     DELETE FROM grammar_lessons
     WHERE catalog_lesson = ${catalogLesson} AND source = 'user'
   `;
+  for (const slot of slots) {
+    await deleteGrammarImagesForSlot(slot.jlpt, slot.lesson);
+  }
 }

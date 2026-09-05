@@ -1,22 +1,30 @@
 "use client";
 
-import { ChevronLeft, Play, Plus } from "lucide-react";
+import { ChevronLeft, Images, Play, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { usePlayer } from "@/context/PlayerProvider";
 import { useCatalog } from "@/context/CatalogProvider";
 import { formatLessonSubtitle, formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
-import { PRELOAD_IMAGE_COUNT, WORD_IMAGE_THUMB, preloadImages } from "@/lib/media";
+import {
+  cloudinaryDisplayUrl,
+  LESSON_IMAGE_THUMB,
+  PRELOAD_IMAGE_COUNT,
+  WORD_IMAGE_THUMB,
+  preloadImages,
+} from "@/lib/media";
 import { findGrammarByCatalogLesson, grammarHref } from "@/lib/grammar";
 
 export default function WordListPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { playLesson, lessonId, index, isPlaying } = usePlayer();
-  const { getLesson, getWordsForLesson, grammarLessons } = useCatalog();
+  const { getLesson, getWordsForLesson, getImagesForLesson, grammarLessons } = useCatalog();
   const lesson = Number(params.id);
   const info = getLesson(lesson);
   const words = getWordsForLesson(lesson);
+  const images = getImagesForLesson(lesson);
+  const imageLed = images.length > 0;
   const grammar = useMemo(
     () => findGrammarByCatalogLesson(grammarLessons, lesson),
     [grammarLessons, lesson],
@@ -24,7 +32,17 @@ export default function WordListPage() {
 
   useEffect(() => {
     preloadImages(words.slice(0, PRELOAD_IMAGE_COUNT).map((word) => wordImageSrc(word)));
-  }, [words]);
+    preloadImages(images.slice(0, 4).map((item) => cloudinaryDisplayUrl(item.imageUrl, LESSON_IMAGE_THUMB)));
+  }, [images, words]);
+
+  function startStudy() {
+    if (imageLed) {
+      router.push(`/lessons/${lesson}/images`);
+      return;
+    }
+    playLesson(lesson, 0);
+    router.push("/listen");
+  }
 
   return (
     <div className="pb-4">
@@ -44,6 +62,14 @@ export default function WordListPage() {
         </div>
         <button
           type="button"
+          onClick={() => router.push(`/create/images?lesson=${lesson}`)}
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC]"
+          aria-label="Quản lý ảnh"
+        >
+          <Images size={17} />
+        </button>
+        <button
+          type="button"
           onClick={() => router.push(`/create/word?lesson=${lesson}`)}
           className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC]"
           aria-label="Thêm từ"
@@ -52,21 +78,48 @@ export default function WordListPage() {
         </button>
         <button
           type="button"
-          disabled={words.length === 0}
-          onClick={() => {
-            playLesson(lesson, 0);
-            router.push("/listen");
-          }}
+          disabled={!imageLed && words.length === 0}
+          onClick={startStudy}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-[#7C5CFC] text-white disabled:opacity-35"
+          aria-label={imageLed ? "Xem ảnh" : "Phát audio"}
         >
-          <Play size={15} className="ml-0.5" fill="currentColor" />
+          {imageLed ? <Images size={15} /> : <Play size={15} className="ml-0.5" fill="currentColor" />}
         </button>
       </div>
       <p className="mt-3 text-sm font-semibold text-[#7C7A9C]">
         {info ? formatLessonSubtitle(info) : ""} · {words.length} từ
+        {images.length ? ` · ${images.length} ảnh` : ""}
         {info?.book?.startsWith("OpenJLPT") ? ` · ${info.book}` : ""}
         {grammar ? ` · ${grammar.points.length} mẫu` : ""}
       </p>
+
+      <button
+        type="button"
+        onClick={() => router.push(imageLed ? `/lessons/${lesson}/images` : `/create/images?lesson=${lesson}`)}
+        className="glass mt-3 w-full rounded-[22px] px-4 py-3 text-left"
+      >
+        <span className="block text-[14px] font-extrabold text-[#1E1B4B]">
+          {imageLed ? `Ảnh từ vựng · ${images.length} trang` : "Ảnh từ vựng (N3+)"}
+        </span>
+        <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">
+          {imageLed ? "Bấm để xem / học theo ảnh" : "Thêm ảnh trang bảng từ — không cần audio"}
+        </span>
+        {imageLed ? (
+          <span className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {images.slice(0, 6).map((image) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`${image.lesson}-${image.order}`}
+                src={cloudinaryDisplayUrl(image.imageUrl, LESSON_IMAGE_THUMB)}
+                alt=""
+                className="h-16 w-12 shrink-0 rounded-xl bg-[#EFEAFF] object-cover"
+                decoding="async"
+              />
+            ))}
+          </span>
+        ) : null}
+      </button>
+
       {grammar?.points.length ? (
         <button
           type="button"
@@ -107,6 +160,10 @@ export default function WordListPage() {
               key={`${word.order}-${wordIndex}`}
               type="button"
               onClick={() => {
+                if (imageLed) {
+                  router.push(`/lessons/${lesson}/images`);
+                  return;
+                }
                 playLesson(lesson, wordIndex);
                 router.push("/listen");
               }}

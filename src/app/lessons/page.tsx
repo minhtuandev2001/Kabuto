@@ -18,7 +18,7 @@ export default function LessonsPage() {
   const root = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { playLesson } = usePlayer();
-  const { lessons, allWords } = useCatalog();
+  const { lessons, allWords, getImagesForLesson } = useCatalog();
   const [filter, setFilter] = useState<Filter>("all");
   const visible = useMemo(() => {
     if (filter === "all") {
@@ -95,6 +95,10 @@ export default function LessonsPage() {
             lesson={item}
             onOpen={() => router.push(`/lessons/${item.lesson}`)}
             onPlay={() => {
+              if (getImagesForLesson(item.lesson).length) {
+                router.push(`/lessons/${item.lesson}/images`);
+                return;
+              }
               playLesson(item.lesson, 0);
               router.push("/listen");
             }}

@@ -1,3 +1,4 @@
+import { listGrammarImages } from "@/lib/grammar-images";
 import { insertGrammarPoint, listGrammarLessons, type GrammarInput } from "@/lib/custom-grammar";
 
 export const runtime = "nodejs";
@@ -5,8 +6,8 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const lessons = await listGrammarLessons();
-    return Response.json({ lessons });
+    const [lessons, images] = await Promise.all([listGrammarLessons(), listGrammarImages()]);
+    return Response.json({ lessons, images });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "Không đọc được ngữ pháp" },

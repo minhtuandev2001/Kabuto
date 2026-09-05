@@ -1,5 +1,7 @@
 "use client";
 
+import { Images } from "lucide-react";
+import { useCatalog } from "@/context/CatalogProvider";
 import type { GrammarLesson } from "@/lib/grammar";
 
 export function GrammarLessonCard({
@@ -11,6 +13,8 @@ export function GrammarLessonCard({
   active?: boolean;
   onOpen: () => void;
 }) {
+  const { getGrammarImages } = useCatalog();
+  const imageCount = getGrammarImages(item.jlpt, item.lesson).length;
   const preview = item.points[0]?.pattern ?? "";
   return (
     <button
@@ -28,10 +32,17 @@ export function GrammarLessonCard({
         <span className="block truncate text-[15px] font-extrabold text-[#1E1B4B]">{item.title}</span>
         <span className="mt-0.5 block truncate text-[12.5px] font-semibold text-[#7C7A9C]">{item.subtitle}</span>
         <span className="mt-2 flex items-center gap-1.5">
-          <span className="rounded-full bg-[#EFEAFF] px-2 py-0.5 text-[10.5px] font-bold text-[#7C5CFC]">
-            {item.points.length} mẫu
-          </span>
-          {preview ? (
+          {imageCount ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#EFEAFF] px-2 py-0.5 text-[10.5px] font-bold text-[#7C5CFC]">
+              <Images size={11} />
+              {imageCount} ảnh
+            </span>
+          ) : (
+            <span className="rounded-full bg-[#EFEAFF] px-2 py-0.5 text-[10.5px] font-bold text-[#7C5CFC]">
+              {item.points.length} mẫu
+            </span>
+          )}
+          {!imageCount && preview ? (
             <span className="min-w-0 truncate text-[11px] font-semibold text-[#7C7A9C]">{preview}</span>
           ) : null}
         </span>
