@@ -25,9 +25,11 @@ export const MAX_WORD_GAP_MS = 5000;
 export const WORD_GAP_STEP_MS = 500;
 export const WORD_GAP_PRESETS = [0, 1000, 1500, 2000, 3000, 5000] as const;
 
-/** 0 = nghe liên tục (không giới hạn). */
-export const DEFAULT_PLAY_WORD_LIMIT = 0;
-export const PLAY_WORD_LIMIT_PRESETS = [0, 5, 10, 20, 30, 50] as const;
+/** Số từ mỗi trang ở tab Phát từ (10–100, bước 10). */
+export const DEFAULT_PLAY_WORD_LIMIT = 100;
+export const MIN_PLAY_WORD_LIMIT = 10;
+export const MAX_PLAY_WORD_LIMIT = 100;
+export const PLAY_WORD_LIMIT_STEP = 10;
 
 export function clampWordGap(ms: number) {
   const snapped = Math.round(ms / WORD_GAP_STEP_MS) * WORD_GAP_STEP_MS;
@@ -45,11 +47,17 @@ export function formatWordGap(ms: number) {
 
 export function clampPlayWordLimit(n: number) {
   if (!Number.isFinite(n) || n <= 0) {
-    return 0;
+    return DEFAULT_PLAY_WORD_LIMIT;
   }
-  return Math.min(200, Math.max(1, Math.round(n)));
+  const snapped = Math.round(n / PLAY_WORD_LIMIT_STEP) * PLAY_WORD_LIMIT_STEP;
+  return Math.min(MAX_PLAY_WORD_LIMIT, Math.max(MIN_PLAY_WORD_LIMIT, snapped));
 }
 
 export function formatPlayWordLimit(n: number) {
-  return n <= 0 ? "Cả bài" : `${n} từ`;
+  return `${clampPlayWordLimit(n)} từ/trang`;
+}
+
+export function queuePageCount(totalWords: number, pageSize: number) {
+  const size = clampPlayWordLimit(pageSize);
+  return Math.max(1, Math.ceil(Math.max(0, totalWords) / size));
 }

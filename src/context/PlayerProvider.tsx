@@ -12,6 +12,7 @@ import {
 } from "react";
 import { getHeadline, wordImageSrc } from "@/lib/catalog";
 import { PRELOAD_AUDIO_COUNT, PRELOAD_IMAGE_COUNT, preloadAudio, preloadImages, resolveMediaUrl } from "@/lib/media";
+import { clampPlayWordLimit, queuePageCount } from "@/lib/theme";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 import { useCatalog } from "./CatalogProvider";
 import { useSettings } from "./SettingsProvider";
@@ -31,10 +32,14 @@ type PlayerContextValue = {
   position: number;
   duration: number;
   loopLesson: boolean;
-  /** Queue mode only: null = unlimited; otherwise words left in this session. */
-  sessionLeft: number | null;
+  /** Queue mode: 0-based page within the flat vocab list. */
+  queuePage: number;
+  queuePageCount: number;
+  /** Global 1-based number of the current word across all lessons. */
+  queueGlobalNumber: number;
   playLesson: (lesson: number, wordIndex?: number, autoplay?: boolean) => void;
-  playQueue: (wordIndex?: number, autoplay?: boolean) => void;
+  playQueue: (wordIndex?: number, autoplay?: boolean, page?: number) => void;
+  setQueuePage: (page: number, autoplay?: boolean) => void;
   togglePlay: () => void;
   next: () => void;
   prev: () => void;
@@ -68,8 +73,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const indexRef = useRef(0);
   const loopRef = useRef(false);
   const gapRef = useRef(wordGapMs);
-  const playLimitRef = useRef(playWordLimit);
-  const sessionLeftRef = useRef<number>(Number.POSITIVE_INFINITY);
+  const pageSizeRef = useRef(clampPlayWordLimit(playWordLimit));
+  const queuePageRef = useRef(0);
   const delayTimerRef = useRef<number | null>(null);
   const finishLockRef = useRef(false);
   const hiddenRef = useRef(false);
@@ -77,54 +82,34 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<PlayMode>("lesson");
   const [lessonId, setLessonId] = useState(1);
   const [index, setIndex] = useState(0);
+  const [queuePage, setQueuePageState] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(1);
   const [loopLesson, setLoopLesson] = useState(false);
-  const [sessionLeft, setSessionLeft] = useState<number | null>(null);
+
+  const pageSize = clampPlayWordLimit(playWordLimit);
+  const pages = queuePageCount(catalog.allWords.length, pageSize);
 
   modeRef.current = mode;
   lessonIdRef.current = lessonId;
   indexRef.current = index;
   loopRef.current = loopLesson;
   gapRef.current = wordGapMs;
-  playLimitRef.current = playWordLimit;
+  queuePageRef.current = queuePage;
 
-  const playlist = useMemo(
-    () => (mode === "queue" ? catalog.allWords : catalog.getWordsForLesson(lessonId)),
-    [catalog, lessonId, mode],
-  );
+  const playlist = useMemo(() => {
+    if (mode !== "queue") {
+      return catalog.getWordsForLesson(lessonId);
+    }
+    const start = queuePage * pageSize;
+    return catalog.allWords.slice(start, start + pageSize);
+  }, [catalog, lessonId, mode, pageSize, queuePage]);
   const currentWord = playlist[index];
   const lesson = catalog.getLesson(currentWord?.lesson ?? lessonId);
-
-  const clearSession = useCallback(() => {
-    sessionLeftRef.current = Number.POSITIVE_INFINITY;
-    setSessionLeft(null);
-  }, []);
-
-  const beginSession = useCallback(() => {
-    const limit = playLimitRef.current;
-    if (limit <= 0) {
-      clearSession();
-      return;
-    }
-    sessionLeftRef.current = limit;
-    setSessionLeft(limit);
-  }, [clearSession]);
-
-  /** After a word finishes in queue mode: return false if session is done. */
-  const consumeSessionWord = useCallback(() => {
-    if (modeRef.current !== "queue" || !Number.isFinite(sessionLeftRef.current)) {
-      return true;
-    }
-    sessionLeftRef.current -= 1;
-    const left = sessionLeftRef.current;
-    setSessionLeft(Math.max(0, left));
-    return left > 0;
-  }, []);
-
+  const queueGlobalNumber = mode === "queue" ? queuePage * pageSize + index + 1 : index + 1;
   const clearDelay = useCallback(() => {
     if (delayTimerRef.current != null) {
       window.clearTimeout(delayTimerRef.current);
@@ -152,7 +137,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const currentPlaylist = useCallback(() => {
     const cat = catalogRef.current;
-    return modeRef.current === "queue" ? cat.allWords : cat.getWordsForLesson(lessonIdRef.current);
+    if (modeRef.current !== "queue") {
+      return cat.getWordsForLesson(lessonIdRef.current);
+    }
+    const size = pageSizeRef.current;
+    const start = queuePageRef.current * size;
+    return cat.allWords.slice(start, start + size);
   }, []);
 
   const warmAround = useCallback((list: VocabWord[], wordIndex: number) => {
@@ -187,8 +177,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const advanceRef = useRef<() => void>(() => undefined);
-  const consumeSessionRef = useRef(consumeSessionWord);
-  consumeSessionRef.current = consumeSessionWord;
 
   const loadWord = useCallback(
     (word: VocabWord | undefined, play: boolean) => {
@@ -307,10 +295,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }
       finishLockRef.current = true;
       setIsPlaying(false);
-      if (!consumeSessionRef.current()) {
-        shouldPlayRef.current = false;
-        return;
-      }
       shouldPlayRef.current = true;
       const list = currentPlaylist();
       if (
@@ -410,7 +394,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const playLesson = useCallback(
     (nextLesson: number, wordIndex = 0, autoplay = true) => {
       clearDelay();
-      clearSession();
       const sameSpot =
         modeRef.current === "lesson" && nextLesson === lessonIdRef.current && wordIndex === indexRef.current;
       modeRef.current = "lesson";
@@ -426,22 +409,27 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIndex(wordIndex);
       setIsPlaying(autoplay);
     },
-    [clearDelay, clearSession, loadWord, warmAround],
+    [clearDelay, loadWord, warmAround],
   );
 
   const playQueue = useCallback(
-    (wordIndex = 0, autoplay = true) => {
+    (wordIndex = 0, autoplay = true, page = queuePageRef.current) => {
       clearDelay();
-      const list = catalogRef.current.allWords;
+      const size = pageSizeRef.current;
+      const total = catalogRef.current.allWords.length;
+      const maxPage = Math.max(0, queuePageCount(total, size) - 1);
+      const safePage = Math.max(0, Math.min(page, maxPage));
+      const start = safePage * size;
+      const list = catalogRef.current.allWords.slice(start, start + size);
       const safeIndex = Math.max(0, Math.min(wordIndex, Math.max(0, list.length - 1)));
-      const sameSpot = modeRef.current === "queue" && safeIndex === indexRef.current;
+      const sameSpot =
+        modeRef.current === "queue" &&
+        safePage === queuePageRef.current &&
+        safeIndex === indexRef.current;
       modeRef.current = "queue";
       setMode("queue");
-      if (autoplay) {
-        beginSession();
-      } else {
-        clearSession();
-      }
+      queuePageRef.current = safePage;
+      setQueuePageState(safePage);
       shouldPlayRef.current = autoplay;
       warmAround(list, safeIndex);
       const word = list[safeIndex];
@@ -455,8 +443,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIndex(safeIndex);
       setIsPlaying(autoplay);
     },
-    [beginSession, clearDelay, clearSession, loadWord, warmAround],
+    [clearDelay, loadWord, warmAround],
   );
+
+  const setQueuePage = useCallback(
+    (page: number, autoplay = false) => {
+      playQueue(0, autoplay, page);
+    },
+    [playQueue],
+  );
+
+  // When page size changes, keep the same global word and rebuild the page.
+  useEffect(() => {
+    const nextSize = clampPlayWordLimit(playWordLimit);
+    const prevSize = pageSizeRef.current;
+    if (nextSize === prevSize) {
+      return;
+    }
+    if (modeRef.current === "queue") {
+      const global = queuePageRef.current * prevSize + indexRef.current;
+      const nextPage = Math.floor(global / nextSize);
+      const nextIndex = global % nextSize;
+      pageSizeRef.current = nextSize;
+      playQueue(nextIndex, shouldPlayRef.current, nextPage);
+      return;
+    }
+    pageSizeRef.current = nextSize;
+  }, [playQueue, playWordLimit]);
 
   const togglePlay = useCallback(() => {
     if (delayTimerRef.current != null) {
@@ -467,9 +480,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
     const audio = audioRef.current;
     if (!audio || !currentWord?.audioUrl) {
-      if (modeRef.current === "queue") {
-        beginSession();
-      }
       shouldPlayRef.current = true;
       loadWord(currentWord, true);
       return;
@@ -480,15 +490,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIsPlaying(false);
       return;
     }
-    if (modeRef.current === "queue") {
-      if (sessionLeftRef.current <= 0 || (playLimitRef.current > 0 && !Number.isFinite(sessionLeftRef.current))) {
-        beginSession();
-      }
-    }
     shouldPlayRef.current = true;
     audio.play().then(() => setIsPlaying(true)).catch(() => loadWord(currentWord, true));
-  }, [beginSession, clearDelay, currentWord, loadWord]);
-
+  }, [clearDelay, currentWord, loadWord]);
   const next = useCallback(() => {
     clearDelay();
     shouldPlayRef.current = true;
@@ -570,9 +574,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       position,
       duration,
       loopLesson,
-      sessionLeft,
+      queuePage,
+      queuePageCount: pages,
+      queueGlobalNumber,
       playLesson,
       playQueue,
+      setQueuePage,
       togglePlay,
       next,
       prev,
@@ -590,12 +597,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       loopLesson,
       mode,
       next,
+      pages,
       playLesson,
       playQueue,
       playlist,
       position,
       prev,
-      sessionLeft,
+      queueGlobalNumber,
+      queuePage,
+      setQueuePage,
       toggleLoop,
       togglePlay,
     ],

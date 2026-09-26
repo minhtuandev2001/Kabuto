@@ -3,9 +3,11 @@
 import { Minus, Plus } from "lucide-react";
 import { useSettings } from "@/context/SettingsProvider";
 import {
+  MAX_PLAY_WORD_LIMIT,
   MAX_WORD_GAP_MS,
+  MIN_PLAY_WORD_LIMIT,
   MIN_WORD_GAP_MS,
-  PLAY_WORD_LIMIT_PRESETS,
+  PLAY_WORD_LIMIT_STEP,
   WORD_GAP_PRESETS,
   WORD_GAP_STEP_MS,
   formatPlayWordLimit,
@@ -19,7 +21,7 @@ export default function SettingsPage() {
     <div>
       <p className="text-[11px] font-bold tracking-wider text-[#7C5CFC]">TÙY CHỈNH</p>
       <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Cài đặt</h1>
-      <p className="mt-1 text-sm font-semibold text-[#4A4470]">Chỉnh nhịp nghe và số từ mỗi lần phát.</p>
+      <p className="mt-1 text-sm font-semibold text-[#4A4470]">Chỉnh nhịp nghe và số từ mỗi trang phát.</p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="glass-strong rounded-[28px] p-4 md:p-6">
@@ -63,24 +65,28 @@ export default function SettingsPage() {
         </div>
 
         <div className="glass-strong rounded-[28px] p-4 md:p-6">
-          <p className="text-[15px] font-extrabold text-[#1E1B4B]">Số từ mỗi lần phát</p>
+          <p className="text-[15px] font-extrabold text-[#1E1B4B]">Số từ mỗi trang</p>
           <p className="mt-1 text-[12.5px] font-semibold leading-5 text-[#7C7A9C]">
-            Dùng ở tab Phát từ: phát theo danh sách toàn bộ từ (theo thứ tự bài), tự dừng sau đúng số từ đã chọn.
+            Tab Phát từ: chia toàn bộ từ thành trang (mặc định 100). ±10 để đổi kích thước trang, rồi chuyển trang để nghe.
           </p>
-          <p className="mt-4 text-center text-xl font-extrabold text-[#1E1B4B]">{formatPlayWordLimit(playWordLimit)}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {PLAY_WORD_LIMIT_PRESETS.map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setPlayWordLimit(n)}
-                className={`rounded-full px-3 py-1 text-xs font-bold ${
-                  playWordLimit === n ? "bg-[#7C5CFC] text-white" : "bg-white/70 text-[#4A4470]"
-                }`}
-              >
-                {formatPlayWordLimit(n)}
-              </button>
-            ))}
+          <div className="mt-4 flex items-center justify-between">
+            <button
+              type="button"
+              disabled={playWordLimit <= MIN_PLAY_WORD_LIMIT}
+              onClick={() => setPlayWordLimit(playWordLimit - PLAY_WORD_LIMIT_STEP)}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC] disabled:opacity-40"
+            >
+              <Minus size={18} />
+            </button>
+            <p className="text-xl font-extrabold text-[#1E1B4B]">{formatPlayWordLimit(playWordLimit)}</p>
+            <button
+              type="button"
+              disabled={playWordLimit >= MAX_PLAY_WORD_LIMIT}
+              onClick={() => setPlayWordLimit(playWordLimit + PLAY_WORD_LIMIT_STEP)}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC] disabled:opacity-40"
+            >
+              <Plus size={18} />
+            </button>
           </div>
         </div>
 

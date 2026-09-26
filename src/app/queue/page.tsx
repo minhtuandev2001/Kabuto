@@ -2,13 +2,18 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minus, Pause, Play, Plus, Repeat, SkipBack, SkipForward } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { usePlayer } from "@/context/PlayerProvider";
 import { useCatalog } from "@/context/CatalogProvider";
 import { useSettings } from "@/context/SettingsProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
-import { PLAY_WORD_LIMIT_PRESETS, formatPlayWordLimit } from "@/lib/theme";
+import {
+  MAX_PLAY_WORD_LIMIT,
+  MIN_PLAY_WORD_LIMIT,
+  PLAY_WORD_LIMIT_STEP,
+  formatPlayWordLimit,
+} from "@/lib/theme";
 
 gsap.registerPlugin(useGSAP);
 
@@ -33,8 +38,11 @@ export default function QueuePage() {
     position,
     duration,
     loopLesson,
-    sessionLeft,
+    queuePage,
+    queuePageCount,
+    queueGlobalNumber,
     playQueue,
+    setQueuePage,
     togglePlay,
     next,
     prev,
@@ -42,6 +50,7 @@ export default function QueuePage() {
   } = usePlayer();
   const { allWords, catalogReady } = useCatalog();
   const { playWordLimit, setPlayWordLimit } = useSettings();
+  const pageStart = queuePage * playWordLimit;
 
   // Enter queue playlist (no autoplay) when opening this screen.
   useEffect(() => {
@@ -49,7 +58,7 @@ export default function QueuePage() {
       return;
     }
     if (mode !== "queue") {
-      playQueue(0, false);
+      playQueue(0, false, 0);
     }
   }, [allWords.length, catalogReady, mode, playQueue]);
 
@@ -57,7 +66,6 @@ export default function QueuePage() {
   const artSrc = currentWord ? wordImageSrc(currentWord) : "";
   const showKana = Boolean(currentWord?.kanji?.trim());
   const progress = Math.min(1, position / Math.max(duration, 1));
-  const globalNumber = index + 1;
   const nextWord = words[index + 1] ?? (loopLesson ? words[0] : undefined);
 
   useEffect(() => {
@@ -118,10 +126,10 @@ export default function QueuePage() {
       <div className="glass-strong flex min-h-0 min-w-0 flex-1 flex-col rounded-[28px] p-3 md:w-1/2 md:flex-none xl:w-[480px] md:p-5">
         <div className="flex items-center gap-3">
           <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[12px] font-extrabold text-white">
-            {globalNumber}
+            {queueGlobalNumber}
           </div>
           <div className="min-w-0 flex-1 text-center">
-            <div className="text-[9.5px] font-bold tracking-[1.6px] text-[#7C5CFC]">PHÁT THEO SỐ TỪ</div>
+            <div className="text-[9.5px] font-bold tracking-[1.6px] text-[#7C5CFC]">PHÁT THEO TRANG</div>
             <div className="truncate text-[13.5px] font-extrabold text-[#1E1B4B]">
               {lesson ? formatLessonTitle(lesson) : "Toàn bộ từ vựng"}
             </div>
@@ -148,7 +156,7 @@ export default function QueuePage() {
 
         <div className="px-1 pb-1 pt-2">
           <p className="text-center text-xl font-extrabold leading-7 text-[#1E1B4B]">
-            {currentWord?.meaning || "Chọn số từ rồi bấm phát"}
+            {currentWord?.meaning || "Chọn trang rồi bấm phát"}
           </p>
           <p className="mt-1.5 text-center text-[13.5px] font-semibold text-[#7C7A9C]">
             {currentWord?.romaji}
@@ -162,25 +170,57 @@ export default function QueuePage() {
           <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-[#7C7A9C]">
             <span>{formatTime(position)}</span>
             <span className="font-bold text-[#7C5CFC]">
-              {globalNumber} / {words.length}
-              {sessionLeft != null ? ` · còn ${sessionLeft}` : ""}
+              {index + 1} / {words.length} · #{queueGlobalNumber}
             </span>
             <span>{formatTime(duration)}</span>
           </div>
 
-          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-            {PLAY_WORD_LIMIT_PRESETS.map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setPlayWordLimit(n)}
-                className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${
-                  playWordLimit === n ? "bg-[#7C5CFC] text-white" : "bg-white/70 text-[#4A4470]"
-                }`}
-              >
-                {formatPlayWordLimit(n)}
-              </button>
-            ))}
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              disabled={playWordLimit <= MIN_PLAY_WORD_LIMIT}
+              onClick={() => setPlayWordLimit(playWordLimit - PLAY_WORD_LIMIT_STEP)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC] disabled:opacity-40"
+              aria-label="Giảm 10 từ mỗi trang"
+            >
+              <Minus size={16} />
+            </button>
+            <p className="min-w-0 flex-1 text-center text-[13px] font-extrabold text-[#1E1B4B]">
+              {formatPlayWordLimit(playWordLimit)}
+            </p>
+            <button
+              type="button"
+              disabled={playWordLimit >= MAX_PLAY_WORD_LIMIT}
+              onClick={() => setPlayWordLimit(playWordLimit + PLAY_WORD_LIMIT_STEP)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC] disabled:opacity-40"
+              aria-label="Tăng 10 từ mỗi trang"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              disabled={queuePage <= 0}
+              onClick={() => setQueuePage(queuePage - 1)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#1E1B4B] disabled:opacity-40"
+              aria-label="Trang trước"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <p className="min-w-0 flex-1 text-center text-[13px] font-extrabold text-[#1E1B4B]">
+              Trang {queuePage + 1} / {queuePageCount}
+            </p>
+            <button
+              type="button"
+              disabled={queuePage >= queuePageCount - 1}
+              onClick={() => setQueuePage(queuePage + 1)}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#1E1B4B] disabled:opacity-40"
+              aria-label="Trang sau"
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
 
           <div className="mt-2 flex items-center justify-between">
@@ -214,7 +254,7 @@ export default function QueuePage() {
           <div className="mt-2 flex items-center gap-2 rounded-[20px] bg-white/50 px-3.5 py-2.5 text-left md:hidden">
             <span className="text-[11.5px] font-bold text-[#7C5CFC]">Tiếp theo</span>
             <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#4A4470]">
-              #{index + 2} {getHeadline(nextWord)} · {nextWord.meaning}
+              #{pageStart + index + 2} {getHeadline(nextWord)} · {nextWord.meaning}
             </span>
           </div>
         ) : null}
@@ -222,16 +262,17 @@ export default function QueuePage() {
 
       <aside className="glass-strong hidden min-h-0 min-w-0 flex-1 flex-col rounded-[28px] p-3 md:flex md:max-h-[calc(100lvh-2rem)]">
         <p className="px-1 text-[12.5px] font-bold text-[#7C7A9C]">
-          {words.length} từ · theo thứ tự bài học
+          Trang {queuePage + 1}/{queuePageCount} · {words.length} từ · #{pageStart + 1}–#{pageStart + words.length}
         </p>
         <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto xl:grid-cols-2">
           {words.map((word, wordIndex) => {
             const active = mode === "queue" && wordIndex === index;
+            const globalNum = pageStart + wordIndex + 1;
             return (
               <button
-                key={`${word.lesson}-${word.order}-${wordIndex}`}
+                key={`${word.lesson}-${word.order}-${globalNum}`}
                 type="button"
-                onClick={() => playQueue(wordIndex, true)}
+                onClick={() => playQueue(wordIndex, true, queuePage)}
                 className={`flex items-center gap-3 rounded-[18px] px-3 py-2.5 text-left ${
                   active ? "bg-[#EFEAFF]" : "bg-white/50"
                 }`}
@@ -241,7 +282,7 @@ export default function QueuePage() {
                     active ? "bg-[#7C5CFC] text-white" : "bg-white/80 text-[#7C7A9C]"
                   }`}
                 >
-                  {wordIndex + 1}
+                  {globalNum}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block truncate text-[14px] font-extrabold ${active ? "text-[#7C5CFC]" : "text-[#1E1B4B]"}`}>
