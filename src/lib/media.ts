@@ -5,6 +5,30 @@ export const LESSON_IMAGE_THUMB = 320;
 export const PRELOAD_IMAGE_COUNT = 10;
 export const PRELOAD_AUDIO_COUNT = 3;
 
+/** Encode path segments so kanji filenames / spaces work in <audio src>. */
+export function resolveMediaUrl(url: string) {
+  const raw = url.trim();
+  if (!raw) {
+    return "";
+  }
+  if (/^https?:\/\//i.test(raw) || raw.startsWith("blob:") || raw.startsWith("data:")) {
+    try {
+      const parsed = new URL(raw);
+      parsed.pathname = parsed.pathname
+        .split("/")
+        .map((part) => (part ? encodeURIComponent(decodeURIComponent(part)) : ""))
+        .join("/");
+      return parsed.toString();
+    } catch {
+      return raw;
+    }
+  }
+  return raw
+    .split("/")
+    .map((part) => (part ? encodeURIComponent(decodeURIComponent(part)) : ""))
+    .join("/");
+}
+
 export function cloudinaryDisplayUrl(url: string, width: number): string {
   if (!url) {
     return "";
@@ -36,7 +60,7 @@ export function preloadImages(urls: Iterable<string>) {
     image.onload = () => {
       warmed.add(url);
     };
-    image.src = url;
+    image.src = resolveMediaUrl(url);
   }
 }
 
@@ -46,7 +70,7 @@ export function preloadAudio(urls: Iterable<string>) {
   if (typeof window === "undefined") {
     return;
   }
-  const unique = [...new Set([...urls].filter(Boolean))].slice(0, PRELOAD_AUDIO_COUNT);
+  const unique = [...new Set([...urls].filter(Boolean).map(resolveMediaUrl))].slice(0, PRELOAD_AUDIO_COUNT);
   unique.forEach((url, slot) => {
     let audio = audioPool[slot];
     if (!audio) {

@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { getHeadline, wordImageSrc } from "@/lib/catalog";
-import { PRELOAD_AUDIO_COUNT, PRELOAD_IMAGE_COUNT, preloadAudio, preloadImages } from "@/lib/media";
+import { PRELOAD_AUDIO_COUNT, PRELOAD_IMAGE_COUNT, preloadAudio, preloadImages, resolveMediaUrl } from "@/lib/media";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 import { useCatalog } from "./CatalogProvider";
 import { useSettings } from "./SettingsProvider";
@@ -160,7 +160,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }
       setIsLoading(true);
       audio.pause();
-      audio.src = word.audioUrl;
+      audio.src = resolveMediaUrl(word.audioUrl);
       audio.load();
       syncMediaSession(word);
       if (play) {

@@ -23,7 +23,4 @@ yarn-error.*
 scripts/.seed-minna-state.json
 scripts/.mimikara-n3-extract/
 
-# Mimikara N3 TTS audio (copied by seed:mimikara-n3)
-public/audio/mimikara-n3/
-
 .cursor

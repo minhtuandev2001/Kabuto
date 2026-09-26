@@ -102,19 +102,37 @@ function syncAudio(dataRoot: string) {
     throw new Error(`Thiếu thư mục audio: ${srcDir}`);
   }
   mkdirSync(AUDIO_PUBLIC, { recursive: true });
+  // Drop old kanji filenames so only ASCII ids remain.
+  for (const name of readdirSync(AUDIO_PUBLIC)) {
+    if (name.toLowerCase().endsWith(".mp3")) {
+      try {
+        rmSync(path.join(AUDIO_PUBLIC, name));
+      } catch {
+        // ignore
+      }
+    }
+  }
   const files = readdirSync(srcDir).filter((name) => name.toLowerCase().endsWith(".mp3"));
   for (const name of files) {
-    copyFileSync(path.join(srcDir, name), path.join(AUDIO_PUBLIC, name));
+    const id = asciiAudioId(name);
+    copyFileSync(path.join(srcDir, name), path.join(AUDIO_PUBLIC, `${id}.mp3`));
   }
   return files.length;
+}
+
+/** n3_0001_男性.mp3 → n3_0001 (ASCII-only public filename). */
+function asciiAudioId(fileName: string) {
+  const base = path.basename(fileName, path.extname(fileName));
+  const m = base.match(/^(n3_\d+)/i);
+  return m?.[1] ?? base.replace(/[^\w.-]+/g, "_");
 }
 
 function audioPublicUrl(rel: string | undefined) {
   if (!rel) {
     return "";
   }
-  const base = path.basename(rel.replace(/\\/g, "/"));
-  return base ? `/audio/mimikara-n3/${base}` : "";
+  const id = asciiAudioId(rel.replace(/\\/g, "/"));
+  return id ? `/audio/mimikara-n3/${id}.mp3` : "";
 }
 
 async function main() {
