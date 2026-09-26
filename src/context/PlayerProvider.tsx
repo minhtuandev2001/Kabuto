@@ -16,7 +16,10 @@ import type { LessonInfo, VocabWord } from "@/lib/types";
 import { useCatalog } from "./CatalogProvider";
 import { useSettings } from "./SettingsProvider";
 
+export type PlayMode = "lesson" | "queue";
+
 type PlayerContextValue = {
+  mode: PlayMode;
   lessonId: number;
   index: number;
   lesson: LessonInfo | undefined;
@@ -28,9 +31,10 @@ type PlayerContextValue = {
   position: number;
   duration: number;
   loopLesson: boolean;
-  /** null = unlimited; otherwise words left in this play session. */
+  /** Queue mode only: null = unlimited; otherwise words left in this session. */
   sessionLeft: number | null;
   playLesson: (lesson: number, wordIndex?: number, autoplay?: boolean) => void;
+  playQueue: (wordIndex?: number, autoplay?: boolean) => void;
   togglePlay: () => void;
   next: () => void;
   prev: () => void;
@@ -59,6 +63,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   catalogRef.current = catalog;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const shouldPlayRef = useRef(false);
+  const modeRef = useRef<PlayMode>("lesson");
   const lessonIdRef = useRef(1);
   const indexRef = useRef(0);
   const loopRef = useRef(false);
@@ -69,6 +74,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const finishLockRef = useRef(false);
   const hiddenRef = useRef(false);
 
+  const [mode, setMode] = useState<PlayMode>("lesson");
   const [lessonId, setLessonId] = useState(1);
   const [index, setIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -79,26 +85,38 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const [loopLesson, setLoopLesson] = useState(false);
   const [sessionLeft, setSessionLeft] = useState<number | null>(null);
 
+  modeRef.current = mode;
   lessonIdRef.current = lessonId;
   indexRef.current = index;
   loopRef.current = loopLesson;
   gapRef.current = wordGapMs;
   playLimitRef.current = playWordLimit;
 
+  const playlist = useMemo(
+    () => (mode === "queue" ? catalog.allWords : catalog.getWordsForLesson(lessonId)),
+    [catalog, lessonId, mode],
+  );
+  const currentWord = playlist[index];
+  const lesson = catalog.getLesson(currentWord?.lesson ?? lessonId);
+
+  const clearSession = useCallback(() => {
+    sessionLeftRef.current = Number.POSITIVE_INFINITY;
+    setSessionLeft(null);
+  }, []);
+
   const beginSession = useCallback(() => {
     const limit = playLimitRef.current;
     if (limit <= 0) {
-      sessionLeftRef.current = Number.POSITIVE_INFINITY;
-      setSessionLeft(null);
+      clearSession();
       return;
     }
     sessionLeftRef.current = limit;
     setSessionLeft(limit);
-  }, []);
+  }, [clearSession]);
 
-  /** After a word finishes: return false if session is done (do not advance). */
+  /** After a word finishes in queue mode: return false if session is done. */
   const consumeSessionWord = useCallback(() => {
-    if (!Number.isFinite(sessionLeftRef.current)) {
+    if (modeRef.current !== "queue" || !Number.isFinite(sessionLeftRef.current)) {
       return true;
     }
     sessionLeftRef.current -= 1;
@@ -106,10 +124,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setSessionLeft(Math.max(0, left));
     return left > 0;
   }, []);
-
-  const words = useMemo(() => catalog.getWordsForLesson(lessonId), [catalog, lessonId]);
-  const currentWord = words[index];
-  const lesson = catalog.getLesson(lessonId);
 
   const clearDelay = useCallback(() => {
     if (delayTimerRef.current != null) {
@@ -136,11 +150,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const warmAround = useCallback((lesson: number, wordIndex: number, loop: boolean) => {
+  const currentPlaylist = useCallback(() => {
     const cat = catalogRef.current;
-    const list = cat.getWordsForLesson(lesson);
+    return modeRef.current === "queue" ? cat.allWords : cat.getWordsForLesson(lessonIdRef.current);
+  }, []);
+
+  const warmAround = useCallback((list: VocabWord[], wordIndex: number) => {
     const current = list[wordIndex];
-    const ahead = cat.getUpcomingWords(lesson, wordIndex, loop, PRELOAD_IMAGE_COUNT);
     const images: string[] = [];
     if (current) {
       images.push(wordImageSrc(current));
@@ -149,8 +165,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (previous) {
       images.push(wordImageSrc(previous));
     }
-    for (const word of ahead) {
-      images.push(wordImageSrc(word));
+    for (let i = 1; i <= PRELOAD_IMAGE_COUNT; i += 1) {
+      const ahead = list[wordIndex + i];
+      if (ahead) {
+        images.push(wordImageSrc(ahead));
+      }
     }
     preloadImages(images);
 
@@ -158,9 +177,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     if (current?.audioUrl) {
       audios.push(current.audioUrl);
     }
-    for (const word of ahead.slice(0, Math.max(0, PRELOAD_AUDIO_COUNT - 1))) {
-      if (word.audioUrl) {
-        audios.push(word.audioUrl);
+    for (let i = 1; i < PRELOAD_AUDIO_COUNT; i += 1) {
+      const ahead = list[wordIndex + i];
+      if (ahead?.audioUrl) {
+        audios.push(ahead.audioUrl);
       }
     }
     preloadAudio(audios);
@@ -169,8 +189,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const advanceRef = useRef<() => void>(() => undefined);
   const consumeSessionRef = useRef(consumeSessionWord);
   consumeSessionRef.current = consumeSessionWord;
-  const beginSessionRef = useRef(beginSession);
-  beginSessionRef.current = beginSession;
 
   const loadWord = useCallback(
     (word: VocabWord | undefined, play: boolean) => {
@@ -178,7 +196,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       clearDelay();
       setPosition(0);
       setDuration(1);
-      warmAround(lessonIdRef.current, indexRef.current, loopRef.current);
+      warmAround(currentPlaylist(), indexRef.current);
       const audio = audioRef.current;
       if (!audio) {
         return;
@@ -207,37 +225,53 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setIsPlaying(false);
       }
     },
-    [clearDelay, syncMediaSession, warmAround],
+    [clearDelay, currentPlaylist, syncMediaSession, warmAround],
   );
 
-  const goToLessonWord = useCallback(
-    (nextLesson: number, wordIndex: number) => {
-      if (nextLesson === lessonIdRef.current && wordIndex === indexRef.current) {
-        loadWord(catalogRef.current.getWordsForLesson(nextLesson)[wordIndex], shouldPlayRef.current);
+  const goToIndex = useCallback(
+    (wordIndex: number, list: VocabWord[]) => {
+      const word = list[wordIndex];
+      if (wordIndex === indexRef.current && (modeRef.current === "queue" || word?.lesson === lessonIdRef.current)) {
+        loadWord(word, shouldPlayRef.current);
         return;
       }
-      warmAround(nextLesson, wordIndex, loopRef.current);
-      setLessonId(nextLesson);
+      warmAround(list, wordIndex);
+      if (word) {
+        setLessonId(word.lesson);
+      }
       setIndex(wordIndex);
     },
     [loadWord, warmAround],
   );
 
   advanceRef.current = () => {
-    const list = catalogRef.current.getWordsForLesson(lessonIdRef.current);
+    const list = currentPlaylist();
     const current = indexRef.current;
     if (current < list.length - 1) {
       setIndex(current + 1);
+      const nextWord = list[current + 1];
+      if (nextWord) {
+        setLessonId(nextWord.lesson);
+      }
       return;
     }
     if (loopRef.current) {
       setIndex(0);
+      const first = list[0];
+      if (first) {
+        setLessonId(first.lesson);
+      }
       return;
     }
-    const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
-    if (nextLesson != null) {
-      goToLessonWord(nextLesson, 0);
-      return;
+    if (modeRef.current === "lesson") {
+      const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
+      if (nextLesson != null) {
+        const nextList = catalogRef.current.getWordsForLesson(nextLesson);
+        warmAround(nextList, 0);
+        setLessonId(nextLesson);
+        setIndex(0);
+        return;
+      }
     }
     shouldPlayRef.current = false;
     setIsPlaying(false);
@@ -278,10 +312,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return;
       }
       shouldPlayRef.current = true;
+      const list = currentPlaylist();
       if (
         !shouldPauseBetweenWords(
           gapRef.current,
-          catalogRef.current.getWordsForLesson(lessonIdRef.current).length,
+          list.length,
           indexRef.current,
           loopRef.current,
           hiddenRef.current,
@@ -355,7 +390,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       shouldPlayRef.current = true;
       clearDelay();
       if (indexRef.current > 0) {
-        setIndex((value) => value - 1);
+        const list = currentPlaylist();
+        const nextIndex = indexRef.current - 1;
+        setIndex(nextIndex);
+        const word = list[nextIndex];
+        if (word) {
+          setLessonId(word.lesson);
+        }
       }
     });
     return () => {
@@ -364,25 +405,57 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       navigator.mediaSession.setActionHandler("nexttrack", null);
       navigator.mediaSession.setActionHandler("previoustrack", null);
     };
-  }, [clearDelay]);
+  }, [clearDelay, currentPlaylist]);
 
   const playLesson = useCallback(
     (nextLesson: number, wordIndex = 0, autoplay = true) => {
       clearDelay();
-      if (autoplay) {
-        beginSession();
-      }
+      clearSession();
+      const sameSpot =
+        modeRef.current === "lesson" && nextLesson === lessonIdRef.current && wordIndex === indexRef.current;
+      modeRef.current = "lesson";
+      setMode("lesson");
       shouldPlayRef.current = autoplay;
-      warmAround(nextLesson, wordIndex, loopRef.current);
-      if (nextLesson === lessonIdRef.current && wordIndex === indexRef.current) {
-        loadWord(catalogRef.current.getWordsForLesson(nextLesson)[wordIndex], autoplay);
+      const list = catalogRef.current.getWordsForLesson(nextLesson);
+      warmAround(list, wordIndex);
+      if (sameSpot) {
+        loadWord(list[wordIndex], autoplay);
         return;
       }
       setLessonId(nextLesson);
       setIndex(wordIndex);
       setIsPlaying(autoplay);
     },
-    [beginSession, clearDelay, loadWord, warmAround],
+    [clearDelay, clearSession, loadWord, warmAround],
+  );
+
+  const playQueue = useCallback(
+    (wordIndex = 0, autoplay = true) => {
+      clearDelay();
+      const list = catalogRef.current.allWords;
+      const safeIndex = Math.max(0, Math.min(wordIndex, Math.max(0, list.length - 1)));
+      const sameSpot = modeRef.current === "queue" && safeIndex === indexRef.current;
+      modeRef.current = "queue";
+      setMode("queue");
+      if (autoplay) {
+        beginSession();
+      } else {
+        clearSession();
+      }
+      shouldPlayRef.current = autoplay;
+      warmAround(list, safeIndex);
+      const word = list[safeIndex];
+      if (sameSpot) {
+        loadWord(word, autoplay);
+        return;
+      }
+      if (word) {
+        setLessonId(word.lesson);
+      }
+      setIndex(safeIndex);
+      setIsPlaying(autoplay);
+    },
+    [beginSession, clearDelay, clearSession, loadWord, warmAround],
   );
 
   const togglePlay = useCallback(() => {
@@ -394,7 +467,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
     const audio = audioRef.current;
     if (!audio || !currentWord?.audioUrl) {
-      beginSession();
+      if (modeRef.current === "queue") {
+        beginSession();
+      }
       shouldPlayRef.current = true;
       loadWord(currentWord, true);
       return;
@@ -405,8 +480,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIsPlaying(false);
       return;
     }
-    if (sessionLeftRef.current <= 0 || (playLimitRef.current > 0 && !Number.isFinite(sessionLeftRef.current))) {
-      beginSession();
+    if (modeRef.current === "queue") {
+      if (sessionLeftRef.current <= 0 || (playLimitRef.current > 0 && !Number.isFinite(sessionLeftRef.current))) {
+        beginSession();
+      }
     }
     shouldPlayRef.current = true;
     audio.play().then(() => setIsPlaying(true)).catch(() => loadWord(currentWord, true));
@@ -415,48 +492,77 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const next = useCallback(() => {
     clearDelay();
     shouldPlayRef.current = true;
-    const list = catalogRef.current.getWordsForLesson(lessonIdRef.current);
+    const list = currentPlaylist();
     if (indexRef.current < list.length - 1) {
-      setIndex((value) => value + 1);
+      const nextIndex = indexRef.current + 1;
+      setIndex(nextIndex);
+      const word = list[nextIndex];
+      if (word) {
+        setLessonId(word.lesson);
+      }
       return;
     }
     if (loopRef.current) {
       setIndex(0);
+      const first = list[0];
+      if (first) {
+        setLessonId(first.lesson);
+      }
       return;
     }
-    const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
-    if (nextLesson != null) {
-      goToLessonWord(nextLesson, 0);
+    if (modeRef.current === "lesson") {
+      const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
+      if (nextLesson != null) {
+        goToIndex(0, catalogRef.current.getWordsForLesson(nextLesson));
+        setLessonId(nextLesson);
+        setIndex(0);
+      }
     }
-  }, [clearDelay, goToLessonWord]);
+  }, [clearDelay, currentPlaylist, goToIndex]);
 
   const prev = useCallback(() => {
     clearDelay();
     shouldPlayRef.current = true;
+    const list = currentPlaylist();
     if (indexRef.current > 0) {
-      setIndex((value) => value - 1);
+      const prevIndex = indexRef.current - 1;
+      setIndex(prevIndex);
+      const word = list[prevIndex];
+      if (word) {
+        setLessonId(word.lesson);
+      }
       return;
     }
     if (loopRef.current) {
-      const list = catalogRef.current.getWordsForLesson(lessonIdRef.current);
-      setIndex(Math.max(0, list.length - 1));
+      const last = Math.max(0, list.length - 1);
+      setIndex(last);
+      const word = list[last];
+      if (word) {
+        setLessonId(word.lesson);
+      }
       return;
     }
-    const prevLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, -1);
-    if (prevLesson != null) {
-      const prevWords = catalogRef.current.getWordsForLesson(prevLesson);
-      goToLessonWord(prevLesson, Math.max(0, prevWords.length - 1));
+    if (modeRef.current === "lesson") {
+      const prevLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, -1);
+      if (prevLesson != null) {
+        const prevWords = catalogRef.current.getWordsForLesson(prevLesson);
+        const last = Math.max(0, prevWords.length - 1);
+        goToIndex(last, prevWords);
+        setLessonId(prevLesson);
+        setIndex(last);
+      }
     }
-  }, [clearDelay, goToLessonWord]);
+  }, [clearDelay, currentPlaylist, goToIndex]);
 
   const toggleLoop = useCallback(() => setLoopLesson((value) => !value), []);
 
   const value = useMemo(
     () => ({
+      mode,
       lessonId,
       index,
       lesson,
-      words,
+      words: playlist,
       currentWord,
       isPlaying,
       isLoading,
@@ -466,6 +572,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       loopLesson,
       sessionLeft,
       playLesson,
+      playQueue,
       togglePlay,
       next,
       prev,
@@ -481,14 +588,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       lesson,
       lessonId,
       loopLesson,
+      mode,
       next,
       playLesson,
+      playQueue,
+      playlist,
       position,
       prev,
       sessionLeft,
       toggleLoop,
       togglePlay,
-      words,
     ],
   );
 

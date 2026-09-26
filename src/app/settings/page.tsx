@@ -63,9 +63,9 @@ export default function SettingsPage() {
         </div>
 
         <div className="glass-strong rounded-[28px] p-4 md:p-6">
-          <p className="text-[15px] font-extrabold text-[#1E1B4B]">Số từ mỗi lần nghe</p>
+          <p className="text-[15px] font-extrabold text-[#1E1B4B]">Số từ mỗi lần phát</p>
           <p className="mt-1 text-[12.5px] font-semibold leading-5 text-[#7C7A9C]">
-            Giống nghe bình thường, nhưng tự dừng sau đúng số từ đã chọn. Bấm phát lại để bắt đầu phiên mới.
+            Dùng ở tab Phát từ: phát theo danh sách toàn bộ từ (theo thứ tự bài), tự dừng sau đúng số từ đã chọn.
           </p>
           <p className="mt-4 text-center text-xl font-extrabold text-[#1E1B4B]">{formatPlayWordLimit(playWordLimit)}</p>
           <div className="mt-3 flex flex-wrap gap-2">

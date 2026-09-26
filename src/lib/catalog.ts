@@ -24,6 +24,15 @@ export function createCatalogIndex(lessonList: LessonInfo[], wordList: VocabWord
     list.sort((a, b) => a.order - b.order);
   }
 
+  // Flat playlist: lesson ASC, then order ASC (for “phát theo số từ”).
+  const allWords: VocabWord[] = [];
+  for (const lesson of lessons) {
+    const list = wordsByLesson.get(lesson.lesson);
+    if (list?.length) {
+      allWords.push(...list);
+    }
+  }
+
   const getLesson = (lesson: number) => lessons.find((item) => item.lesson === lesson);
   const getWordsForLesson = (lesson: number) => wordsByLesson.get(lesson) ?? [];
   const getAdjacentLesson = (current: number, delta: 1 | -1) => {
@@ -81,7 +90,7 @@ export function createCatalogIndex(lessonList: LessonInfo[], wordList: VocabWord
 
   return {
     lessons,
-    allWords: wordList,
+    allWords,
     getLesson,
     getWordsForLesson,
     getAdjacentLesson,

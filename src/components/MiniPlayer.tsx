@@ -8,7 +8,8 @@ import { WORD_IMAGE_THUMB } from "@/lib/media";
 
 export function MiniPlayer({ hidden, className }: { hidden: boolean; className?: string }) {
   const router = useRouter();
-  const { currentWord, lesson, isPlaying, isLoading, isWaiting, position, duration, togglePlay, next } = usePlayer();
+  const { mode, currentWord, lesson, isPlaying, isLoading, isWaiting, position, duration, togglePlay, next } =
+    usePlayer();
 
   if (hidden || !currentWord) {
     return null;
@@ -21,7 +22,7 @@ export function MiniPlayer({ hidden, className }: { hidden: boolean; className?:
   return (
     <button
       type="button"
-      onClick={() => router.push("/listen")}
+      onClick={() => router.push(mode === "queue" ? "/queue" : "/listen")}
       className={`glass-strong relative flex h-16 items-center gap-2.5 overflow-hidden rounded-[18px] px-2.5 text-left shadow-[0_6px_16px_rgba(91,63,214,0.12)] ${
         className ?? "mx-3 mb-2 w-[calc(100%-1.5rem)]"
       }`}

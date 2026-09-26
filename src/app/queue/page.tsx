@@ -2,12 +2,13 @@
 
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { List, Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Pause, Play, Repeat, SkipBack, SkipForward } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { usePlayer } from "@/context/PlayerProvider";
 import { useCatalog } from "@/context/CatalogProvider";
+import { useSettings } from "@/context/SettingsProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
+import { PLAY_WORD_LIMIT_PRESETS, formatPlayWordLimit } from "@/lib/theme";
 
 gsap.registerPlugin(useGSAP);
 
@@ -16,15 +17,13 @@ function formatTime(ms: number) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-export default function ListenPage() {
+export default function QueuePage() {
   const root = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const [imgOk, setImgOk] = useState(true);
   const [displaySrc, setDisplaySrc] = useState("");
   const {
     mode,
     lesson,
-    lessonId,
     words,
     currentWord,
     index,
@@ -34,41 +33,32 @@ export default function ListenPage() {
     position,
     duration,
     loopLesson,
-    playLesson,
+    sessionLeft,
+    playQueue,
     togglePlay,
     next,
     prev,
     toggleLoop,
   } = usePlayer();
-  const { catalogReady, getAdjacentLesson, getWordsForLesson, lessons } = useCatalog();
+  const { allWords, catalogReady } = useCatalog();
+  const { playWordLimit, setPlayWordLimit } = useSettings();
 
-  // Keep lesson listen separate from global “Phát từ” queue.
+  // Enter queue playlist (no autoplay) when opening this screen.
   useEffect(() => {
-    if (!catalogReady || mode === "lesson") {
+    if (!catalogReady || !allWords.length) {
       return;
     }
-    const fallback = lessons.find((item) => getWordsForLesson(item.lesson).length > 0)?.lesson ?? 1;
-    const target = getWordsForLesson(lessonId).length > 0 ? lessonId : fallback;
-    playLesson(target, 0, false);
-  }, [catalogReady, getWordsForLesson, lessonId, lessons, mode, playLesson]);
+    if (mode !== "queue") {
+      playQueue(0, false);
+    }
+  }, [allWords.length, catalogReady, mode, playQueue]);
 
   const headline = currentWord ? getHeadline(currentWord) : "—";
   const artSrc = currentWord ? wordImageSrc(currentWord) : "";
   const showKana = Boolean(currentWord?.kanji?.trim());
   const progress = Math.min(1, position / Math.max(duration, 1));
-  const nextWord = (() => {
-    if (!words.length) {
-      return undefined;
-    }
-    if (index + 1 < words.length) {
-      return words[index + 1];
-    }
-    if (loopLesson) {
-      return words[0];
-    }
-    const nextLesson = getAdjacentLesson(lessonId, 1);
-    return nextLesson != null ? getWordsForLesson(nextLesson)[0] : undefined;
-  })();
+  const globalNumber = index + 1;
+  const nextWord = words[index + 1] ?? (loopLesson ? words[0] : undefined);
 
   useEffect(() => {
     if (!artSrc) {
@@ -101,23 +91,17 @@ export default function ListenPage() {
 
   useGSAP(
     () => {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         return;
       }
-      gsap.fromTo(
-        ".player-word",
-        { y: 18, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" },
-      );
+      gsap.fromTo(".player-word", { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" });
     },
     { scope: root, dependencies: [currentWord?.kana, currentWord?.order, currentWord?.lesson] },
   );
 
   useGSAP(
     () => {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         return;
       }
       gsap.fromTo(
@@ -133,22 +117,16 @@ export default function ListenPage() {
     <div ref={root} className="flex min-h-0 flex-1 flex-col md:flex-row md:gap-4 lg:gap-5">
       <div className="glass-strong flex min-h-0 min-w-0 flex-1 flex-col rounded-[28px] p-3 md:w-1/2 md:flex-none xl:w-[480px] md:p-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[13.5px] font-extrabold text-white">
-            {String(lesson?.lesson ?? 1).padStart(2, "0")}
+          <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[12px] font-extrabold text-white">
+            {globalNumber}
           </div>
           <div className="min-w-0 flex-1 text-center">
-            <div className="text-[9.5px] font-bold tracking-[1.6px] text-[#7C5CFC]">ĐANG PHÁT</div>
+            <div className="text-[9.5px] font-bold tracking-[1.6px] text-[#7C5CFC]">PHÁT THEO SỐ TỪ</div>
             <div className="truncate text-[13.5px] font-extrabold text-[#1E1B4B]">
-              {lesson ? formatLessonTitle(lesson) : ""}
+              {lesson ? formatLessonTitle(lesson) : "Toàn bộ từ vựng"}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => router.push(`/lessons/${lessonId}`)}
-            className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] border border-white/70 bg-white/70"
-          >
-            <List size={18} className="text-[#7C5CFC]" />
-          </button>
+          <div className="w-[38px]" />
         </div>
 
         <div className="flex min-h-[120px] flex-1 flex-col items-center justify-center py-3">
@@ -170,7 +148,7 @@ export default function ListenPage() {
 
         <div className="px-1 pb-1 pt-2">
           <p className="text-center text-xl font-extrabold leading-7 text-[#1E1B4B]">
-            {currentWord?.meaning || "Chọn một từ để nghe"}
+            {currentWord?.meaning || "Chọn số từ rồi bấm phát"}
           </p>
           <p className="mt-1.5 text-center text-[13.5px] font-semibold text-[#7C7A9C]">
             {currentWord?.romaji}
@@ -184,9 +162,25 @@ export default function ListenPage() {
           <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-[#7C7A9C]">
             <span>{formatTime(position)}</span>
             <span className="font-bold text-[#7C5CFC]">
-              {index + 1} / {words.length}
+              {globalNumber} / {words.length}
+              {sessionLeft != null ? ` · còn ${sessionLeft}` : ""}
             </span>
             <span>{formatTime(duration)}</span>
+          </div>
+
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+            {PLAY_WORD_LIMIT_PRESETS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPlayWordLimit(n)}
+                className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${
+                  playWordLimit === n ? "bg-[#7C5CFC] text-white" : "bg-white/70 text-[#4A4470]"
+                }`}
+              >
+                {formatPlayWordLimit(n)}
+              </button>
+            ))}
           </div>
 
           <div className="mt-2 flex items-center justify-between">
@@ -212,56 +206,50 @@ export default function ListenPage() {
             <button type="button" onClick={next} className="flex h-11 w-11 items-center justify-center">
               <SkipForward size={24} className="text-[#1E1B4B]" />
             </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/lessons/${lessonId}`)}
-              className="flex h-11 w-11 items-center justify-center"
-            >
-              <List size={20} className="text-[#B9B6D4]" />
-            </button>
+            <div className="h-11 w-11" />
           </div>
         </div>
 
         {nextWord ? (
-          <button
-            type="button"
-            onClick={() => router.push(`/lessons/${lessonId}`)}
-            className="mt-2 flex items-center gap-2 rounded-[20px] bg-white/50 px-3.5 py-2.5 text-left md:hidden"
-          >
+          <div className="mt-2 flex items-center gap-2 rounded-[20px] bg-white/50 px-3.5 py-2.5 text-left md:hidden">
             <span className="text-[11.5px] font-bold text-[#7C5CFC]">Tiếp theo</span>
             <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#4A4470]">
-              {getHeadline(nextWord)} · {nextWord.meaning}
+              #{index + 2} {getHeadline(nextWord)} · {nextWord.meaning}
             </span>
-          </button>
+          </div>
         ) : null}
       </div>
 
       <aside className="glass-strong hidden min-h-0 min-w-0 flex-1 flex-col rounded-[28px] p-3 md:flex md:max-h-[calc(100lvh-2rem)]">
-        <p className="px-1 text-[12.5px] font-bold text-[#7C7A9C]">{words.length} từ trong bài</p>
+        <p className="px-1 text-[12.5px] font-bold text-[#7C7A9C]">
+          {words.length} từ · theo thứ tự bài học
+        </p>
         <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto xl:grid-cols-2">
           {words.map((word, wordIndex) => {
-            const active = wordIndex === index;
+            const active = mode === "queue" && wordIndex === index;
             return (
               <button
-                key={`${word.order}-${wordIndex}`}
+                key={`${word.lesson}-${word.order}-${wordIndex}`}
                 type="button"
-                onClick={() => playLesson(lessonId, wordIndex)}
+                onClick={() => playQueue(wordIndex, true)}
                 className={`flex items-center gap-3 rounded-[18px] px-3 py-2.5 text-left ${
                   active ? "bg-[#EFEAFF]" : "bg-white/50"
                 }`}
               >
                 <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[11.5px] font-extrabold ${
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-extrabold ${
                     active ? "bg-[#7C5CFC] text-white" : "bg-white/80 text-[#7C7A9C]"
                   }`}
                 >
-                  {word.order}
+                  {wordIndex + 1}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={`block truncate text-[14px] font-extrabold ${active ? "text-[#7C5CFC]" : "text-[#1E1B4B]"}`}>
                     {getHeadline(word)}
                   </span>
-                  <span className="block truncate text-[12px] font-semibold text-[#7C7A9C]">{word.meaning}</span>
+                  <span className="block truncate text-[12px] font-semibold text-[#7C7A9C]">
+                    Bài {word.lesson} · {word.meaning}
+                  </span>
                 </span>
               </button>
             );

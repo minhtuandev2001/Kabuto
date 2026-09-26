@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, BookType, Headphones, Plus, Settings } from "lucide-react";
+import { BookOpen, BookType, Headphones, ListMusic, Plus, Settings } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { BusyBar, BusyOverlay, Spinner } from "./Busy";
 import { MiniPlayer } from "./MiniPlayer";
@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 
 const TABS = [
   { href: "/listen", label: "Nghe", icon: Headphones },
+  { href: "/queue", label: "Phát từ", icon: ListMusic },
   { href: "/lessons", label: "Bài học", icon: BookOpen },
   { href: "/grammar", label: "Ngữ pháp", icon: BookType },
   { href: "/create", label: "Tạo", icon: Plus },
@@ -69,7 +70,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [navOverlay, setNavOverlay] = useState(false);
   const [, startNav] = useTransition();
   const showChrome = pathname !== "/";
-  const hideMini = pathname === "/listen";
+  const hideMini = pathname === "/listen" || pathname === "/queue";
   const navigating = Boolean(pendingHref);
   const blocking = navOverlay || (!catalogReady && lessons.length === 0);
   const showBar = navigating || catalogBusy || !catalogReady;
