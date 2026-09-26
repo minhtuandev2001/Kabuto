@@ -299,17 +299,31 @@ export async function importCustomWords(
 }
 
 export async function deleteCustomLesson(lesson: number) {
+  await deleteLesson(lesson);
+}
+
+/** Delete a catalog lesson (custom and/or minna) plus its words and sheet images. */
+export async function deleteLesson(lesson: number) {
+  if (!Number.isFinite(lesson) || lesson < 1) {
+    throw new Error("Bài học không hợp lệ");
+  }
   await ensureSchema();
   const sql = getSql();
-  const deleted = (await sql`
+  const custom = (await sql`
     DELETE FROM custom_lessons
     WHERE lesson = ${lesson}
     RETURNING lesson
   `) as { lesson: number }[];
-  if (!deleted.length) {
-    throw new Error("Không tìm thấy bài tự soạn");
+  const minna = (await sql`
+    DELETE FROM minna_lessons
+    WHERE lesson = ${lesson}
+    RETURNING lesson
+  `) as { lesson: number }[];
+  if (!custom.length && !minna.length) {
+    throw new Error("Không tìm thấy bài học");
   }
   await sql`DELETE FROM custom_words WHERE lesson = ${lesson}`;
+  await sql`DELETE FROM minna_words WHERE lesson = ${lesson}`;
   await deleteLessonImagesForLesson(lesson);
   await deleteGrammarForCatalogLesson(lesson);
 }

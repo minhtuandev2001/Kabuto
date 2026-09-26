@@ -18,7 +18,8 @@ export function LessonCard({ lesson, onOpen, onPlay }: Props) {
   const accent = lessonAccents[(lesson.lesson - 1) % lessonAccents.length];
   const count = getWordsForLesson(lesson.lesson).length;
   const imageCount = getImagesForLesson(lesson.lesson).length;
-  const imageLed = imageCount > 0;
+  // Words (audio) win when present — sheet images only lead empty lessons.
+  const imageLed = imageCount > 0 && count === 0;
 
   function warmLesson() {
     const list = getWordsForLesson(lesson.lesson);
@@ -46,8 +47,7 @@ export function LessonCard({ lesson, onOpen, onPlay }: Props) {
               <span className="rounded-full bg-[#FDE68A] px-2 py-0.5 text-[10.5px] font-bold text-[#92400E]">Tự soạn</span>
             ) : null}
             <span className="text-[11.5px] font-semibold text-[#7C7A9C]">
-              {imageLed ? `${imageCount} ảnh` : `${count} từ`}
-              {imageLed && count ? ` · ${count} từ` : ""}
+              {count ? `${count} từ` : imageLed ? `${imageCount} ảnh` : "0 từ"}
             </span>
           </span>
         </span>

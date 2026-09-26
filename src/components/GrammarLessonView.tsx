@@ -21,7 +21,7 @@ import { cloudinaryDisplayUrl, LESSON_IMAGE_THUMB } from "@/lib/media";
 export function GrammarLessonView({ item }: { item: GrammarLesson }) {
   const router = useRouter();
   const { playLesson } = usePlayer();
-  const { grammarLessons, removeGrammar, getGrammarImages, getImagesForLesson } = useCatalog();
+  const { grammarLessons, removeGrammar, getGrammarImages, getImagesForLesson, getWordsForLesson } = useCatalog();
   const prev = adjacentGrammarLesson(grammarLessons, item, -1);
   const next = adjacentGrammarLesson(grammarLessons, item, 1);
   const vocabLesson = item.catalogLesson ?? catalogLessonForBuiltin(item.jlpt, item.lesson);
@@ -188,7 +188,7 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
         <button
           type="button"
           onClick={() => {
-            if (vocabImages.length) {
+            if (vocabImages.length && getWordsForLesson(vocabLesson).length === 0) {
               router.push(`/lessons/${vocabLesson}/images`);
               return;
             }
@@ -198,17 +198,17 @@ export function GrammarLessonView({ item }: { item: GrammarLesson }) {
           className="glass-strong flex items-center gap-3 rounded-[20px] px-3.5 py-3 text-left"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC]">
-            {vocabImages.length ? <Images size={18} /> : <Headphones size={18} />}
+            {vocabImages.length && getWordsForLesson(vocabLesson).length === 0 ? (
+              <Images size={18} />
+            ) : (
+              <Headphones size={18} />
+            )}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[14px] font-extrabold text-[#1E1B4B]">
-              {vocabImages.length
-                ? `Ảnh từ vựng bài ${String(vocabLesson).padStart(2, "0")}`
-                : `Nghe từ vựng bài ${String(vocabLesson).padStart(2, "0")}`}
+              {`Nghe từ vựng bài ${String(vocabLesson).padStart(2, "0")}`}
             </span>
-            <span className="block text-[12px] font-semibold text-[#7C7A9C]">
-              {vocabImages.length ? "Sang học từ theo ảnh" : "Ngữ pháp xong thì luyện tai"}
-            </span>
+            <span className="block text-[12px] font-semibold text-[#7C7A9C]">Ngữ pháp xong thì luyện tai</span>
           </span>
         </button>
       ) : null}

@@ -17,6 +17,7 @@ function ManageLessonImagesForm() {
     getImagesForLesson,
     addLessonImage,
     removeLessonImage,
+    clearLessonImages,
     moveLessonImage,
     catalogBusy,
   } = useCatalog();
@@ -183,13 +184,28 @@ function ManageLessonImagesForm() {
       </div>
 
       {images.length ? (
-        <button
-          type="button"
-          onClick={() => router.push(`/lessons/${lessonId}/images`)}
-          className="mt-4 w-full rounded-full bg-[#EFEAFF] py-3 text-[14px] font-extrabold text-[#7C5CFC]"
-        >
-          Xem như học · {images.length} trang
-        </button>
+        <>
+          <button
+            type="button"
+            disabled={catalogBusy}
+            onClick={() => {
+              if (!window.confirm(`Xóa hết ${images.length} ảnh của bài ${lessonId}?`)) {
+                return;
+              }
+              void clearLessonImages(lessonId);
+            }}
+            className="mt-3 w-full rounded-full bg-[#FFE4F1] py-3 text-[14px] font-extrabold text-[#DB2777] disabled:opacity-50"
+          >
+            Xóa hết ảnh bài này
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(`/lessons/${lessonId}/images`)}
+            className="mt-2 w-full rounded-full bg-[#EFEAFF] py-3 text-[14px] font-extrabold text-[#7C5CFC]"
+          >
+            Xem như học · {images.length} trang
+          </button>
+        </>
       ) : null}
     </div>
   );

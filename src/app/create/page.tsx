@@ -11,12 +11,11 @@ export default function CreatePage() {
   const router = useRouter();
   const {
     lessons,
-    customLessons,
     customWords,
     grammarLessons,
     getWordsForLesson,
     reloadCatalog,
-    removeCustomLesson,
+    removeLesson,
     removeCustomWord,
     removeGrammar,
   } = useCatalog();
@@ -100,9 +99,9 @@ export default function CreatePage() {
             <Images size={22} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[16px] font-extrabold text-[#1E1B4B]">Ảnh từ vựng (N3+)</span>
+            <span className="block text-[16px] font-extrabold text-[#1E1B4B]">Ảnh phụ theo bài</span>
             <span className="mt-0.5 block text-[12.5px] font-semibold text-[#7C7A9C]">
-              {hasLessons ? "Thêm / xóa / sắp xếp ảnh trang bảng từ" : "Chưa có bài học — tạo bài trước"}
+              {hasLessons ? "Tùy chọn — N3 mặc định học bằng nghe Mimikara" : "Chưa có bài học — tạo bài trước"}
             </span>
           </span>
           <ChevronRight size={18} className="text-[#B9B6D4]" />
@@ -149,11 +148,11 @@ export default function CreatePage() {
         </button>
       </div>
 
-      {customLessons.length ? (
+      {lessons.length ? (
         <div className="mt-6">
-          <p className="text-[12.5px] font-bold text-[#7C7A9C]">Bài tự soạn</p>
+          <p className="text-[12.5px] font-bold text-[#7C7A9C]">Tất cả bài học</p>
           <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
-            {customLessons.map((item) => (
+            {lessons.map((item) => (
               <div key={item.lesson} className="glass flex items-center gap-2 rounded-[22px] p-3">
                 <button
                   type="button"
@@ -164,27 +163,21 @@ export default function CreatePage() {
                     Bài {String(item.lesson).padStart(2, "0")} · {formatLessonTitle(item)}
                   </span>
                   <span className="text-[12px] font-semibold text-[#7C7A9C]">
-                    {getWordsForLesson(item.lesson).length} từ · {customGrammar.filter((row) => row.lesson === item.lesson).length} mẫu
+                    {item.jlpt} · {getWordsForLesson(item.lesson).length} từ
+                    {item.custom ? " · Tự soạn" : ""}
                   </span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => router.push(`/create/grammar?lesson=${item.lesson}`)}
-                  className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-[#7C5CFC]"
-                >
-                  Ngữ pháp
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push(`/create/word?lesson=${item.lesson}`)}
-                  className="rounded-full bg-[#EFEAFF] px-2.5 py-1 text-[11px] font-bold text-[#7C5CFC]"
-                >
-                  Thêm từ
-                </button>
-                <button
-                  type="button"
                   onClick={() => {
-                    void removeCustomLesson(item.lesson);
+                    if (
+                      !window.confirm(
+                        `Xóa bài ${item.lesson}?\nTừ vựng và ngữ pháp gắn với bài này cũng sẽ bị xóa.`,
+                      )
+                    ) {
+                      return;
+                    }
+                    void removeLesson(item.lesson);
                   }}
                   className="flex h-9 w-9 items-center justify-center text-[#F472B6]"
                   aria-label={`Xóa bài ${item.lesson}`}

@@ -77,10 +77,9 @@ export function grammarImagesHref(item: GrammarLesson) {
   return `${grammarHref(item)}/images`;
 }
 
-/** N3+ study from sheet images; N5/N4 stay text/audio. */
-export function isImageLedJlpt(jlpt: string) {
-  const key = jlpt.trim().toUpperCase();
-  return key === "N3" || key === "N2" || key === "N1";
+/** N3+ used sheet images briefly; Mimikara N3 is audio+words now. */
+export function isImageLedJlpt(_jlpt: string) {
+  return false;
 }
 
 export function findGrammarLesson(list: GrammarLesson[], jlpt: string, lesson: number) {

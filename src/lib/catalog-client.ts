@@ -111,6 +111,11 @@ export async function deleteLessonImageApi(lesson: number, order: number) {
   await readJson<{ ok: boolean }>(res);
 }
 
+export async function clearLessonImagesApi(lesson: number) {
+  const res = await fetch(`/api/lesson-images?lesson=${lesson}`, { method: "DELETE" });
+  await readJson<{ ok: boolean }>(res);
+}
+
 export async function moveLessonImageApi(lesson: number, order: number, delta: -1 | 1) {
   const res = await fetch("/api/lesson-images", {
     method: "PATCH",

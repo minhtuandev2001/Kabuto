@@ -149,6 +149,9 @@ async function main() {
   const delMinnaWords = await sql`
     DELETE FROM minna_words WHERE lesson BETWEEN 51 AND 100 RETURNING lesson
   `;
+  const delImagesN3 = await sql`
+    DELETE FROM lesson_images WHERE lesson BETWEEN 51 AND 62 RETURNING lesson
+  `;
   const delImages = await sql`
     DELETE FROM lesson_images WHERE lesson BETWEEN 66 AND 100 RETURNING lesson
   `;
@@ -161,6 +164,7 @@ async function main() {
     JSON.stringify({
       deletedCustomWords: delCustom.length,
       deletedMinnaWords: delMinnaWords.length,
+      deletedLessonImagesN3: delImagesN3.length,
       deletedLessonImagesN2N1: delImages.length,
       deletedN2N1Lessons: delN2N1Lessons.length,
     }),

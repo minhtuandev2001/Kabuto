@@ -13,6 +13,7 @@ import { createCatalogIndex, type CatalogIndex } from "@/lib/catalog";
 import {
   addGrammarImageApi,
   addLessonImageApi,
+  clearLessonImagesApi,
   createLessonApi,
   createWordApi,
   deleteGrammarApi,
@@ -62,6 +63,7 @@ type CatalogContextValue = CatalogIndex & {
   addWord: (input: NewWordInput) => Promise<VocabWord>;
   addLessonImage: (lesson: number, imageUrl: string) => Promise<LessonImage>;
   removeLessonImage: (lesson: number, order: number) => Promise<void>;
+  clearLessonImages: (lesson: number) => Promise<void>;
   moveLessonImage: (lesson: number, order: number, delta: -1 | 1) => Promise<void>;
   addGrammarImage: (jlpt: string, lesson: number, imageUrl: string) => Promise<GrammarImage>;
   removeGrammarImage: (jlpt: string, lesson: number, order: number) => Promise<void>;
@@ -69,12 +71,13 @@ type CatalogContextValue = CatalogIndex & {
   saveGrammar: (input: GrammarPayload, dbId?: number) => Promise<GrammarPoint>;
   removeGrammar: (dbId: number) => Promise<void>;
   removeCustomLesson: (lesson: number) => Promise<void>;
+  removeLesson: (lesson: number) => Promise<void>;
   removeCustomWord: (lesson: number, order: number) => Promise<void>;
   reloadCatalog: () => Promise<void>;
 };
 
 const CatalogContext = createContext<CatalogContextValue | null>(null);
-const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v9";
+const CATALOG_CACHE_KEY = "learn-japan.catalog.cache.v11";
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const [lessons, setLessons] = useState<LessonInfo[]>([]);
@@ -269,6 +272,15 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     [runBusy],
   );
 
+  const clearLessonImages = useCallback(
+    (lesson: number) =>
+      runBusy(async () => {
+        await clearLessonImagesApi(lesson);
+        setLessonImages((current) => current.filter((item) => item.lesson !== lesson));
+      }),
+    [runBusy],
+  );
+
   const moveLessonImageFn = useCallback(
     (lesson: number, order: number, delta: -1 | 1) =>
       runBusy(async () => {
@@ -338,7 +350,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     [refreshGrammar, runBusy],
   );
 
-  const removeCustomLesson = useCallback(
+  const removeLesson = useCallback(
     (lesson: number) =>
       runBusy(async () => {
         await deleteLessonApi(lesson);
@@ -347,7 +359,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         setLessonImages((current) => current.filter((item) => item.lesson !== lesson));
         setGrammarImages((current) => {
           const removed = grammarLessons.filter(
-            (item) => item.custom && (item.catalogLesson === lesson || item.lesson === lesson),
+            (item) => item.catalogLesson === lesson || (item.custom && item.lesson === lesson),
           );
           if (!removed.length) {
             return current;
@@ -358,11 +370,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
           );
         });
         setGrammarLessons((current) =>
-          current.filter((item) => !(item.custom && (item.catalogLesson === lesson || item.lesson === lesson))),
+          current.filter((item) => item.catalogLesson !== lesson && !(item.custom && item.lesson === lesson)),
         );
       }),
     [grammarLessons, runBusy],
   );
+
+  const removeCustomLesson = removeLesson;
 
   const removeCustomWord = useCallback(
     (lesson: number, order: number) =>
@@ -390,6 +404,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       addWord,
       addLessonImage,
       removeLessonImage,
+      clearLessonImages,
       moveLessonImage: moveLessonImageFn,
       addGrammarImage: addGrammarImageFn,
       removeGrammarImage: removeGrammarImageFn,
@@ -397,6 +412,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       saveGrammar,
       removeGrammar,
       removeCustomLesson,
+      removeLesson,
       removeCustomWord,
       reloadCatalog,
     }),
@@ -407,6 +423,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       addWord,
       busy,
       catalogReady,
+      clearLessonImages,
       customLessons,
       customWords,
       getGrammarImages,
@@ -423,6 +440,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       removeCustomWord,
       removeGrammar,
       removeGrammarImageFn,
+      removeLesson,
       removeLessonImage,
       saveGrammar,
     ],

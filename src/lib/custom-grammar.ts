@@ -242,18 +242,20 @@ export async function deleteGrammarForCatalogLesson(catalogLesson: number) {
   const slots = (await sql`
     SELECT jlpt, lesson
     FROM grammar_lessons
-    WHERE catalog_lesson = ${catalogLesson} AND source = 'user'
+    WHERE catalog_lesson = ${catalogLesson}
   `) as { jlpt: string; lesson: number }[];
+  if (!slots.length) {
+    return;
+  }
   await sql`
     DELETE FROM grammar_points
-    WHERE source = 'user'
-      AND (jlpt, lesson) IN (
-        SELECT jlpt, lesson FROM grammar_lessons WHERE catalog_lesson = ${catalogLesson}
-      )
+    WHERE (jlpt, lesson) IN (
+      SELECT jlpt, lesson FROM grammar_lessons WHERE catalog_lesson = ${catalogLesson}
+    )
   `;
   await sql`
     DELETE FROM grammar_lessons
-    WHERE catalog_lesson = ${catalogLesson} AND source = 'user'
+    WHERE catalog_lesson = ${catalogLesson}
   `;
   for (const slot of slots) {
     await deleteGrammarImagesForSlot(slot.jlpt, slot.lesson);

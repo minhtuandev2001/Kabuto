@@ -1,4 +1,4 @@
-import { addLessonImage, listLessonImages, moveLessonImage } from "@/lib/lesson-images";
+import { addLessonImage, deleteLessonImagesForLesson, listLessonImages, moveLessonImage } from "@/lib/lesson-images";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,6 +41,23 @@ export async function PATCH(request: Request) {
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "Không sắp xếp được ảnh" },
+      { status: 400 },
+    );
+  }
+}
+
+/** Clear all sheet images for one lesson: DELETE /api/lesson-images?lesson=51 */
+export async function DELETE(request: Request) {
+  try {
+    const lesson = Number(new URL(request.url).searchParams.get("lesson"));
+    if (!Number.isFinite(lesson) || lesson < 1) {
+      throw new Error("Bài học không hợp lệ");
+    }
+    await deleteLessonImagesForLesson(lesson);
+    return Response.json({ ok: true });
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Không xóa được ảnh" },
       { status: 400 },
     );
   }
