@@ -163,9 +163,9 @@ export default function QueuePage() {
     <div ref={root} className="flex min-h-0 flex-1 flex-col">
       <div
         ref={scroller}
-        className="flex min-h-0 flex-1 max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overscroll-x-contain max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:flex-row md:gap-4 md:overflow-visible lg:gap-5"
+        className="flex min-h-0 flex-1 max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overflow-y-hidden max-md:overscroll-x-contain max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:flex-row md:gap-4 md:overflow-visible lg:gap-5"
       >
-        <section className="glass-strong flex min-h-0 flex-1 flex-col rounded-[28px] p-3 max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always md:w-1/2 md:min-w-0 md:flex-none md:p-5 xl:w-[480px]">
+        <section className="glass-strong flex min-h-0 flex-1 flex-col rounded-[28px] p-3 max-md:h-[calc(100lvh-8.75rem)] max-md:max-h-[calc(100lvh-8.75rem)] max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always max-md:overflow-y-auto max-md:overscroll-y-contain md:w-1/2 md:min-w-0 md:flex-none md:p-5 xl:w-[480px]">
           <div className="flex items-center gap-3">
             <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[12px] font-extrabold text-white">
               {queueGlobalNumber}
@@ -325,8 +325,8 @@ export default function QueuePage() {
           </div>
         </section>
 
-        <aside className="glass-strong flex min-h-0 flex-1 flex-col rounded-[28px] p-3 max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always md:min-w-0 md:max-h-[calc(100lvh-2rem)]">
-          <div className="flex items-center gap-2 px-1">
+        <aside className="glass-strong flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] p-3 max-md:h-[calc(100lvh-8.75rem)] max-md:max-h-[calc(100lvh-8.75rem)] max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always md:min-w-0 md:max-h-[calc(100lvh-2rem)]">
+          <div className="flex shrink-0 items-center gap-2 px-1">
             <button
               type="button"
               onClick={() => scrollToPane("player")}
@@ -337,7 +337,7 @@ export default function QueuePage() {
             </button>
             <p className="min-w-0 flex-1 text-[12.5px] font-bold text-[#7C7A9C]">{listHeader}</p>
           </div>
-          <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto xl:grid-cols-2">
+          <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto overscroll-y-contain touch-pan-y xl:grid-cols-2">
             {words.map((word, wordIndex) => {
               const active = mode === "queue" && wordIndex === index;
               const globalNum = pageStart + wordIndex + 1;
