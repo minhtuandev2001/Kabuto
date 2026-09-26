@@ -1,12 +1,9 @@
 /**
- * Seed N3–N1 vocab from OpenJLPT (free, CC BY-SA 4.0) into minna_lessons /
- * minna_words (catalog 51–100) and link grammar_lessons.catalog_lesson.
+ * DEPRECATED for N3: use `npm run seed:mimikara-n3` (Mimikara Oboeru).
+ * This script still seeds OpenJLPT N3–N1 into minna_lessons / minna_words
+ * (catalog 51–100). Prefer Mimikara for N3; N2/N1 catalog lessons may be removed.
  *
  * Source: https://github.com/evanclan/OpenJLPT
- *   level lists — Jonathan Waller / tanos.co.uk (CC BY)
- *   glosses — JMdict/EDICT, EDRDG (CC BY-SA 4.0)
- *
- * Not Irodori/Marugoto: JF terms forbid copying those lists into a separate app.
  *
  *   npm run seed:jlpt-vocab
  */
