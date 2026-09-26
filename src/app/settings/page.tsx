@@ -2,16 +2,24 @@
 
 import { Minus, Plus } from "lucide-react";
 import { useSettings } from "@/context/SettingsProvider";
-import { MAX_WORD_GAP_MS, MIN_WORD_GAP_MS, WORD_GAP_PRESETS, WORD_GAP_STEP_MS, formatWordGap } from "@/lib/theme";
+import {
+  MAX_WORD_GAP_MS,
+  MIN_WORD_GAP_MS,
+  PLAY_WORD_LIMIT_PRESETS,
+  WORD_GAP_PRESETS,
+  WORD_GAP_STEP_MS,
+  formatPlayWordLimit,
+  formatWordGap,
+} from "@/lib/theme";
 
 export default function SettingsPage() {
-  const { wordGapMs, setWordGapMs } = useSettings();
+  const { wordGapMs, setWordGapMs, playWordLimit, setPlayWordLimit } = useSettings();
 
   return (
     <div>
       <p className="text-[11px] font-bold tracking-wider text-[#7C5CFC]">TÙY CHỈNH</p>
       <h1 className="mt-1 text-[26px] font-extrabold text-[#1E1B4B] md:text-[32px]">Cài đặt</h1>
-      <p className="mt-1 text-sm font-semibold text-[#4A4470]">Chỉnh nhịp nghe cho vừa tốc độ học của bạn.</p>
+      <p className="mt-1 text-sm font-semibold text-[#4A4470]">Chỉnh nhịp nghe và số từ mỗi lần phát.</p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <div className="glass-strong rounded-[28px] p-4 md:p-6">
@@ -54,22 +62,33 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="glass-strong rounded-[28px] p-4 md:p-6">
+          <p className="text-[15px] font-extrabold text-[#1E1B4B]">Số từ mỗi lần nghe</p>
+          <p className="mt-1 text-[12.5px] font-semibold leading-5 text-[#7C7A9C]">
+            Giống nghe bình thường, nhưng tự dừng sau đúng số từ đã chọn. Bấm phát lại để bắt đầu phiên mới.
+          </p>
+          <p className="mt-4 text-center text-xl font-extrabold text-[#1E1B4B]">{formatPlayWordLimit(playWordLimit)}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {PLAY_WORD_LIMIT_PRESETS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPlayWordLimit(n)}
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  playWordLimit === n ? "bg-[#7C5CFC] text-white" : "bg-white/70 text-[#4A4470]"
+                }`}
+              >
+                {formatPlayWordLimit(n)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 md:col-span-2">
           <div className="glass rounded-[28px] p-4 text-[12.5px] font-semibold leading-5 text-[#4A4470] md:p-6">
             Trên iPhone: mở Safari → nút Chia sẻ →{" "}
             <span className="font-extrabold text-[#1E1B4B]">Thêm vào màn hình chính</span>
             . App hiện icon riêng, nghe được khi Safari/PWA còn mở.
-          </div>
-          <div className="text-[11.5px] font-semibold leading-5 text-[#7C7A9C]">
-            Từ vựng N3–N1 lấy từ{" "}
-            <a className="text-[#7C5CFC] underline" href="https://github.com/evanclan/OpenJLPT" target="_blank" rel="noreferrer">
-              OpenJLPT
-            </a>{" "}
-            (danh sách tanos.co.uk + JMdict/EDICT), giấy phép{" "}
-            <a className="text-[#7C5CFC] underline" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
-              CC BY-SA 4.0
-            </a>
-            . Nghĩa gốc tiếng Anh. Không dùng giáo trình có bản quyền.
           </div>
         </div>
       </div>

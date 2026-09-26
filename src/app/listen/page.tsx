@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { usePlayer } from "@/context/PlayerProvider";
 import { useCatalog } from "@/context/CatalogProvider";
+import { useSettings } from "@/context/SettingsProvider";
 import { formatLessonTitle, getHeadline, wordImageSrc } from "@/lib/catalog";
+import { PLAY_WORD_LIMIT_PRESETS, formatPlayWordLimit } from "@/lib/theme";
 
 gsap.registerPlugin(useGSAP);
 
@@ -33,6 +35,7 @@ export default function ListenPage() {
     position,
     duration,
     loopLesson,
+    sessionLeft,
     playLesson,
     togglePlay,
     next,
@@ -40,6 +43,7 @@ export default function ListenPage() {
     toggleLoop,
   } = usePlayer();
   const { getAdjacentLesson, getWordsForLesson } = useCatalog();
+  const { playWordLimit, setPlayWordLimit } = useSettings();
 
   const headline = currentWord ? getHeadline(currentWord) : "—";
   const artSrc = currentWord ? wordImageSrc(currentWord) : "";
@@ -174,8 +178,24 @@ export default function ListenPage() {
             <span>{formatTime(position)}</span>
             <span className="font-bold text-[#7C5CFC]">
               {index + 1} / {words.length}
+              {sessionLeft != null ? ` · còn ${sessionLeft}` : ""}
             </span>
             <span>{formatTime(duration)}</span>
+          </div>
+
+          <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+            {PLAY_WORD_LIMIT_PRESETS.map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPlayWordLimit(n)}
+                className={`rounded-full px-2.5 py-1 text-[10.5px] font-bold ${
+                  playWordLimit === n ? "bg-[#7C5CFC] text-white" : "bg-white/70 text-[#4A4470]"
+                }`}
+              >
+                {formatPlayWordLimit(n)}
+              </button>
+            ))}
           </div>
 
           <div className="mt-2 flex items-center justify-between">

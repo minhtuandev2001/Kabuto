@@ -25,6 +25,10 @@ export const MAX_WORD_GAP_MS = 5000;
 export const WORD_GAP_STEP_MS = 500;
 export const WORD_GAP_PRESETS = [0, 1000, 1500, 2000, 3000, 5000] as const;
 
+/** 0 = nghe liên tục (không giới hạn). */
+export const DEFAULT_PLAY_WORD_LIMIT = 0;
+export const PLAY_WORD_LIMIT_PRESETS = [0, 5, 10, 20, 30, 50] as const;
+
 export function clampWordGap(ms: number) {
   const snapped = Math.round(ms / WORD_GAP_STEP_MS) * WORD_GAP_STEP_MS;
   return Math.min(MAX_WORD_GAP_MS, Math.max(MIN_WORD_GAP_MS, snapped));
@@ -37,4 +41,15 @@ export function formatWordGap(ms: number) {
   const seconds = ms / 1000;
   const label = Number.isInteger(seconds) ? String(seconds) : String(seconds).replace(".", ",");
   return `${label} giây`;
+}
+
+export function clampPlayWordLimit(n: number) {
+  if (!Number.isFinite(n) || n <= 0) {
+    return 0;
+  }
+  return Math.min(200, Math.max(1, Math.round(n)));
+}
+
+export function formatPlayWordLimit(n: number) {
+  return n <= 0 ? "Cả bài" : `${n} từ`;
 }

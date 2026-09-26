@@ -79,7 +79,7 @@ export default function WelcomePage() {
         disabled={!catalogReady || lessons.length === 0}
         className="welcome-cta mt-auto flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#A78BFA] to-[#7C5CFC] py-4 text-base font-extrabold text-white shadow-[0_14px_24px_rgba(124,92,252,0.32)] disabled:opacity-60 md:mt-8"
         onClick={() => {
-          playLesson(lessons[0]?.lesson ?? 1, 0);
+          playLesson(lessons[0]?.lesson ?? 1, 0, false);
           router.push("/listen");
         }}
       >
