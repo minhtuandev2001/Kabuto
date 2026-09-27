@@ -23,7 +23,6 @@ import {
   MAX_PLAY_WORD_LIMIT,
   MIN_PLAY_WORD_LIMIT,
   PLAY_WORD_LIMIT_STEP,
-  formatPlayWordLimit,
 } from "@/lib/theme";
 
 gsap.registerPlugin(useGSAP);
@@ -70,7 +69,7 @@ export default function QueuePage() {
     if (!el || window.matchMedia("(min-width: 768px)").matches) {
       return;
     }
-    el.scrollTo({ left: pane === "list" ? el.clientWidth : 0, behavior: "smooth" });
+    el.scrollTo({ left: pane === "list" ? el.scrollWidth : 0, behavior: "smooth" });
     setMobilePane(pane);
   }
 
@@ -93,7 +92,7 @@ export default function QueuePage() {
       if (window.matchMedia("(min-width: 768px)").matches) {
         return;
       }
-      setMobilePane(el.scrollLeft > el.clientWidth * 0.4 ? "list" : "player");
+      setMobilePane(el.scrollLeft > (el.scrollWidth - el.clientWidth) / 2 ? "list" : "player");
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
@@ -163,9 +162,9 @@ export default function QueuePage() {
     <div ref={root} className="flex min-h-0 flex-1 flex-col">
       <div
         ref={scroller}
-        className="flex min-h-0 flex-1 max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:overflow-y-hidden max-md:overscroll-x-contain max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:flex-row md:gap-4 md:overflow-visible lg:gap-5"
+        className="flex min-h-0 flex-1 max-md:-mx-5 max-md:h-[calc(100dvh-8.25rem-env(safe-area-inset-bottom))] max-md:flex-none max-md:snap-x max-md:snap-mandatory max-md:gap-5 max-md:overflow-x-auto max-md:overflow-y-hidden max-md:overscroll-x-contain max-md:px-5 max-md:pb-5 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:flex-row md:gap-4 md:overflow-visible lg:gap-5"
       >
-        <section className="glass-strong flex min-h-0 flex-1 flex-col rounded-[28px] p-3 max-md:h-[calc(100lvh-8.75rem)] max-md:max-h-[calc(100lvh-8.75rem)] max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always max-md:overflow-y-auto max-md:overscroll-y-contain md:w-1/2 md:min-w-0 md:flex-none md:p-5 xl:w-[480px]">
+        <section className="glass-strong flex min-h-0 flex-1 flex-col rounded-[28px] p-4 max-md:h-full max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always max-md:overflow-y-auto max-md:overscroll-y-contain md:w-1/2 md:min-w-0 md:flex-none md:p-5 xl:w-[480px]">
           <div className="flex items-center gap-3">
             <div className="flex h-[38px] w-[38px] items-center justify-center rounded-[13px] bg-[#7C5CFC] text-[12px] font-extrabold text-white">
               {queueGlobalNumber}
@@ -186,7 +185,7 @@ export default function QueuePage() {
             </button>
           </div>
 
-          <div className="flex min-h-[120px] flex-1 flex-col items-center justify-center py-3">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center py-4">
             <h1
               className={`player-word text-center font-extrabold text-[#1E1B4B] ${headline.length > 8 ? "text-2xl" : "text-[34px] leading-[42px]"}`}
             >
@@ -201,17 +200,17 @@ export default function QueuePage() {
                 <span className="text-6xl font-extrabold text-white">あ</span>
               )}
             </div>
-          </div>
-
-          <div className="px-1 pb-1 pt-2">
-            <p className="text-center text-xl font-extrabold leading-7 text-[#1E1B4B]">
+            <p className="mt-5 text-center text-xl font-extrabold leading-7 text-[#1E1B4B]">
               {currentWord?.meaning || "Chọn trang rồi bấm phát"}
             </p>
-            <p className="mt-1.5 text-center text-[13.5px] font-semibold text-[#7C7A9C]">
+            <p className="mt-1 min-h-5 text-center text-[13.5px] font-semibold text-[#7C7A9C]">
               {currentWord?.romaji}
               {currentWord?.sinoVietnamese ? ` · ${currentWord.sinoVietnamese}` : ""}
             </p>
-            <div className="mt-4 h-1.5 overflow-visible rounded-full bg-[rgba(30,27,75,0.1)]">
+          </div>
+
+          <div className="px-1 pb-1">
+            <div className="h-1.5 overflow-visible rounded-full bg-[rgba(30,27,75,0.1)]">
               <div className="relative h-full rounded-full bg-[#7C5CFC]" style={{ width: `${progress * 100}%` }}>
                 <span className="absolute -right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border-[3px] border-[#7C5CFC] bg-white" />
               </div>
@@ -219,60 +218,66 @@ export default function QueuePage() {
             <div className="mt-2 flex items-center justify-between text-[11px] font-semibold text-[#7C7A9C]">
               <span>{formatTime(position)}</span>
               <span className="font-bold text-[#7C5CFC]">
-                {index + 1} / {words.length} · #{queueGlobalNumber}
+                #{queueGlobalNumber} · {index + 1}/{words.length}
               </span>
               <span>{formatTime(duration)}</span>
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                disabled={playWordLimit <= MIN_PLAY_WORD_LIMIT}
-                onClick={() => setPlayWordLimit(playWordLimit - PLAY_WORD_LIMIT_STEP)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC] disabled:opacity-40"
-                aria-label="Giảm 10 từ mỗi trang"
-              >
-                <Minus size={16} />
-              </button>
-              <p className="min-w-0 flex-1 text-center text-[13px] font-extrabold text-[#1E1B4B]">
-                {formatPlayWordLimit(playWordLimit)}
-              </p>
-              <button
-                type="button"
-                disabled={playWordLimit >= MAX_PLAY_WORD_LIMIT}
-                onClick={() => setPlayWordLimit(playWordLimit + PLAY_WORD_LIMIT_STEP)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFEAFF] text-[#7C5CFC] disabled:opacity-40"
-                aria-label="Tăng 10 từ mỗi trang"
-              >
-                <Plus size={16} />
-              </button>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-between rounded-2xl bg-[#F4F1FF] p-1">
+                <button
+                  type="button"
+                  disabled={playWordLimit <= MIN_PLAY_WORD_LIMIT}
+                  onClick={() => setPlayWordLimit(playWordLimit - PLAY_WORD_LIMIT_STEP)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7C5CFC] transition hover:bg-white disabled:text-[#D3CFEA] disabled:hover:bg-transparent"
+                  aria-label="Giảm 10 từ mỗi trang"
+                >
+                  <Minus size={16} strokeWidth={2.6} />
+                </button>
+                <span className="min-w-0 text-center leading-tight">
+                  <span className="block text-[14px] font-extrabold text-[#1E1B4B]">{playWordLimit}</span>
+                  <span className="block text-[10px] font-bold text-[#7C7A9C]">từ / trang</span>
+                </span>
+                <button
+                  type="button"
+                  disabled={playWordLimit >= MAX_PLAY_WORD_LIMIT}
+                  onClick={() => setPlayWordLimit(playWordLimit + PLAY_WORD_LIMIT_STEP)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7C5CFC] transition hover:bg-white disabled:text-[#D3CFEA] disabled:hover:bg-transparent"
+                  aria-label="Tăng 10 từ mỗi trang"
+                >
+                  <Plus size={16} strokeWidth={2.6} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between rounded-2xl bg-[#F4F1FF] p-1">
+                <button
+                  type="button"
+                  disabled={queuePage <= 0}
+                  onClick={() => setQueuePage(queuePage - 1)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7C5CFC] transition hover:bg-white disabled:text-[#D3CFEA] disabled:hover:bg-transparent"
+                  aria-label="Trang trước"
+                >
+                  <ChevronLeft size={18} strokeWidth={2.6} />
+                </button>
+                <span className="min-w-0 text-center leading-tight">
+                  <span className="block text-[14px] font-extrabold text-[#1E1B4B]">
+                    {queuePage + 1}
+                    <span className="text-[#B9B6D4]">/{queuePageCount}</span>
+                  </span>
+                  <span className="block text-[10px] font-bold text-[#7C7A9C]">trang</span>
+                </span>
+                <button
+                  type="button"
+                  disabled={queuePage >= queuePageCount - 1}
+                  onClick={() => setQueuePage(queuePage + 1)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-[#7C5CFC] transition hover:bg-white disabled:text-[#D3CFEA] disabled:hover:bg-transparent"
+                  aria-label="Trang sau"
+                >
+                  <ChevronRight size={18} strokeWidth={2.6} />
+                </button>
+              </div>
             </div>
 
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <button
-                type="button"
-                disabled={queuePage <= 0}
-                onClick={() => setQueuePage(queuePage - 1)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#1E1B4B] disabled:opacity-40"
-                aria-label="Trang trước"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <p className="min-w-0 flex-1 text-center text-[13px] font-extrabold text-[#1E1B4B]">
-                Trang {queuePage + 1} / {queuePageCount}
-              </p>
-              <button
-                type="button"
-                disabled={queuePage >= queuePageCount - 1}
-                onClick={() => setQueuePage(queuePage + 1)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 text-[#1E1B4B] disabled:opacity-40"
-                aria-label="Trang sau"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-
-            <div className="mt-2 flex items-center justify-between">
+            <div className="mt-3 flex items-center justify-between">
               <button type="button" onClick={toggleLoop} className="flex h-11 w-11 items-center justify-center">
                 <Repeat size={22} className={loopLesson ? "text-[#7C5CFC]" : "text-[#B9B6D4]"} />
               </button>
@@ -325,19 +330,22 @@ export default function QueuePage() {
           </div>
         </section>
 
-        <aside className="glass-strong flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] p-3 max-md:h-[calc(100lvh-8.75rem)] max-md:max-h-[calc(100lvh-8.75rem)] max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always md:min-w-0 md:max-h-[calc(100lvh-2rem)]">
-          <div className="flex shrink-0 items-center gap-2 px-1">
+        <aside className="glass-strong flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] p-3 max-md:h-full max-md:w-full max-md:min-w-full max-md:shrink-0 max-md:snap-center max-md:snap-always md:min-w-0 md:max-h-[calc(100lvh-2rem)]">
+          <div className="flex shrink-0 items-center gap-2.5 px-1 pb-1 pt-0.5">
             <button
               type="button"
               onClick={() => scrollToPane("player")}
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/70 text-[#7C5CFC] md:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/80 text-[#7C5CFC] md:hidden"
               aria-label="Quay lại phát"
             >
               <ChevronLeft size={18} />
             </button>
-            <p className="min-w-0 flex-1 text-[12.5px] font-bold text-[#7C7A9C]">{listHeader}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-extrabold text-[#1E1B4B]">Danh sách đang phát</p>
+              <p className="truncate text-[11.5px] font-semibold text-[#7C7A9C]">{listHeader}</p>
+            </div>
           </div>
-          <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 gap-1.5 overflow-y-auto overscroll-y-contain touch-pan-y xl:grid-cols-2">
+          <div className="mt-2 grid min-h-0 flex-1 grid-cols-1 content-start gap-1.5 overflow-y-auto overscroll-y-contain touch-pan-y xl:grid-cols-2">
             {words.map((word, wordIndex) => {
               const active = mode === "queue" && wordIndex === index;
               const globalNum = pageStart + wordIndex + 1;
