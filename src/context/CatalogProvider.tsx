@@ -25,6 +25,7 @@ import {
   fetchGrammarLessons,
   moveGrammarImageApi,
   moveLessonImageApi,
+  reorderWordsApi,
   saveGrammarApi,
   type GrammarPayload,
 } from "@/lib/catalog-client";
@@ -72,7 +73,9 @@ type CatalogContextValue = CatalogIndex & {
   removeGrammar: (dbId: number) => Promise<void>;
   removeCustomLesson: (lesson: number) => Promise<void>;
   removeLesson: (lesson: number) => Promise<void>;
-  removeCustomWord: (lesson: number, order: number) => Promise<void>;
+  removeWord: (lesson: number, order: number) => Promise<void>;
+  /** `orders` = the lesson's current order values in the new sequence. */
+  reorderWords: (lesson: number, orders: number[]) => Promise<void>;
   reloadCatalog: () => Promise<void>;
 };
 
@@ -378,12 +381,42 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
 
   const removeCustomLesson = removeLesson;
 
-  const removeCustomWord = useCallback(
+  const removeWord = useCallback(
     (lesson: number, order: number) =>
       runBusy(async () => {
         await deleteWordApi(lesson, order);
-        setWords((current) => current.filter((item) => !(item.custom && item.lesson === lesson && item.order === order)));
+        setWords((current) => {
+          const kept = current.filter((item) => item.lesson !== lesson);
+          const renumbered = current
+            .filter((item) => item.lesson === lesson && item.order !== order)
+            .sort((a, b) => a.order - b.order)
+            .map((item, i) => ({ ...item, order: i + 1 }));
+          return [...kept, ...renumbered];
+        });
       }),
+    [runBusy],
+  );
+
+  const reorderWords = useCallback(
+    (lesson: number, orders: number[]) => {
+      const position = new Map(orders.map((order, i) => [order, i + 1]));
+      setWords((current) =>
+        current.map((item) =>
+          item.lesson === lesson && position.has(item.order) ? { ...item, order: position.get(item.order)! } : item,
+        ),
+      );
+      return runBusy(async () => {
+        try {
+          await reorderWordsApi(lesson, orders);
+        } catch (error) {
+          const catalog = await fetchCustomCatalog().catch(() => null);
+          if (catalog) {
+            setWords(catalog.words);
+          }
+          throw error;
+        }
+      });
+    },
     [runBusy],
   );
 
@@ -413,7 +446,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       removeGrammar,
       removeCustomLesson,
       removeLesson,
-      removeCustomWord,
+      removeWord,
+      reorderWords,
       reloadCatalog,
     }),
     [
@@ -437,11 +471,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       nextLessonNumber,
       reloadCatalog,
       removeCustomLesson,
-      removeCustomWord,
       removeGrammar,
       removeGrammarImageFn,
       removeLesson,
       removeLessonImage,
+      removeWord,
+      reorderWords,
       saveGrammar,
     ],
   );

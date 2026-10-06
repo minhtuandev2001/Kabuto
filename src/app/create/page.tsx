@@ -16,7 +16,7 @@ export default function CreatePage() {
     getWordsForLesson,
     reloadCatalog,
     removeLesson,
-    removeCustomWord,
+    removeWord,
     removeGrammar,
   } = useCatalog();
   const hasLessons = lessons.length > 0;
@@ -253,7 +253,7 @@ export default function CreatePage() {
                   <button
                     type="button"
                     onClick={() => {
-                      void removeCustomWord(word.lesson, word.order);
+                      void removeWord(word.lesson, word.order);
                     }}
                     className="flex h-9 w-9 items-center justify-center text-[#F472B6]"
                     aria-label="Xóa từ"

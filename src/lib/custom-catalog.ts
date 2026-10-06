@@ -1,6 +1,7 @@
 import { deleteGrammarForCatalogLesson } from "@/lib/custom-grammar";
 import { ensureSchema, getSql } from "@/lib/db";
 import { deleteLessonImagesForLesson, listLessonImages } from "@/lib/lesson-images";
+import { isSameOrderSet } from "@/lib/reorder";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 
 type LessonRow = {
@@ -328,15 +329,55 @@ export async function deleteLesson(lesson: number) {
   await deleteGrammarForCatalogLesson(lesson);
 }
 
-export async function deleteCustomWord(lesson: number, order: number) {
+async function listLessonWordOrders(lesson: number) {
+  const sql = getSql();
+  const rows = (await sql`
+    SELECT "order" FROM minna_words WHERE lesson = ${lesson}
+    UNION ALL
+    SELECT "order" FROM custom_words WHERE lesson = ${lesson}
+  `) as { order: number }[];
+  return rows.map((row) => Number(row.order)).sort((a, b) => a - b);
+}
+
+/** Renumber a lesson's words 1..N in the sequence given by their current `order` values. */
+export async function reorderWords(lesson: number, orders: number[]) {
+  if (!Number.isInteger(lesson) || lesson < 1) {
+    throw new Error("Bài học không hợp lệ");
+  }
+  await ensureSchema();
+  const existing = await listLessonWordOrders(lesson);
+  if (!isSameOrderSet(orders, existing)) {
+    throw new Error("Danh sách từ đã thay đổi, tải lại trang rồi thử lại");
+  }
+  const positions = orders.map((_, i) => i + 1);
+  const sql = getSql();
+  // ponytail: set check runs outside the transaction; a word added mid-request keeps a negative order. Move the check into a plpgsql function if concurrent editing ever matters.
+  // Words of one lesson can live in either table; orders are unique across both, so park them negative first to dodge PK clashes.
+  await sql.transaction((tx) => [
+    tx`UPDATE minna_words SET "order" = -"order" WHERE lesson = ${lesson}`,
+    tx`UPDATE custom_words SET "order" = -"order" WHERE lesson = ${lesson}`,
+    tx`
+      UPDATE minna_words w SET "order" = m.position
+      FROM unnest(${orders}::int[], ${positions}::int[]) AS m(old_order, position)
+      WHERE w.lesson = ${lesson} AND w."order" = -m.old_order
+    `,
+    tx`
+      UPDATE custom_words w SET "order" = m.position
+      FROM unnest(${orders}::int[], ${positions}::int[]) AS m(old_order, position)
+      WHERE w.lesson = ${lesson} AND w."order" = -m.old_order
+    `,
+  ]);
+}
+
+export async function deleteWord(lesson: number, order: number) {
   await ensureSchema();
   const sql = getSql();
-  const deleted = (await sql`
-    DELETE FROM custom_words
-    WHERE lesson = ${lesson} AND "order" = ${order}
-    RETURNING lesson
-  `) as { lesson: number }[];
-  if (!deleted.length) {
-    throw new Error("Không tìm thấy từ tự soạn");
+  const [minna, custom] = (await sql.transaction((tx) => [
+    tx`DELETE FROM minna_words WHERE lesson = ${lesson} AND "order" = ${order} RETURNING lesson`,
+    tx`DELETE FROM custom_words WHERE lesson = ${lesson} AND "order" = ${order} RETURNING lesson`,
+  ])) as { lesson: number }[][];
+  if (!minna?.length && !custom?.length) {
+    throw new Error("Không tìm thấy từ");
   }
+  await reorderWords(lesson, await listLessonWordOrders(lesson));
 }

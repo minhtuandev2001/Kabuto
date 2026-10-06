@@ -1,4 +1,4 @@
-import { deleteCustomWord } from "@/lib/custom-catalog";
+import { deleteWord } from "@/lib/custom-catalog";
 
 export const runtime = "nodejs";
 
@@ -13,7 +13,7 @@ export async function DELETE(
     if (!Number.isFinite(lessonId) || !Number.isFinite(orderId)) {
       return Response.json({ error: "Từ không hợp lệ" }, { status: 400 });
     }
-    await deleteCustomWord(lessonId, orderId);
+    await deleteWord(lessonId, orderId);
     return Response.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Không xóa được từ";

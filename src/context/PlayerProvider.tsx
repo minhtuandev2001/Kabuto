@@ -61,6 +61,11 @@ function shouldPauseBetweenWords(
   return !(index >= listLength - 1 && !loopLesson);
 }
 
+/** Identity of a word that survives renumbering (its `order` changes on reorder). */
+function wordKey(word: VocabWord | undefined) {
+  return word ? `${word.lesson}|${word.kana}|${word.kanji}|${word.meaning}|${word.audioUrl}` : "";
+}
+
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const { wordGapMs, playWordLimit } = useSettings();
   const catalog = useCatalog();
@@ -334,9 +339,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const listId = mode === "queue" ? `queue:${queuePage}:${pageSize}` : `lesson:${lessonId}`;
+  const loadedRef = useRef({ listId: "", index: -1, key: "" });
   useEffect(() => {
-    loadWord(currentWord, shouldPlayRef.current);
-  }, [currentWord, loadWord]);
+    const prev = loadedRef.current;
+    const key = wordKey(currentWord);
+    // Same list edited (reorder/delete) under a fixed index: follow the word that is playing instead of jumping.
+    if (listId === prev.listId && index === prev.index && prev.key && key !== prev.key) {
+      const at = playlist.findIndex((word) => wordKey(word) === prev.key);
+      if (at >= 0) {
+        loadedRef.current = { listId, index: at, key: prev.key };
+        indexRef.current = at;
+        setIndex(at);
+        return;
+      }
+    }
+    loadedRef.current = { listId, index, key };
+    if (key !== prev.key) {
+      loadWord(currentWord, shouldPlayRef.current);
+    }
+  }, [currentWord, index, listId, loadWord, playlist]);
 
   useEffect(() => {
     const onVis = () => {

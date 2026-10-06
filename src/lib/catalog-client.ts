@@ -97,6 +97,15 @@ export async function deleteWordApi(lesson: number, order: number) {
   await readJson<{ ok: boolean }>(res);
 }
 
+export async function reorderWordsApi(lesson: number, orders: number[]) {
+  const res = await fetch("/api/words", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lesson, orders }),
+  });
+  await readJson<{ ok: boolean }>(res);
+}
+
 export async function addLessonImageApi(lesson: number, imageUrl: string) {
   const res = await fetch("/api/lesson-images", {
     method: "POST",
