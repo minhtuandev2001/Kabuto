@@ -25,10 +25,10 @@ export const MAX_WORD_GAP_MS = 5000;
 export const WORD_GAP_STEP_MS = 500;
 export const WORD_GAP_PRESETS = [0, 1000, 1500, 2000, 3000, 5000] as const;
 
-/** Số từ mỗi trang ở tab Phát từ (10–100, bước 10). */
+/** Số từ mỗi trang ở tab Phát từ (10–1000, bước 10; lần đầu dùng app là 100). */
 export const DEFAULT_PLAY_WORD_LIMIT = 100;
 export const MIN_PLAY_WORD_LIMIT = 10;
-export const MAX_PLAY_WORD_LIMIT = 100;
+export const MAX_PLAY_WORD_LIMIT = 1000;
 export const PLAY_WORD_LIMIT_STEP = 10;
 
 export function clampWordGap(ms: number) {
