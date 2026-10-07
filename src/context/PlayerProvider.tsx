@@ -83,6 +83,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const delayTimerRef = useRef<number | null>(null);
   const finishLockRef = useRef(false);
   const hiddenRef = useRef(false);
+  const loadedRef = useRef({ listId: "", index: -1, key: "" });
 
   const [mode, setMode] = useState<PlayMode>("lesson");
   const [lessonId, setLessonId] = useState(1);
@@ -237,32 +238,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [loadWord, warmAround],
   );
 
+  // Load synchronously instead of waiting for the index effect: with the screen off the page can be
+  // suspended before React re-renders, and iOS keeps background audio only if play() runs inside `ended`.
+  const startWord = (list: VocabWord[], wordIndex: number) => {
+    const word = list[wordIndex];
+    indexRef.current = wordIndex;
+    if (word) {
+      lessonIdRef.current = word.lesson;
+      setLessonId(word.lesson);
+    }
+    loadedRef.current.key = wordKey(word);
+    loadWord(word, true);
+    setIndex(wordIndex);
+  };
+
   advanceRef.current = () => {
     const list = currentPlaylist();
     const current = indexRef.current;
     if (current < list.length - 1) {
-      setIndex(current + 1);
-      const nextWord = list[current + 1];
-      if (nextWord) {
-        setLessonId(nextWord.lesson);
-      }
+      startWord(list, current + 1);
       return;
     }
     if (loopRef.current) {
-      setIndex(0);
-      const first = list[0];
-      if (first) {
-        setLessonId(first.lesson);
-      }
+      startWord(list, 0);
       return;
     }
     if (modeRef.current === "lesson") {
       const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
       if (nextLesson != null) {
-        const nextList = catalogRef.current.getWordsForLesson(nextLesson);
-        warmAround(nextList, 0);
-        setLessonId(nextLesson);
-        setIndex(0);
+        startWord(catalogRef.current.getWordsForLesson(nextLesson), 0);
         return;
       }
     }
@@ -340,7 +344,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const listId = mode === "queue" ? `queue:${queuePage}:${pageSize}` : `lesson:${lessonId}`;
-  const loadedRef = useRef({ listId: "", index: -1, key: "" });
   useEffect(() => {
     const prev = loadedRef.current;
     const key = wordKey(currentWord);
