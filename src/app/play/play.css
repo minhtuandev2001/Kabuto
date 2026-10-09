@@ -334,3 +334,30 @@
     opacity: 0;
   }
 }
+
+/* Set by GameScreen while a round runs. */
+html[data-game-focus] .app-tabbar {
+  display: none;
+}
+
+html[data-game-focus] .app-main {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* On-screen keyboard is up (touch typing mode): keep only what is needed to answer. */
+.play-compact .play-art {
+  display: none;
+}
+
+/* The game column is phone-sized; scale it up on large screens instead of leaving it tiny. */
+@media (min-width: 1024px) and (min-height: 680px) {
+  .play-zoom {
+    zoom: 1.2;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 820px) {
+  .play-zoom {
+    zoom: 1.35;
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FocusEvent } from "react";
 import {
   BOSSES,
   buildOptions,
@@ -50,6 +50,7 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
   const [praise, setPraise] = useState<{ id: number; jp: string; vi: string } | null>(null);
   const [hitKey, setHitKey] = useState(0);
   const [boss] = useState(() => BOSSES[Math.floor(Math.random() * BOSSES.length)]!);
+  const [typing, setTyping] = useState(false);
 
   const questionRef = useRef<Question | null>(null);
   const feedbackRef = useRef<Feedback | null>(null);
@@ -239,6 +240,30 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
     }, pause);
   }
 
+  // Hides the bottom tab bar while a round runs: a stray tap there would drop the round.
+  useEffect(() => {
+    document.documentElement.dataset.gameFocus = "";
+    return () => {
+      delete document.documentElement.dataset.gameFocus;
+    };
+  }, []);
+
+  // With the on-screen keyboard up only about half the phone screen is left: drop the artwork and pin the
+  // question to the top so it stays visible next to the input.
+  function onAnswerFocus(event: FocusEvent) {
+    if (!(event.target instanceof HTMLInputElement) || !window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+    setTyping(true);
+    window.setTimeout(() => window.scrollTo({ top: 0 }), 300);
+  }
+
+  function onAnswerBlur(event: FocusEvent) {
+    if (event.target instanceof HTMLInputElement) {
+      setTyping(false);
+    }
+  }
+
   const engine = useRef({ ask, resolve, finish });
   engine.current = { ask, resolve, finish };
 
@@ -334,7 +359,11 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
   ) : null;
 
   return (
-    <div className={`relative mx-auto flex w-full max-w-xl flex-col gap-3 pb-4 ${limit && feedback ? "play-paused" : ""}`}>
+    <div
+      className={`play-zoom relative mx-auto flex w-full max-w-xl flex-col gap-3 pb-4 ${limit && feedback ? "play-paused" : ""} ${
+        typing ? "play-compact" : ""
+      }`}
+    >
       <header className="flex items-center gap-2">
         <button type="button" onClick={exit} className="glass-strong flex h-10 w-10 items-center justify-center rounded-2xl text-[#4A4470]" aria-label="Thoát">
           <X size={18} />
@@ -357,9 +386,11 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
       {game === "sushi" ? (
         <section className="overflow-hidden rounded-[28px] bg-gradient-to-br from-[#FFF4E6] via-[#FFE9EF] to-[#F3EDFF] p-3.5 shadow-[0_10px_22px_rgba(46,42,92,0.08)]">
           <div className="flex items-center gap-3">
-            <Neko mood={mood} moodKey={moodKey} accessory={accessory || "🍣"} size={84} />
+            <div className="play-art">
+              <Neko mood={mood} moodKey={moodKey} accessory={accessory || "🍣"} size={84} />
+            </div>
             <div className="relative min-w-0 flex-1 rounded-[22px] bg-white/90 px-3 py-3 shadow-sm">
-              <span className="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rotate-45 bg-white/90" />
+              <span className="play-art absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 rotate-45 bg-white/90" />
               {question ? <PromptCard question={question} onReplay={replay} /> : null}
             </div>
           </div>
@@ -379,7 +410,9 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
             <div className="min-w-0 flex-1 rounded-[20px] border-4 border-[#C08B5C] bg-[#FFF7EC] px-3 py-3">
               {question ? <PromptCard question={question} onReplay={replay} /> : null}
             </div>
-            <Neko mood={mood} moodKey={moodKey} accessory={accessory || "🔨"} size={70} />
+            <div className="play-art">
+              <Neko mood={mood} moodKey={moodKey} accessory={accessory || "🔨"} size={70} />
+            </div>
           </div>
           {limit && question ? <TimerBar id={question.id} ms={limit} color="bg-[#2F9E55]" /> : null}
         </section>
@@ -387,7 +420,7 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
 
       {game === "ninja" ? (
         <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-b from-[#1E1B4B] to-[#3B2F7A] p-3.5 text-white shadow-[0_14px_26px_rgba(30,27,75,0.35)]">
-          <span className="pointer-events-none absolute right-4 top-3 text-[34px] opacity-90">🌕</span>
+          <span className="play-art pointer-events-none absolute right-4 top-3 text-[34px] opacity-90">🌕</span>
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-white/10">
               <span className={`text-[22px] font-extrabold leading-6 ${timeLeft <= 10 ? "text-[#FCA5A5]" : ""}`}>{timeLeft}</span>
@@ -418,7 +451,7 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
           <p className="mt-0.5 text-right text-[10.5px] font-bold text-white/70">
             HP {bossHp}/{deck.length}
           </p>
-          <div className="relative flex items-end justify-between">
+          <div className="play-art relative flex items-end justify-between">
             <Neko mood={mood} moodKey={moodKey} accessory={accessory || "⚔️"} size={64} />
             <div className="play-bob relative">
               <span key={hitKey} className={`inline-block text-[76px] leading-[84px] ${hitKey ? "play-boss-hit" : ""}`}>
@@ -437,7 +470,9 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
         </section>
       ) : null}
 
-      <div className={dark ? "rounded-[28px] bg-[#2A2363] p-3" : ""}>{answers}</div>
+      <div className={dark ? "rounded-[28px] bg-[#2A2363] p-3" : ""} onFocus={onAnswerFocus} onBlur={onAnswerBlur}>
+        {answers}
+      </div>
 
       {question && feedback ? <AnswerReveal word={question.word} feedback={feedback} dark={dark} /> : null}
 

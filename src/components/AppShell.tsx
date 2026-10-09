@@ -126,7 +126,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       ) : null}
       <div className="flex min-w-0 flex-1 flex-col">
         <main
-          className={`relative z-10 flex min-h-lvh flex-1 flex-col px-5 md:px-6 lg:px-8 ${
+          className={`app-main relative z-10 flex min-h-lvh flex-1 flex-col px-5 md:px-6 lg:px-8 ${
             !showChrome
               ? "pb-[max(1.25rem,env(safe-area-inset-bottom))]"
               : "pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-6"
@@ -139,7 +139,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
         {showChrome ? (
           <div
-            className="fixed inset-x-0 bottom-0 z-30 mx-auto w-full max-w-[460px] md:hidden"
+            className="app-tabbar fixed inset-x-0 bottom-0 z-30 mx-auto w-full max-w-[460px] md:hidden"
             style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
           >
             <MiniPlayer hidden={hideMini} />

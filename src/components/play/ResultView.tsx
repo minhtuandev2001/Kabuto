@@ -43,7 +43,7 @@ export function ResultView({
   }, [result.koban]);
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-3 pb-4">
+    <div className="play-zoom mx-auto flex w-full max-w-xl flex-col gap-3 pb-4">
       <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#A78BFA] via-[#7C5CFC] to-[#5B3FD6] p-5 text-center text-white">
         <div className="flex justify-center">
           <Neko mood={good ? "happy" : "sad"} accessory={accessory} size={110} />
