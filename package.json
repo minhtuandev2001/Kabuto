@@ -11,6 +11,7 @@
     "check:transfer": "tsx scripts/check-transfer.ts",
     "check:lesson-images": "tsx scripts/check-lesson-images.ts",
     "check:reorder": "tsx scripts/check-reorder.ts",
+    "check:play": "tsx scripts/check-play.ts",
     "seed:jlpt-vocab": "tsx --env-file=.env scripts/seed-jlpt-vocab-neon.ts",
     "seed:mimikara-n3": "tsx --env-file=.env scripts/seed-mimikara-n3-neon.ts"
   },

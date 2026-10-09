@@ -27,7 +27,7 @@ export default function SettingsPage() {
         <div className="glass-strong rounded-[28px] p-4 md:p-6">
           <p className="text-[15px] font-extrabold text-[#1E1B4B]">Nghỉ giữa các từ</p>
           <p className="mt-1 text-[12.5px] font-semibold leading-5 text-[#7C7A9C]">
-            Sau khi phát xong một từ, đợi rồi mới sang từ kế. Khi khóa màn hình, app bỏ khoảng nghỉ để nghe không bị đứt.
+            Sau khi phát xong một từ, đợi rồi mới sang từ kế. Khoảng nghỉ vẫn giữ khi khóa màn hình.
           </p>
           <div className="mt-4 flex items-center justify-between">
             <button
