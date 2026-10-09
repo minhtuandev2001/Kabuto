@@ -3,7 +3,6 @@ export const WORD_IMAGE_THUMB = 96;
 export const LESSON_IMAGE_VIEW = 1400;
 export const LESSON_IMAGE_THUMB = 320;
 export const PRELOAD_IMAGE_COUNT = 10;
-export const PRELOAD_AUDIO_COUNT = 3;
 
 /** Encode path segments so kanji filenames / spaces work in <audio src>. */
 export function resolveMediaUrl(url: string) {
@@ -62,25 +61,4 @@ export function preloadImages(urls: Iterable<string>) {
     };
     image.src = resolveMediaUrl(url);
   }
-}
-
-const audioPool: HTMLAudioElement[] = [];
-
-export function preloadAudio(urls: Iterable<string>) {
-  if (typeof window === "undefined") {
-    return;
-  }
-  const unique = [...new Set([...urls].filter(Boolean).map(resolveMediaUrl))].slice(0, PRELOAD_AUDIO_COUNT);
-  unique.forEach((url, slot) => {
-    let audio = audioPool[slot];
-    if (!audio) {
-      audio = new Audio();
-      audio.preload = "auto";
-      audioPool[slot] = audio;
-    }
-    if (audio.src === url || audio.src.endsWith(url)) {
-      return;
-    }
-    audio.src = url;
-  });
 }

@@ -10,8 +10,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { buildTrack, isAudioDecoded, silenceUrl, type TrackSegment } from "@/lib/audio-track";
 import { getHeadline, wordImageSrc } from "@/lib/catalog";
-import { PRELOAD_AUDIO_COUNT, PRELOAD_IMAGE_COUNT, preloadAudio, preloadImages, resolveMediaUrl } from "@/lib/media";
+import { PRELOAD_IMAGE_COUNT, preloadImages } from "@/lib/media";
 import { clampPlayWordLimit, queuePageCount } from "@/lib/theme";
 import type { LessonInfo, VocabWord } from "@/lib/types";
 import { useCatalog } from "./CatalogProvider";
@@ -50,58 +51,76 @@ const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 /** How long a word without playable audio stays on screen before auto-advancing. */
 const NO_AUDIO_HOLD_MS = 1500;
-/** Stop auto-play after this many consecutive audio load failures (e.g. offline). */
-const MAX_FAILED_WORDS = 3;
-const SILENCE_SAMPLE_RATE = 8000;
-const silenceCache = new Map<number, string>();
+/** Words per audio file; every switch to another file is a chance for a locked iPhone to stop playback. */
+const MAX_TRACK_WORDS = 160;
+/** Rendered first when audio is not cached yet, so playback starts quickly; the full track takes over in a gap. */
+const STARTER_WORDS = 5;
+/** Prepare the following file once playback gets this close to the end of the current one. */
+const PREPARE_NEXT_WORDS = 10;
 
-/** A silent WAV of `ms` length, so the gap between words is real playback rather than a timer. */
-function silenceSrc(ms: number) {
-  const cached = silenceCache.get(ms);
-  if (cached) {
-    return cached;
-  }
-  const samples = Math.max(1, Math.round((SILENCE_SAMPLE_RATE * ms) / 1000));
-  const dataBytes = samples * 2;
-  const view = new DataView(new ArrayBuffer(44 + dataBytes));
-  const text = (offset: number, value: string) => {
-    for (let i = 0; i < value.length; i += 1) {
-      view.setUint8(offset + i, value.charCodeAt(i));
-    }
-  };
-  text(0, "RIFF");
-  view.setUint32(4, 36 + dataBytes, true);
-  text(8, "WAVE");
-  text(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, SILENCE_SAMPLE_RATE, true);
-  view.setUint32(28, SILENCE_SAMPLE_RATE * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  text(36, "data");
-  view.setUint32(40, dataBytes, true);
-  const bytes = new Uint8Array(view.buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  }
-  const src = `data:audio/wav;base64,${btoa(binary)}`;
-  silenceCache.set(ms, src);
-  return src;
-}
+/** One playlist: a lesson, or a page of the global queue. */
+type ListSpec = {
+  mode: PlayMode;
+  lesson: number;
+  page: number;
+  listId: string;
+  list: VocabWord[];
+};
 
-function shouldPauseBetweenWords(gapMs: number, listLength: number, index: number, loopLesson: boolean) {
-  if (gapMs <= 0) {
-    return false;
-  }
-  return !(index >= listLength - 1 && !loopLesson);
-}
+/** A stretch [from, to) of a playlist rendered into one audio file. */
+type Track = ListSpec & {
+  url: string;
+  sig: string;
+  gapMs: number;
+  from: number;
+  to: number;
+  segments: TrackSegment[];
+  playable: boolean;
+};
+
+type NextTrack = {
+  promise: Promise<Track | null>;
+  track: Track | null;
+  /** Playlist index to start from in the next track. */
+  startIndex: number;
+  /** The full version of a starter track: may replace it mid-playback, during a gap. */
+  upgrade: boolean;
+};
 
 /** Identity of a word that survives renumbering (its `order` changes on reorder). */
 function wordKey(word: VocabWord | undefined) {
   return word ? `${word.lesson}|${word.kana}|${word.kanji}|${word.meaning}|${word.audioUrl}` : "";
+}
+
+function listSignature(list: VocabWord[]) {
+  return list.map(wordKey).join("\n");
+}
+
+/** Browsers report a seek to a word's start a hair earlier, which would otherwise read as the previous word. */
+const SEEK_TOLERANCE_S = 0.03;
+
+function segmentIndexAt(track: Track, at: number) {
+  const { segments } = track;
+  const time = at + SEEK_TOLERANCE_S;
+  let low = 0;
+  let high = segments.length - 1;
+  while (low < high) {
+    const mid = (low + high + 1) >> 1;
+    if (segments[mid].start <= time) {
+      low = mid;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return low;
+}
+
+function covers(track: Track, index: number) {
+  return index >= track.from && index < track.to;
+}
+
+function offsetOf(track: Track, wordIndex: number) {
+  return track.segments[wordIndex - track.from]?.start ?? 0;
 }
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
@@ -118,12 +137,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const gapRef = useRef(wordGapMs);
   const pageSizeRef = useRef(clampPlayWordLimit(playWordLimit));
   const queuePageRef = useRef(0);
-  const delayTimerRef = useRef<number | null>(null);
-  /** True while the audio element is playing the silent gap (or its timer fallback) between words. */
-  const gapActiveRef = useRef(false);
-  const failStreakRef = useRef(0);
-  const finishLockRef = useRef(false);
-  const loadedRef = useRef({ listId: "", index: -1, key: "" });
+  const trackRef = useRef<Track | null>(null);
+  const nextRef = useRef<NextTrack | null>(null);
+  /** Bumped whenever playback is redirected; builds started under an older value are dropped. */
+  const genRef = useRef(0);
+  /** True while looping silence: a track is being prepared. */
+  const holdingRef = useRef(false);
+  const pendingSeekRef = useRef<number | null>(null);
+  const prepareNextRef = useRef<(track: Track) => void>(() => undefined);
 
   const [mode, setMode] = useState<PlayMode>("lesson");
   const [lessonId, setLessonId] = useState(1);
@@ -139,12 +160,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const pageSize = clampPlayWordLimit(playWordLimit);
   const pages = queuePageCount(catalog.allWords.length, pageSize);
 
-  modeRef.current = mode;
-  lessonIdRef.current = lessonId;
-  indexRef.current = index;
   loopRef.current = loopLesson;
   gapRef.current = wordGapMs;
-  queuePageRef.current = queuePage;
 
   const playlist = useMemo(() => {
     if (mode !== "queue") {
@@ -156,14 +173,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const currentWord = playlist[index];
   const lesson = catalog.getLesson(currentWord?.lesson ?? lessonId);
   const queueGlobalNumber = mode === "queue" ? queuePage * pageSize + index + 1 : index + 1;
-  const clearDelay = useCallback(() => {
-    if (delayTimerRef.current != null) {
-      window.clearTimeout(delayTimerRef.current);
-      delayTimerRef.current = null;
-    }
-    gapActiveRef.current = false;
-    setIsWaiting(false);
-  }, []);
 
   const syncMediaSession = useCallback((word: VocabWord) => {
     if (!("mediaSession" in navigator)) {
@@ -182,273 +191,470 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const currentPlaylist = useCallback(() => {
-    const cat = catalogRef.current;
-    if (modeRef.current !== "queue") {
-      return cat.getWordsForLesson(lessonIdRef.current);
-    }
-    const size = pageSizeRef.current;
-    const start = queuePageRef.current * size;
-    return cat.allWords.slice(start, start + size);
-  }, []);
-
-  const warmAround = useCallback((list: VocabWord[], wordIndex: number) => {
-    const current = list[wordIndex];
+  const warmImages = useCallback((list: VocabWord[], wordIndex: number) => {
     const images: string[] = [];
-    if (current) {
-      images.push(wordImageSrc(current));
-    }
-    const previous = list[wordIndex - 1];
-    if (previous) {
-      images.push(wordImageSrc(previous));
-    }
-    for (let i = 1; i <= PRELOAD_IMAGE_COUNT; i += 1) {
-      const ahead = list[wordIndex + i];
-      if (ahead) {
-        images.push(wordImageSrc(ahead));
+    for (let i = -1; i <= PRELOAD_IMAGE_COUNT; i += 1) {
+      const word = list[wordIndex + i];
+      if (word) {
+        images.push(wordImageSrc(word));
       }
     }
     preloadImages(images);
-
-    const audios: string[] = [];
-    if (current?.audioUrl) {
-      audios.push(current.audioUrl);
-    }
-    for (let i = 1; i < PRELOAD_AUDIO_COUNT; i += 1) {
-      const ahead = list[wordIndex + i];
-      if (ahead?.audioUrl) {
-        audios.push(ahead.audioUrl);
-      }
-    }
-    preloadAudio(audios);
   }, []);
 
-  const advanceRef = useRef<() => void>(() => undefined);
-  const retreatRef = useRef<() => void>(() => undefined);
+  const lessonSpec = useCallback((lessonNumber: number): ListSpec => {
+    return {
+      mode: "lesson",
+      lesson: lessonNumber,
+      page: 0,
+      listId: `lesson:${lessonNumber}`,
+      list: catalogRef.current.getWordsForLesson(lessonNumber),
+    };
+  }, []);
 
-  const runGapTimer = useCallback((ms: number) => {
-    if (delayTimerRef.current != null) {
+  const queueSpec = useCallback((page: number): ListSpec => {
+    const size = pageSizeRef.current;
+    return {
+      mode: "queue",
+      lesson: lessonIdRef.current,
+      page,
+      listId: `queue:${page}:${size}`,
+      list: catalogRef.current.allWords.slice(page * size, page * size + size),
+    };
+  }, []);
+
+  const currentSpec = useCallback(
+    () => (modeRef.current === "queue" ? queueSpec(queuePageRef.current) : lessonSpec(lessonIdRef.current)),
+    [lessonSpec, queueSpec],
+  );
+
+  const nextLessonWith = useCallback((from: number, step: 1 | -1) => {
+    const cat = catalogRef.current;
+    let lessonNumber = cat.getAdjacentLesson(from, step);
+    while (lessonNumber != null && cat.getWordsForLesson(lessonNumber).length === 0) {
+      lessonNumber = cat.getAdjacentLesson(lessonNumber, step);
+    }
+    return lessonNumber;
+  }, []);
+
+  /** Points the UI (and lock screen) at a word. */
+  const showWord = useCallback(
+    (spec: ListSpec, wordIndex: number, force = false) => {
+      const word = spec.list[wordIndex];
+      const sameSpot =
+        modeRef.current === spec.mode &&
+        indexRef.current === wordIndex &&
+        (spec.mode === "queue" ? queuePageRef.current === spec.page : lessonIdRef.current === spec.lesson);
+      modeRef.current = spec.mode;
+      setMode(spec.mode);
+      if (spec.mode === "queue") {
+        queuePageRef.current = spec.page;
+        setQueuePageState(spec.page);
+      }
+      const lessonNumber = spec.mode === "queue" ? (word?.lesson ?? lessonIdRef.current) : spec.lesson;
+      lessonIdRef.current = lessonNumber;
+      setLessonId(lessonNumber);
+      indexRef.current = wordIndex;
+      setIndex(wordIndex);
+      if ((force || !sameSpot) && word) {
+        syncMediaSession(word);
+        warmImages(spec.list, wordIndex);
+      }
+    },
+    [syncMediaSession, warmImages],
+  );
+
+  const releaseNext = useCallback(() => {
+    const pending = nextRef.current;
+    nextRef.current = null;
+    if (pending?.track) {
+      URL.revokeObjectURL(pending.track.url);
+    }
+  }, []);
+
+  const dropTrack = useCallback(() => {
+    genRef.current += 1;
+    releaseNext();
+    const track = trackRef.current;
+    trackRef.current = null;
+    holdingRef.current = false;
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.loop = false;
+      audio.removeAttribute("src");
+      audio.load();
+    }
+    if (track) {
+      URL.revokeObjectURL(track.url);
+    }
+    setIsLoading(false);
+    setIsWaiting(false);
+  }, [releaseNext]);
+
+  const stopPlayback = useCallback(() => {
+    shouldPlayRef.current = false;
+    setIsPlaying(false);
+    setIsWaiting(false);
+    setIsLoading(false);
+  }, []);
+
+  const startAudio = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) {
       return;
     }
-    delayTimerRef.current = window.setTimeout(() => {
-      delayTimerRef.current = null;
-      gapActiveRef.current = false;
-      setIsWaiting(false);
-      advanceRef.current();
-    }, ms);
+    audio.play().catch((error: unknown) => {
+      // AbortError only means another source replaced this one.
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        stopPlayback();
+      }
+    });
+  }, [stopPlayback]);
+
+  /** Loops silence until the next track is ready; play() must run now, inside the tap or `ended`, for iOS. */
+  const hold = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+    holdingRef.current = true;
+    setIsLoading(true);
+    setIsWaiting(false);
+    audio.loop = true;
+    audio.src = silenceUrl();
+    startAudio();
+  }, [startAudio]);
+
+  /** Before metadata loads a seek is ignored, so it waits for `loadedmetadata`. */
+  const seekTo = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+    if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      pendingSeekRef.current = null;
+      audio.currentTime = time;
+    } else {
+      pendingSeekRef.current = time;
+    }
   }, []);
 
-  // A setTimeout gap gets throttled or frozen once the screen is off, and iOS drops the audio session
-  // when nothing plays. Playing silence keeps the page "playing", and its `ended` starts the next word.
-  const beginGap = useCallback(
-    (ms: number) => {
-      gapActiveRef.current = true;
-      setIsWaiting(true);
+  const makeTrack = useCallback(
+    async (spec: ListSpec, from: number, to: number): Promise<Track | null> => {
+      const gen = genRef.current;
+      const gapMs = gapRef.current;
+      const trailingGap =
+        to < spec.list.length || loopRef.current || (spec.mode === "lesson" && nextLessonWith(spec.lesson, 1) != null);
+      const built = await buildTrack(spec.list.slice(from, to), {
+        gapMs,
+        holdMs: NO_AUDIO_HOLD_MS,
+        trailingGap,
+        cancelled: () => gen !== genRef.current,
+      });
+      if (!built) {
+        return null;
+      }
+      if (gen !== genRef.current) {
+        URL.revokeObjectURL(built.url);
+        return null;
+      }
+      return {
+        ...spec,
+        url: built.url,
+        sig: listSignature(spec.list),
+        gapMs,
+        from,
+        to,
+        segments: built.segments,
+        playable: built.withAudio === 0 || built.failed < built.withAudio,
+      };
+    },
+    [nextLessonWith],
+  );
+
+  const wholeLoop = useCallback(
+    (track: Track) => loopRef.current && track.from === 0 && track.to === track.list.length,
+    [],
+  );
+
+  const matches = useCallback(
+    (track: Track, spec: ListSpec) =>
+      track.listId === spec.listId &&
+      track.gapMs === gapRef.current &&
+      track.sig === listSignature(spec.list),
+    [],
+  );
+
+  const install = useCallback(
+    (track: Track, offset: number, next: NextTrack | null) => {
       const audio = audioRef.current;
       if (!audio) {
-        runGapTimer(ms);
         return;
       }
-      audio.src = silenceSrc(ms);
-      audio.play().catch(() => {
-        if (gapActiveRef.current) {
-          runGapTimer(ms);
+      const previous = trackRef.current;
+      trackRef.current = track;
+      nextRef.current = next;
+      holdingRef.current = false;
+      pendingSeekRef.current = offset > 0 ? offset : null;
+      audio.loop = wholeLoop(track);
+      audio.src = track.url;
+      if (shouldPlayRef.current) {
+        startAudio();
+      }
+      if (previous && previous !== track) {
+        URL.revokeObjectURL(previous.url);
+      }
+      setIsLoading(false);
+      showWord(track, track.from + segmentIndexAt(track, offset));
+      if (document.hidden && !next) {
+        prepareNextRef.current(track);
+      }
+    },
+    [showWord, startAudio, wholeLoop],
+  );
+
+  /** Starts building whatever plays after `track` ends (rest of the page, the loop, or the next lesson). */
+  const prepareNext = useCallback(
+    (track: Track) => {
+      if (nextRef.current || trackRef.current !== track || wholeLoop(track)) {
+        return;
+      }
+      let spec: ListSpec = track;
+      let start = track.to;
+      if (track.to >= track.list.length) {
+        start = 0;
+        if (!loopRef.current) {
+          const nextLesson = track.mode === "lesson" ? nextLessonWith(track.lesson, 1) : null;
+          if (nextLesson == null) {
+            return;
+          }
+          spec = lessonSpec(nextLesson);
+        }
+      }
+      const entry: NextTrack = {
+        promise: makeTrack(spec, start, Math.min(spec.list.length, start + MAX_TRACK_WORDS)),
+        track: null,
+        startIndex: start,
+        upgrade: false,
+      };
+      nextRef.current = entry;
+      void entry.promise.then((built) => {
+        if (nextRef.current === entry) {
+          entry.track = built;
+        } else if (built) {
+          URL.revokeObjectURL(built.url);
         }
       });
     },
-    [runGapTimer],
+    [lessonSpec, makeTrack, nextLessonWith, wholeLoop],
   );
+  prepareNextRef.current = prepareNext;
 
-  const loadWord = useCallback(
-    (word: VocabWord | undefined, play: boolean) => {
-      finishLockRef.current = true;
-      clearDelay();
+  /** Moves to a word: a seek when it is already in the loaded file, otherwise a new file is built. */
+  const go = useCallback(
+    (spec: ListSpec, wordIndex: number, autoplay: boolean) => {
+      const audio = audioRef.current;
+      const safeIndex = Math.max(0, Math.min(wordIndex, Math.max(0, spec.list.length - 1)));
+      showWord(spec, safeIndex, true);
       setPosition(0);
       setDuration(1);
-      warmAround(currentPlaylist(), indexRef.current);
-      const audio = audioRef.current;
+      setIsWaiting(false);
+      shouldPlayRef.current = autoplay && spec.list.length > 0;
+      setIsPlaying(shouldPlayRef.current);
       if (!audio) {
         return;
       }
-      if (!word?.audioUrl) {
-        audio.pause();
-        setIsLoading(false);
-        if (word && play) {
-          shouldPlayRef.current = true;
-          syncMediaSession(word);
-          beginGap(Math.max(gapRef.current, NO_AUDIO_HOLD_MS));
+      const track = trackRef.current;
+      if (track && !holdingRef.current && matches(track, spec) && covers(track, safeIndex)) {
+        seekTo(offsetOf(track, safeIndex));
+        if (shouldPlayRef.current) {
+          startAudio();
+        } else {
+          audio.pause();
+        }
+        return;
+      }
+      dropTrack();
+      if (!shouldPlayRef.current) {
+        return;
+      }
+      hold();
+      const length = spec.list.length;
+      const from = length <= MAX_TRACK_WORDS ? 0 : safeIndex;
+      const to = Math.min(length, from + MAX_TRACK_WORDS);
+      const quick = to - safeIndex <= STARTER_WORDS || spec.list.slice(from, to).every(isAudioDecoded);
+      const starterTo = quick ? to : Math.min(length, safeIndex + STARTER_WORDS);
+      void makeTrack(spec, quick ? from : safeIndex, starterTo).then((starter) => {
+        if (!starter) {
           return;
         }
-        audio.removeAttribute("src");
-        setIsPlaying(false);
-        return;
-      }
-      setIsLoading(true);
-      audio.pause();
-      audio.src = resolveMediaUrl(word.audioUrl);
-      audio.load();
-      syncMediaSession(word);
-      if (play) {
-        shouldPlayRef.current = true;
-        const start = audio.play();
-        if (start) {
-          start
-            .then(() => setIsPlaying(true))
-            .catch(() => setIsPlaying(false));
+        if (!starter.playable) {
+          URL.revokeObjectURL(starter.url);
+          dropTrack();
+          stopPlayback();
+          return;
         }
-      } else {
-        setIsPlaying(false);
-      }
+        let upgrade: NextTrack | null = null;
+        if (!quick) {
+          const entry: NextTrack = { promise: makeTrack(spec, from, to), track: null, startIndex: starterTo, upgrade: true };
+          void entry.promise.then((built) => {
+            if (nextRef.current === entry) {
+              entry.track = built;
+            } else if (built) {
+              URL.revokeObjectURL(built.url);
+            }
+          });
+          upgrade = entry;
+        }
+        install(starter, offsetOf(starter, safeIndex), upgrade);
+      });
     },
-    [beginGap, clearDelay, currentPlaylist, syncMediaSession, warmAround],
+    [dropTrack, hold, install, makeTrack, matches, seekTo, showWord, startAudio, stopPlayback],
   );
 
-  const goToIndex = useCallback(
-    (wordIndex: number, list: VocabWord[]) => {
-      const word = list[wordIndex];
-      if (wordIndex === indexRef.current && (modeRef.current === "queue" || word?.lesson === lessonIdRef.current)) {
-        loadWord(word, shouldPlayRef.current);
-        return;
-      }
-      warmAround(list, wordIndex);
-      if (word) {
-        setLessonId(word.lesson);
-      }
-      setIndex(wordIndex);
-    },
-    [loadWord, warmAround],
-  );
-
-  // Load synchronously instead of waiting for the index effect: with the screen off the page can be
-  // suspended before React re-renders, and iOS keeps background audio only if play() runs inside `ended`.
-  const startWord = (list: VocabWord[], wordIndex: number) => {
-    const word = list[wordIndex];
-    indexRef.current = wordIndex;
-    if (word) {
-      lessonIdRef.current = word.lesson;
-      setLessonId(word.lesson);
+  /** Continues into the prepared track when the current file ends. */
+  const playNext = useCallback(() => {
+    const current = trackRef.current;
+    if (current && !nextRef.current) {
+      prepareNext(current);
     }
-    loadedRef.current.key = wordKey(word);
-    loadWord(word, true);
-    setIndex(wordIndex);
-  };
-
-  advanceRef.current = () => {
-    const list = currentPlaylist();
-    const current = indexRef.current;
-    if (current < list.length - 1) {
-      startWord(list, current + 1);
+    const pending = nextRef.current;
+    if (!pending) {
+      stopPlayback();
       return;
     }
-    if (loopRef.current) {
-      startWord(list, 0);
-      return;
-    }
-    if (modeRef.current === "lesson") {
-      const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
-      if (nextLesson != null) {
-        startWord(catalogRef.current.getWordsForLesson(nextLesson), 0);
+    const start = (track: Track | null) => {
+      if (nextRef.current !== pending) {
         return;
       }
+      nextRef.current = null;
+      if (!track?.playable) {
+        if (track) {
+          URL.revokeObjectURL(track.url);
+        }
+        dropTrack();
+        stopPlayback();
+        return;
+      }
+      install(track, offsetOf(track, pending.startIndex), null);
+    };
+    if (pending.track) {
+      start(pending.track);
+      return;
     }
+    // Not built yet (slow network): keep the audio session alive with silence meanwhile.
+    hold();
+    void pending.promise.then(start);
+  }, [dropTrack, hold, install, prepareNext, stopPlayback]);
+
+  const pause = useCallback(() => {
     shouldPlayRef.current = false;
     setIsPlaying(false);
-  };
+    setIsWaiting(false);
+    if (holdingRef.current) {
+      dropTrack();
+      return;
+    }
+    audioRef.current?.pause();
+  }, [dropTrack]);
 
-  retreatRef.current = () => {
-    const list = currentPlaylist();
-    const current = indexRef.current;
-    if (current > 0) {
-      startWord(list, current - 1);
-      return;
-    }
-    if (loopRef.current) {
-      startWord(list, Math.max(0, list.length - 1));
-      return;
-    }
-    if (modeRef.current === "lesson") {
-      const prevLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, -1);
-      if (prevLesson != null) {
-        const prevWords = catalogRef.current.getWordsForLesson(prevLesson);
-        startWord(prevWords, Math.max(0, prevWords.length - 1));
+  const resume = useCallback(() => {
+    const audio = audioRef.current;
+    const track = trackRef.current;
+    const spec = currentSpec();
+    if (audio && track && !holdingRef.current && matches(track, spec) && covers(track, indexRef.current)) {
+      if (audio.ended) {
+        seekTo(offsetOf(track, indexRef.current));
       }
+      shouldPlayRef.current = true;
+      setIsPlaying(true);
+      startAudio();
+      return;
     }
-  };
+    go(spec, indexRef.current, true);
+  }, [currentSpec, go, matches, seekTo, startAudio]);
 
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
     audioRef.current = audio;
+    const session = (navigator as Navigator & { audioSession?: { type: string } }).audioSession;
+    if (session) {
+      session.type = "playback";
+    }
 
     const onLoaded = () => {
-      finishLockRef.current = false;
-      if (!gapActiveRef.current) {
-        setDuration(Math.max(1, audio.duration * 1000 || 1));
-      }
-      setIsLoading(false);
-      if (shouldPlayRef.current) {
-        audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      const seek = pendingSeekRef.current;
+      pendingSeekRef.current = null;
+      if (seek != null && !holdingRef.current) {
+        audio.currentTime = seek;
       }
     };
     const onTime = () => {
-      if (!gapActiveRef.current) {
-        setPosition(audio.currentTime * 1000);
+      const track = trackRef.current;
+      if (!track || holdingRef.current || pendingSeekRef.current != null) {
+        return;
+      }
+      const time = audio.currentTime;
+      const at = segmentIndexAt(track, time);
+      const segment = track.segments[at];
+      const wordIndex = track.from + at;
+      if (wordIndex !== indexRef.current) {
+        showWord(track, wordIndex);
+      }
+      const inGap = time >= segment.end;
+      setIsWaiting(inGap && !audio.paused);
+      setPosition(Math.max(0, Math.min(time, segment.end) - segment.start) * 1000);
+      setDuration(Math.max(1, (segment.end - segment.start) * 1000));
+
+      const pending = nextRef.current;
+      if (pending?.upgrade && pending.track && inGap && segment.next - time > 0.15 && !audio.paused) {
+        const full = pending.track;
+        nextRef.current = null;
+        install(full, full.segments[wordIndex - full.from].end + (time - segment.end), null);
+        return;
+      }
+      if (!pending && track.to - wordIndex <= PREPARE_NEXT_WORDS) {
+        prepareNext(track);
       }
     };
     const onPlay = () => {
-      finishLockRef.current = false;
-      if (!gapActiveRef.current) {
-        failStreakRef.current = 0;
+      if (shouldPlayRef.current) {
+        setIsPlaying(true);
       }
-      setIsPlaying(true);
-      setIsLoading(false);
+      if ("mediaSession" in navigator) {
+        navigator.mediaSession.playbackState = "playing";
+      }
     };
     const onPause = () => {
-      if (!gapActiveRef.current) {
-        setIsPlaying(false);
+      if ("mediaSession" in navigator && !shouldPlayRef.current) {
+        navigator.mediaSession.playbackState = "paused";
       }
+      // Events arrive async: when we swap sources, play() has already run again by now.
+      if (audio.ended || !audio.paused || holdingRef.current) {
+        return;
+      }
+      // Paused from outside (phone call, Siri, headphones unplugged).
+      shouldPlayRef.current = false;
+      setIsPlaying(false);
+      setIsWaiting(false);
     };
     const onEnded = () => {
-      if (gapActiveRef.current) {
-        gapActiveRef.current = false;
-        setIsWaiting(false);
-        advanceRef.current();
+      if (holdingRef.current || !trackRef.current) {
         return;
       }
-      if (finishLockRef.current) {
-        return;
-      }
-      finishLockRef.current = true;
-      setIsPlaying(false);
-      shouldPlayRef.current = true;
-      const list = currentPlaylist();
-      if (!shouldPauseBetweenWords(gapRef.current, list.length, indexRef.current, loopRef.current)) {
-        advanceRef.current();
-        return;
-      }
-      beginGap(gapRef.current);
-    };
-    // Without this a word whose audio fails to load (bad URL, flaky network while asleep) stalls playback for good.
-    const onError = () => {
-      if (gapActiveRef.current) {
-        runGapTimer(gapRef.current);
-        return;
-      }
-      if (!audio.getAttribute("src")) {
-        return;
-      }
-      setIsLoading(false);
       if (!shouldPlayRef.current) {
-        setIsPlaying(false);
         return;
       }
-      failStreakRef.current += 1;
-      if (failStreakRef.current >= MAX_FAILED_WORDS) {
-        shouldPlayRef.current = false;
-        setIsPlaying(false);
+      playNext();
+    };
+    const onError = () => {
+      if (!audio.getAttribute("src") || holdingRef.current) {
         return;
       }
-      beginGap(Math.max(gapRef.current, NO_AUDIO_HOLD_MS));
+      dropTrack();
+      stopPlayback();
     };
 
     audio.addEventListener("loadedmetadata", onLoaded);
@@ -468,131 +674,66 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       audio.removeEventListener("error", onError);
       audioRef.current = null;
     };
-  }, [beginGap, currentPlaylist, runGapTimer]);
+  }, [dropTrack, install, playNext, prepareNext, showWord, stopPlayback]);
 
-  const listId = mode === "queue" ? `queue:${queuePage}:${pageSize}` : `lesson:${lessonId}`;
-  useEffect(() => {
-    const prev = loadedRef.current;
-    const key = wordKey(currentWord);
-    // Same list edited (reorder/delete) under a fixed index: follow the word that is playing instead of jumping.
-    if (listId === prev.listId && index === prev.index && prev.key && key !== prev.key) {
-      const at = playlist.findIndex((word) => wordKey(word) === prev.key);
-      if (at >= 0) {
-        loadedRef.current = { listId, index: at, key: prev.key };
-        indexRef.current = at;
-        setIndex(at);
-        return;
-      }
-    }
-    loadedRef.current = { listId, index, key };
-    if (key !== prev.key) {
-      loadWord(currentWord, shouldPlayRef.current);
-    }
-  }, [currentWord, index, listId, loadWord, playlist]);
-
-  // Only the timer fallback (silence failed to play) is left here; a frozen background timer would stall playback.
+  // Going to the background is the last reliable moment to fetch what plays after this file.
   useEffect(() => {
     const onVis = () => {
-      if (document.hidden && delayTimerRef.current != null) {
-        clearDelay();
-        if (shouldPlayRef.current) {
-          advanceRef.current();
-        }
+      const track = trackRef.current;
+      if (document.hidden && track && shouldPlayRef.current) {
+        prepareNext(track);
       }
     };
     document.addEventListener("visibilitychange", onVis);
     return () => document.removeEventListener("visibilitychange", onVis);
-  }, [clearDelay]);
+  }, [prepareNext]);
 
+  // The rendered file bakes in the gap and the word list: rebuild it when either changes.
+  const listId = mode === "queue" ? `queue:${queuePage}:${pageSize}` : `lesson:${lessonId}`;
   useEffect(() => {
-    if (!("mediaSession" in navigator)) {
+    const track = trackRef.current;
+    if (!track || holdingRef.current || track.listId !== listId) {
       return;
     }
-    navigator.mediaSession.setActionHandler("play", () => {
-      shouldPlayRef.current = true;
-      audioRef.current?.play().catch(() => undefined);
-    });
-    navigator.mediaSession.setActionHandler("pause", () => {
-      shouldPlayRef.current = false;
-      if (gapActiveRef.current) {
-        // Put the current word back on the element so "play" replays it instead of finishing the silence.
-        loadWord(currentPlaylist()[indexRef.current], false);
-        return;
-      }
-      clearDelay();
-      audioRef.current?.pause();
-    });
-    navigator.mediaSession.setActionHandler("nexttrack", () => {
-      shouldPlayRef.current = true;
-      clearDelay();
-      advanceRef.current();
-    });
-    navigator.mediaSession.setActionHandler("previoustrack", () => {
-      shouldPlayRef.current = true;
-      clearDelay();
-      retreatRef.current();
-    });
-    return () => {
-      navigator.mediaSession.setActionHandler("play", null);
-      navigator.mediaSession.setActionHandler("pause", null);
-      navigator.mediaSession.setActionHandler("nexttrack", null);
-      navigator.mediaSession.setActionHandler("previoustrack", null);
-    };
-  }, [clearDelay, currentPlaylist, loadWord]);
+    const spec = currentSpec();
+    if (matches(track, spec)) {
+      return;
+    }
+    if (!shouldPlayRef.current) {
+      dropTrack();
+      return;
+    }
+    const playingKey = wordKey(track.list[indexRef.current]);
+    const at = spec.list.findIndex((word) => wordKey(word) === playingKey);
+    go(spec, at >= 0 ? at : indexRef.current, true);
+  }, [currentSpec, dropTrack, go, listId, matches, playlist, wordGapMs]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    const audio = audioRef.current;
+    if (!track || !audio || holdingRef.current) {
+      return;
+    }
+    audio.loop = wholeLoop(track);
+    if (!nextRef.current?.upgrade) {
+      releaseNext();
+    }
+  }, [loopLesson, releaseNext, wholeLoop]);
 
   const playLesson = useCallback(
     (nextLesson: number, wordIndex = 0, autoplay = true) => {
-      clearDelay();
-      const sameSpot =
-        modeRef.current === "lesson" && nextLesson === lessonIdRef.current && wordIndex === indexRef.current;
-      modeRef.current = "lesson";
-      setMode("lesson");
-      shouldPlayRef.current = autoplay;
-      const list = catalogRef.current.getWordsForLesson(nextLesson);
-      warmAround(list, wordIndex);
-      if (sameSpot) {
-        loadWord(list[wordIndex], autoplay);
-        return;
-      }
-      setLessonId(nextLesson);
-      setIndex(wordIndex);
-      setIsPlaying(autoplay);
+      go(lessonSpec(nextLesson), wordIndex, autoplay);
     },
-    [clearDelay, loadWord, warmAround],
+    [go, lessonSpec],
   );
 
   const playQueue = useCallback(
     (wordIndex = 0, autoplay = true, page = queuePageRef.current) => {
-      clearDelay();
-      const size = pageSizeRef.current;
       const total = catalogRef.current.allWords.length;
-      const maxPage = Math.max(0, queuePageCount(total, size) - 1);
-      const safePage = Math.max(0, Math.min(page, maxPage));
-      const start = safePage * size;
-      const list = catalogRef.current.allWords.slice(start, start + size);
-      const safeIndex = Math.max(0, Math.min(wordIndex, Math.max(0, list.length - 1)));
-      const sameSpot =
-        modeRef.current === "queue" &&
-        safePage === queuePageRef.current &&
-        safeIndex === indexRef.current;
-      modeRef.current = "queue";
-      setMode("queue");
-      queuePageRef.current = safePage;
-      setQueuePageState(safePage);
-      shouldPlayRef.current = autoplay;
-      warmAround(list, safeIndex);
-      const word = list[safeIndex];
-      if (sameSpot) {
-        loadWord(word, autoplay);
-        return;
-      }
-      if (word) {
-        setLessonId(word.lesson);
-      }
-      setIndex(safeIndex);
-      setIsPlaying(autoplay);
+      const maxPage = Math.max(0, queuePageCount(total, pageSizeRef.current) - 1);
+      go(queueSpec(Math.max(0, Math.min(page, maxPage))), wordIndex, autoplay);
     },
-    [clearDelay, loadWord, warmAround],
+    [go, queueSpec],
   );
 
   const setQueuePage = useCallback(
@@ -611,100 +752,75 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
     if (modeRef.current === "queue") {
       const global = queuePageRef.current * prevSize + indexRef.current;
-      const nextPage = Math.floor(global / nextSize);
-      const nextIndex = global % nextSize;
       pageSizeRef.current = nextSize;
-      playQueue(nextIndex, shouldPlayRef.current, nextPage);
+      playQueue(global % nextSize, shouldPlayRef.current, Math.floor(global / nextSize));
       return;
     }
     pageSizeRef.current = nextSize;
   }, [playQueue, playWordLimit]);
 
   const togglePlay = useCallback(() => {
-    if (gapActiveRef.current) {
-      shouldPlayRef.current = false;
-      loadWord(currentWord, false);
+    if (shouldPlayRef.current) {
+      pause();
       return;
     }
-    const audio = audioRef.current;
-    if (!audio || !currentWord?.audioUrl) {
-      shouldPlayRef.current = true;
-      loadWord(currentWord, true);
-      return;
-    }
-    if (!audio.paused) {
-      shouldPlayRef.current = false;
-      audio.pause();
-      setIsPlaying(false);
-      return;
-    }
-    shouldPlayRef.current = true;
-    audio.play().then(() => setIsPlaying(true)).catch(() => loadWord(currentWord, true));
-  }, [currentWord, loadWord]);
+    resume();
+  }, [pause, resume]);
+
   const next = useCallback(() => {
-    clearDelay();
-    shouldPlayRef.current = true;
-    const list = currentPlaylist();
-    if (indexRef.current < list.length - 1) {
-      const nextIndex = indexRef.current + 1;
-      setIndex(nextIndex);
-      const word = list[nextIndex];
-      if (word) {
-        setLessonId(word.lesson);
-      }
+    const spec = currentSpec();
+    const current = indexRef.current;
+    if (current < spec.list.length - 1) {
+      go(spec, current + 1, true);
       return;
     }
     if (loopRef.current) {
-      setIndex(0);
-      const first = list[0];
-      if (first) {
-        setLessonId(first.lesson);
-      }
+      go(spec, 0, true);
       return;
     }
-    if (modeRef.current === "lesson") {
-      const nextLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, 1);
+    if (spec.mode === "lesson") {
+      const nextLesson = nextLessonWith(spec.lesson, 1);
       if (nextLesson != null) {
-        goToIndex(0, catalogRef.current.getWordsForLesson(nextLesson));
-        setLessonId(nextLesson);
-        setIndex(0);
+        go(lessonSpec(nextLesson), 0, true);
       }
     }
-  }, [clearDelay, currentPlaylist, goToIndex]);
+  }, [currentSpec, go, lessonSpec, nextLessonWith]);
 
   const prev = useCallback(() => {
-    clearDelay();
-    shouldPlayRef.current = true;
-    const list = currentPlaylist();
-    if (indexRef.current > 0) {
-      const prevIndex = indexRef.current - 1;
-      setIndex(prevIndex);
-      const word = list[prevIndex];
-      if (word) {
-        setLessonId(word.lesson);
-      }
+    const spec = currentSpec();
+    const current = indexRef.current;
+    if (current > 0) {
+      go(spec, current - 1, true);
       return;
     }
     if (loopRef.current) {
-      const last = Math.max(0, list.length - 1);
-      setIndex(last);
-      const word = list[last];
-      if (word) {
-        setLessonId(word.lesson);
-      }
+      go(spec, Math.max(0, spec.list.length - 1), true);
       return;
     }
-    if (modeRef.current === "lesson") {
-      const prevLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, -1);
+    if (spec.mode === "lesson") {
+      const prevLesson = nextLessonWith(spec.lesson, -1);
       if (prevLesson != null) {
-        const prevWords = catalogRef.current.getWordsForLesson(prevLesson);
-        const last = Math.max(0, prevWords.length - 1);
-        goToIndex(last, prevWords);
-        setLessonId(prevLesson);
-        setIndex(last);
+        const prevSpec = lessonSpec(prevLesson);
+        go(prevSpec, Math.max(0, prevSpec.list.length - 1), true);
       }
     }
-  }, [clearDelay, currentPlaylist, goToIndex]);
+  }, [currentSpec, go, lessonSpec, nextLessonWith]);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) {
+      return;
+    }
+    navigator.mediaSession.setActionHandler("play", resume);
+    navigator.mediaSession.setActionHandler("pause", pause);
+    navigator.mediaSession.setActionHandler("nexttrack", next);
+    navigator.mediaSession.setActionHandler("previoustrack", prev);
+    return () => {
+      navigator.mediaSession.setActionHandler("play", null);
+      navigator.mediaSession.setActionHandler("pause", null);
+      navigator.mediaSession.setActionHandler("nexttrack", null);
+      navigator.mediaSession.setActionHandler("previoustrack", null);
+    };
+  }, [next, pause, prev, resume]);
 
   const toggleLoop = useCallback(() => setLoopLesson((value) => !value), []);
 
