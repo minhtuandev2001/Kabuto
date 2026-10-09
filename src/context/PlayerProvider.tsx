@@ -48,14 +48,52 @@ type PlayerContextValue = {
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
-function shouldPauseBetweenWords(
-  gapMs: number,
-  listLength: number,
-  index: number,
-  loopLesson: boolean,
-  hidden: boolean,
-) {
-  if (gapMs <= 0 || hidden) {
+/** How long a word without playable audio stays on screen before auto-advancing. */
+const NO_AUDIO_HOLD_MS = 1500;
+/** Stop auto-play after this many consecutive audio load failures (e.g. offline). */
+const MAX_FAILED_WORDS = 3;
+const SILENCE_SAMPLE_RATE = 8000;
+const silenceCache = new Map<number, string>();
+
+/** A silent WAV of `ms` length, so the gap between words is real playback rather than a timer. */
+function silenceSrc(ms: number) {
+  const cached = silenceCache.get(ms);
+  if (cached) {
+    return cached;
+  }
+  const samples = Math.max(1, Math.round((SILENCE_SAMPLE_RATE * ms) / 1000));
+  const dataBytes = samples * 2;
+  const view = new DataView(new ArrayBuffer(44 + dataBytes));
+  const text = (offset: number, value: string) => {
+    for (let i = 0; i < value.length; i += 1) {
+      view.setUint8(offset + i, value.charCodeAt(i));
+    }
+  };
+  text(0, "RIFF");
+  view.setUint32(4, 36 + dataBytes, true);
+  text(8, "WAVE");
+  text(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, SILENCE_SAMPLE_RATE, true);
+  view.setUint32(28, SILENCE_SAMPLE_RATE * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  text(36, "data");
+  view.setUint32(40, dataBytes, true);
+  const bytes = new Uint8Array(view.buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  const src = `data:audio/wav;base64,${btoa(binary)}`;
+  silenceCache.set(ms, src);
+  return src;
+}
+
+function shouldPauseBetweenWords(gapMs: number, listLength: number, index: number, loopLesson: boolean) {
+  if (gapMs <= 0) {
     return false;
   }
   return !(index >= listLength - 1 && !loopLesson);
@@ -81,8 +119,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const pageSizeRef = useRef(clampPlayWordLimit(playWordLimit));
   const queuePageRef = useRef(0);
   const delayTimerRef = useRef<number | null>(null);
+  /** True while the audio element is playing the silent gap (or its timer fallback) between words. */
+  const gapActiveRef = useRef(false);
+  const failStreakRef = useRef(0);
   const finishLockRef = useRef(false);
-  const hiddenRef = useRef(false);
   const loadedRef = useRef({ listId: "", index: -1, key: "" });
 
   const [mode, setMode] = useState<PlayMode>("lesson");
@@ -121,6 +161,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       window.clearTimeout(delayTimerRef.current);
       delayTimerRef.current = null;
     }
+    gapActiveRef.current = false;
     setIsWaiting(false);
   }, []);
 
@@ -183,6 +224,40 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const advanceRef = useRef<() => void>(() => undefined);
+  const retreatRef = useRef<() => void>(() => undefined);
+
+  const runGapTimer = useCallback((ms: number) => {
+    if (delayTimerRef.current != null) {
+      return;
+    }
+    delayTimerRef.current = window.setTimeout(() => {
+      delayTimerRef.current = null;
+      gapActiveRef.current = false;
+      setIsWaiting(false);
+      advanceRef.current();
+    }, ms);
+  }, []);
+
+  // A setTimeout gap gets throttled or frozen once the screen is off, and iOS drops the audio session
+  // when nothing plays. Playing silence keeps the page "playing", and its `ended` starts the next word.
+  const beginGap = useCallback(
+    (ms: number) => {
+      gapActiveRef.current = true;
+      setIsWaiting(true);
+      const audio = audioRef.current;
+      if (!audio) {
+        runGapTimer(ms);
+        return;
+      }
+      audio.src = silenceSrc(ms);
+      audio.play().catch(() => {
+        if (gapActiveRef.current) {
+          runGapTimer(ms);
+        }
+      });
+    },
+    [runGapTimer],
+  );
 
   const loadWord = useCallback(
     (word: VocabWord | undefined, play: boolean) => {
@@ -197,9 +272,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }
       if (!word?.audioUrl) {
         audio.pause();
+        setIsLoading(false);
+        if (word && play) {
+          shouldPlayRef.current = true;
+          syncMediaSession(word);
+          beginGap(Math.max(gapRef.current, NO_AUDIO_HOLD_MS));
+          return;
+        }
         audio.removeAttribute("src");
         setIsPlaying(false);
-        setIsLoading(false);
         return;
       }
       setIsLoading(true);
@@ -219,7 +300,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setIsPlaying(false);
       }
     },
-    [clearDelay, currentPlaylist, syncMediaSession, warmAround],
+    [beginGap, clearDelay, currentPlaylist, syncMediaSession, warmAround],
   );
 
   const goToIndex = useCallback(
@@ -274,6 +355,26 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setIsPlaying(false);
   };
 
+  retreatRef.current = () => {
+    const list = currentPlaylist();
+    const current = indexRef.current;
+    if (current > 0) {
+      startWord(list, current - 1);
+      return;
+    }
+    if (loopRef.current) {
+      startWord(list, Math.max(0, list.length - 1));
+      return;
+    }
+    if (modeRef.current === "lesson") {
+      const prevLesson = catalogRef.current.getAdjacentLesson(lessonIdRef.current, -1);
+      if (prevLesson != null) {
+        const prevWords = catalogRef.current.getWordsForLesson(prevLesson);
+        startWord(prevWords, Math.max(0, prevWords.length - 1));
+      }
+    }
+  };
+
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
@@ -281,24 +382,39 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
     const onLoaded = () => {
       finishLockRef.current = false;
-      setDuration(Math.max(1, audio.duration * 1000 || 1));
+      if (!gapActiveRef.current) {
+        setDuration(Math.max(1, audio.duration * 1000 || 1));
+      }
       setIsLoading(false);
       if (shouldPlayRef.current) {
         audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
       }
     };
-    const onTime = () => setPosition(audio.currentTime * 1000);
+    const onTime = () => {
+      if (!gapActiveRef.current) {
+        setPosition(audio.currentTime * 1000);
+      }
+    };
     const onPlay = () => {
       finishLockRef.current = false;
+      if (!gapActiveRef.current) {
+        failStreakRef.current = 0;
+      }
       setIsPlaying(true);
       setIsLoading(false);
     };
     const onPause = () => {
-      if (!delayTimerRef.current) {
+      if (!gapActiveRef.current) {
         setIsPlaying(false);
       }
     };
     const onEnded = () => {
+      if (gapActiveRef.current) {
+        gapActiveRef.current = false;
+        setIsWaiting(false);
+        advanceRef.current();
+        return;
+      }
       if (finishLockRef.current) {
         return;
       }
@@ -306,24 +422,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setIsPlaying(false);
       shouldPlayRef.current = true;
       const list = currentPlaylist();
-      if (
-        !shouldPauseBetweenWords(
-          gapRef.current,
-          list.length,
-          indexRef.current,
-          loopRef.current,
-          hiddenRef.current,
-        )
-      ) {
+      if (!shouldPauseBetweenWords(gapRef.current, list.length, indexRef.current, loopRef.current)) {
         advanceRef.current();
         return;
       }
-      setIsWaiting(true);
-      delayTimerRef.current = window.setTimeout(() => {
-        delayTimerRef.current = null;
-        setIsWaiting(false);
-        advanceRef.current();
-      }, gapRef.current);
+      beginGap(gapRef.current);
+    };
+    // Without this a word whose audio fails to load (bad URL, flaky network while asleep) stalls playback for good.
+    const onError = () => {
+      if (gapActiveRef.current) {
+        runGapTimer(gapRef.current);
+        return;
+      }
+      if (!audio.getAttribute("src")) {
+        return;
+      }
+      setIsLoading(false);
+      if (!shouldPlayRef.current) {
+        setIsPlaying(false);
+        return;
+      }
+      failStreakRef.current += 1;
+      if (failStreakRef.current >= MAX_FAILED_WORDS) {
+        shouldPlayRef.current = false;
+        setIsPlaying(false);
+        return;
+      }
+      beginGap(Math.max(gapRef.current, NO_AUDIO_HOLD_MS));
     };
 
     audio.addEventListener("loadedmetadata", onLoaded);
@@ -331,6 +456,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("ended", onEnded);
+    audio.addEventListener("error", onError);
 
     return () => {
       audio.pause();
@@ -339,9 +465,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("error", onError);
       audioRef.current = null;
     };
-  }, []);
+  }, [beginGap, currentPlaylist, runGapTimer]);
 
   const listId = mode === "queue" ? `queue:${queuePage}:${pageSize}` : `lesson:${lessonId}`;
   useEffect(() => {
@@ -363,9 +490,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   }, [currentWord, index, listId, loadWord, playlist]);
 
+  // Only the timer fallback (silence failed to play) is left here; a frozen background timer would stall playback.
   useEffect(() => {
     const onVis = () => {
-      hiddenRef.current = document.hidden;
       if (document.hidden && delayTimerRef.current != null) {
         clearDelay();
         if (shouldPlayRef.current) {
@@ -387,6 +514,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
     navigator.mediaSession.setActionHandler("pause", () => {
       shouldPlayRef.current = false;
+      if (gapActiveRef.current) {
+        // Put the current word back on the element so "play" replays it instead of finishing the silence.
+        loadWord(currentPlaylist()[indexRef.current], false);
+        return;
+      }
       clearDelay();
       audioRef.current?.pause();
     });
@@ -398,15 +530,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     navigator.mediaSession.setActionHandler("previoustrack", () => {
       shouldPlayRef.current = true;
       clearDelay();
-      if (indexRef.current > 0) {
-        const list = currentPlaylist();
-        const nextIndex = indexRef.current - 1;
-        setIndex(nextIndex);
-        const word = list[nextIndex];
-        if (word) {
-          setLessonId(word.lesson);
-        }
-      }
+      retreatRef.current();
     });
     return () => {
       navigator.mediaSession.setActionHandler("play", null);
@@ -414,7 +538,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       navigator.mediaSession.setActionHandler("nexttrack", null);
       navigator.mediaSession.setActionHandler("previoustrack", null);
     };
-  }, [clearDelay, currentPlaylist]);
+  }, [clearDelay, currentPlaylist, loadWord]);
 
   const playLesson = useCallback(
     (nextLesson: number, wordIndex = 0, autoplay = true) => {
@@ -497,10 +621,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   }, [playQueue, playWordLimit]);
 
   const togglePlay = useCallback(() => {
-    if (delayTimerRef.current != null) {
-      clearDelay();
+    if (gapActiveRef.current) {
       shouldPlayRef.current = false;
-      setIsPlaying(false);
+      loadWord(currentWord, false);
       return;
     }
     const audio = audioRef.current;
@@ -517,7 +640,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
     shouldPlayRef.current = true;
     audio.play().then(() => setIsPlaying(true)).catch(() => loadWord(currentWord, true));
-  }, [clearDelay, currentWord, loadWord]);
+  }, [currentWord, loadWord]);
   const next = useCallback(() => {
     clearDelay();
     shouldPlayRef.current = true;
