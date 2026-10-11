@@ -15,8 +15,117 @@
 }
 
 .play-paused .play-timer,
-.play-paused .play-run {
+.play-paused .play-run,
+.play-paused .play-strip,
+.play-paused .play-toss-x,
+.play-paused .play-toss-y {
   animation-play-state: paused;
+}
+
+/* Arena motion is the game mechanic itself, so it is not gated on reduced motion; GameScreen swaps in the
+   static answer grid for players who ask for reduced motion. */
+@keyframes play-strip {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.play-strip {
+  animation: play-strip var(--play-dur, 8s) linear infinite;
+}
+
+@keyframes play-toss-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--toss-dx, 0px));
+  }
+}
+
+@keyframes play-toss-y {
+  0% {
+    transform: translateY(0) rotate(-4deg);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  50% {
+    transform: translateY(-310px) rotate(3deg);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.3);
+  }
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+}
+
+.play-toss-x {
+  animation: play-toss-x var(--play-dur, 2.6s) linear infinite both;
+}
+
+.play-toss-y {
+  animation: play-toss-y var(--play-dur, 2.6s) infinite both;
+}
+
+@keyframes play-flash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.play-flash {
+  animation: play-flash 0.5s ease-out forwards;
+}
+
+@keyframes play-fever {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+.play-fever::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  z-index: -1;
+  border-radius: 34px;
+  background: linear-gradient(110deg, #fb923cb3, #f472b6b3, #a78bfab3, #facc15b3, #fb923cb3);
+  background-size: 300% 100%;
+  filter: blur(16px);
+  animation: play-fever 3s linear infinite;
+}
+
+@keyframes play-confetti {
+  from {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(var(--cx, 0px), 110vh, 0) rotate(var(--cr, 720deg));
+  }
+}
+
+.play-confetti {
+  position: fixed;
+  top: 0;
+  z-index: 40;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  pointer-events: none;
+  animation: play-confetti var(--cd, 2.6s) cubic-bezier(0.25, 0.6, 0.45, 1) var(--cdel, 0s) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-confetti {
+    display: none;
+  }
 }
 
 @keyframes play-run {

@@ -85,7 +85,7 @@ export function PromptCard({
 
 const PLATES = ["🍣", "🍤", "🍙", "🍥"];
 
-function optionState(option: VocabWord, question: Question, feedback: Feedback | null) {
+export function optionState(option: VocabWord, question: Question, feedback: Feedback | null) {
   if (!feedback) {
     return "idle" as const;
   }
@@ -95,19 +95,20 @@ function optionState(option: VocabWord, question: Question, feedback: Feedback |
   return feedback.picked === option ? ("wrong" as const) : ("dim" as const);
 }
 
-const STATE_CLASS = {
+export const STATE_CLASS = {
   idle: "",
   answer: "ring-4 ring-emerald-400 bg-emerald-50",
   wrong: "ring-4 ring-rose-400 bg-rose-50",
   dim: "opacity-45",
 };
 
-function OptionText({ option, question }: { option: VocabWord; question: Question }) {
+export function OptionText({ option, question, compact = false }: { option: VocabWord; question: Question; compact?: boolean }) {
   const label = optionLabel(option, question.prompt);
   const showKana = question.prompt === "meaning" && option.kanji.trim();
+  const size = question.prompt === "meaning" ? (compact ? "text-[16px] leading-5" : "text-[18px] leading-6") : compact ? "text-[13px]" : "text-[14px]";
   return (
     <span className="block min-w-0">
-      <span className={`line-clamp-3 block font-extrabold leading-5 ${question.prompt === "meaning" ? "text-[18px] leading-6" : "text-[14px]"}`}>
+      <span className={`line-clamp-3 block font-extrabold leading-5 ${size}`}>
         {label}
       </span>
       {showKana ? <span className="block truncate text-[11.5px] font-bold opacity-70">{option.kana}</span> : null}

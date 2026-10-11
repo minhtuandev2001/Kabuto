@@ -4,6 +4,10 @@ import { X } from "lucide-react";
 import { useEffect, useRef, useState, type FocusEvent } from "react";
 import {
   BOSSES,
+  CRIT_BONUS,
+  CRIT_MS,
+  NINJA_MISS_PENALTY_S,
+  bossRage,
   buildOptions,
   gameRules,
   kobanFor,
@@ -19,6 +23,7 @@ import {
 import { wordKey, type AnswerMode, type GameId } from "@/lib/play/progress";
 import { buzz, playWordAudio, sfx, stopWordAudio } from "@/lib/play/sfx";
 import type { VocabWord } from "@/lib/types";
+import { NinjaToss, SushiBelt, WhackField } from "./Arenas";
 import { AnswerReveal, ChoiceAnswers, PromptCard, TypeAnswer, type Feedback } from "./GameParts";
 import { Neko, type NekoMood } from "./Neko";
 
@@ -51,6 +56,11 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
   const [hitKey, setHitKey] = useState(0);
   const [boss] = useState(() => BOSSES[Math.floor(Math.random() * BOSSES.length)]!);
   const [typing, setTyping] = useState(false);
+  const [questionMs, setQuestionMs] = useState(rules.questionMs?.[mode]);
+  const [pop, setPop] = useState<{ id: number; text: string; bad: boolean } | null>(null);
+  const [flash, setFlash] = useState(0);
+  // Moving targets are the mechanic; players who ask for reduced motion get the static grid instead.
+  const [calm] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   const questionRef = useRef<Question | null>(null);
   const feedbackRef = useRef<Feedback | null>(null);
@@ -64,6 +74,8 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
   const questionIdRef = useRef(0);
   const questionTimerRef = useRef<number | null>(null);
   const questionEndsRef = useRef(0);
+  const questionStartRef = useRef(0);
+  const bossHpRef = useRef(deck.length);
   const advanceTimerRef = useRef<number | null>(null);
   const roundEndsRef = useRef(0);
   const endedRef = useRef(false);
@@ -158,7 +170,10 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
     if (prompt === "listen") {
       playWordAudio(word);
     }
-    const limit = rules.questionMs?.[mode];
+    questionStartRef.current = Date.now();
+    const base = rules.questionMs?.[mode];
+    const limit = base && game === "boss" && bossRage(bossHpRef.current, deck.length) ? Math.round(base * 0.7) : base;
+    setQuestionMs(limit);
     if (limit) {
       questionEndsRef.current = Date.now() + limit;
       questionTimerRef.current = window.setTimeout(() => {
@@ -187,9 +202,12 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
     if (correct) {
       const combo = detail.hinted ? 0 : s.combo + 1;
       const secondsLeft = rules.questionMs ? (questionEndsRef.current - Date.now()) / 1000 : 0;
+      const crit = game === "boss" && !detail.hinted && Date.now() - questionStartRef.current < CRIT_MS;
+      const gained = questionScore(combo, Boolean(detail.hinted), secondsLeft) + (crit ? CRIT_BONUS : 0);
+      setPop({ id: Date.now(), text: crit ? `💥 Chí mạng +${gained}` : `+${gained}`, bad: false });
       setStatsBoth({
         ...s,
-        score: s.score + questionScore(combo, Boolean(detail.hinted), secondsLeft),
+        score: s.score + gained,
         combo,
         maxCombo: Math.max(s.maxCombo, combo),
         correct: s.correct + 1,
@@ -204,7 +222,8 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
         sfx.combo();
       }
       if (game === "boss") {
-        setBossHp((hp) => Math.max(0, hp - 1));
+        bossHpRef.current = Math.max(0, bossHpRef.current - 1);
+        setBossHp(bossHpRef.current);
         setHitKey((n) => n + 1);
         sfx.hit();
       }
@@ -214,6 +233,13 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
       sfx.wrong();
       buzz([40, 60, 40]);
       react("sad");
+      setFlash((n) => n + 1);
+      if (game === "ninja") {
+        roundEndsRef.current -= NINJA_MISS_PENALTY_S * 1000;
+        setPop({ id: Date.now(), text: `-${NINJA_MISS_PENALTY_S} giây`, bad: true });
+      } else if (game === "boss" && detail.timeout) {
+        setPop({ id: Date.now(), text: "⚡ Boss đánh trúng!", bad: true });
+      }
       if (rules.retryUntilCorrect || (rules.retryWrong && !retriedRef.current.has(key))) {
         retriedRef.current.add(key);
         queueRef.current.push(word);
@@ -275,6 +301,7 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
     retriedRef.current.clear();
     recordedRef.current.clear();
     missedRef.current.clear();
+    bossHpRef.current = deck.length;
     endedRef.current = false;
     if (rules.roundSec) {
       roundEndsRef.current = Date.now() + rules.roundSec * 1000;
@@ -335,17 +362,27 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
   }
 
   const dark = game === "ninja";
-  const limit = rules.questionMs?.[mode];
+  const limit = questionMs;
   const total = deck.length + retriedRef.current.size;
   const replay = () => playWordAudio(question?.word);
+  const fever = stats.combo >= 5;
+  const rage = game === "boss" && bossRage(bossHp, deck.length);
+  const pick = (option: VocabWord) => question && resolve(option === question.word, { picked: option });
+  const arena = { question: question!, feedback, combo: stats.combo, onPick: pick };
 
   const answers = question ? (
-    mode === "choice" ? (
+    mode === "choice" && !calm && game === "tanuki" ? (
+      <WhackField key={question.id} {...arena} />
+    ) : mode === "choice" && !calm && game === "sushi" ? (
+      <SushiBelt key={question.id} {...arena} />
+    ) : mode === "choice" && !calm && game === "ninja" ? (
+      <NinjaToss key={question.id} {...arena} />
+    ) : mode === "choice" ? (
       <ChoiceAnswers
         game={game}
         question={question}
         feedback={feedback}
-        onPick={(option) => resolve(option === question.word, { picked: option })}
+        onPick={pick}
       />
     ) : (
       <TypeAnswer
@@ -360,10 +397,11 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
 
   return (
     <div
-      className={`play-zoom relative mx-auto flex w-full max-w-xl flex-col gap-3 pb-4 ${limit && feedback ? "play-paused" : ""} ${
+      className={`play-zoom relative mx-auto flex w-full max-w-xl flex-col gap-3 pb-4 ${feedback ? "play-paused" : ""} ${
         typing ? "play-compact" : ""
-      }`}
+      } ${fever ? "play-fever" : ""}`}
     >
+      {flash ? <div key={flash} className="play-flash pointer-events-none fixed inset-0 z-30 bg-rose-500/25" /> : null}
       <header className="flex items-center gap-2">
         <button type="button" onClick={exit} className="glass-strong flex h-10 w-10 items-center justify-center rounded-2xl text-[#4A4470]" aria-label="Thoát">
           <X size={18} />
@@ -377,10 +415,26 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
             {rules.endless ? "" : ` · Câu ${Math.min(stats.answered + 1, total)}/${total}`}
           </p>
         </div>
-        {stats.combo >= 2 ? (
+        {fever ? (
+          <span className="rounded-full bg-gradient-to-r from-[#F97316] to-[#EC4899] px-2.5 py-1 text-[12px] font-extrabold text-white shadow-[0_4px_12px_rgba(236,72,153,0.4)]">
+            🔥 FEVER x{1 + Math.floor(stats.combo / 5)}
+          </span>
+        ) : stats.combo >= 2 ? (
           <span className="rounded-full bg-[#FFF1E6] px-2.5 py-1 text-[12px] font-extrabold text-[#EA580C]">🔥 x{stats.combo}</span>
         ) : null}
-        <span className="rounded-2xl bg-[#7C5CFC] px-3 py-1.5 text-[14px] font-extrabold text-white">{stats.score}</span>
+        <span className="relative rounded-2xl bg-[#7C5CFC] px-3 py-1.5 text-[14px] font-extrabold text-white">
+          {stats.score}
+          {pop ? (
+            <span
+              key={pop.id}
+              className={`play-rise pointer-events-none absolute right-full top-1 z-20 mr-2 whitespace-nowrap rounded-full px-2 py-0.5 text-[13px] font-extrabold shadow ${
+                pop.bad ? "bg-rose-500 text-white" : "bg-[#FDE68A] text-[#92400E]"
+              }`}
+            >
+              {pop.text}
+            </span>
+          ) : null}
+        </span>
       </header>
 
       {game === "sushi" ? (
@@ -394,13 +448,7 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
               {question ? <PromptCard question={question} onReplay={replay} /> : null}
             </div>
           </div>
-          {limit && question ? (
-            <div className="play-belt play-belt-move relative mt-3 h-7 overflow-hidden rounded-full">
-              <span key={question.id} className="play-run absolute top-0 text-[22px] leading-7" style={{ ["--play-dur" as string]: `${limit}ms` }}>
-                🍣
-              </span>
-            </div>
-          ) : null}
+          {limit && question ? <TimerBar id={question.id} ms={limit} color="bg-[#F97316]" /> : null}
         </section>
       ) : null}
 
@@ -428,20 +476,27 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
             </div>
             <div className="min-w-0 flex-1 py-2 pr-10">{question ? <PromptCard question={question} onReplay={replay} dark /> : null}</div>
           </div>
-          <TimerBar id={0} ms={(rules.roundSec ?? 60) * 1000} color="bg-[#FBBF24]" dark />
+          {/* Driven by state, not a CSS run: a wrong slash takes seconds off. */}
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/15">
+            <div
+              className="h-full rounded-full bg-[#FBBF24] transition-[width] duration-300 ease-linear"
+              style={{ width: `${(timeLeft / (rules.roundSec ?? 60)) * 100}%` }}
+            />
+          </div>
         </section>
       ) : null}
 
       {game === "boss" ? (
         <section
           key={feedback && !feedback.correct ? `hurt-${stats.wrong}` : "boss"}
-          className={`relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#3B0764] via-[#7C2D92] to-[#BE185D] p-3.5 text-white shadow-[0_14px_26px_rgba(59,7,100,0.35)] ${
-            feedback && !feedback.correct ? "play-shake" : ""
-          }`}
+          className={`relative overflow-hidden rounded-[28px] bg-gradient-to-br p-3.5 text-white shadow-[0_14px_26px_rgba(59,7,100,0.35)] ${
+            rage ? "from-[#450A0A] via-[#991B1B] to-[#EA580C]" : "from-[#3B0764] via-[#7C2D92] to-[#BE185D]"
+          } ${feedback && !feedback.correct ? "play-shake" : ""}`}
         >
           <div className="flex items-center justify-between text-[12px] font-extrabold">
             <span>
               {boss.emoji} {boss.name}
+              {rage ? <span className="ml-1.5 rounded-full bg-black/30 px-2 py-0.5 text-[10.5px]">😡 NỔI GIẬN</span> : null}
             </span>
             <span>{"❤️".repeat(Math.max(0, hearts))}{"🖤".repeat(Math.max(0, (rules.hearts ?? 0) - hearts))}</span>
           </div>
@@ -464,13 +519,21 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
               ) : null}
             </div>
           </div>
+          {limit && question ? (
+            <div className="mt-1 flex items-center gap-2">
+              <span className="shrink-0 text-[10.5px] font-extrabold text-white/80">⚡ Boss tụ lực</span>
+              <div className="min-w-0 flex-1">
+                <TimerBar id={question.id} ms={limit} color={rage ? "bg-[#FCA5A5]" : "bg-[#FBBF24]"} dark gap="" />
+              </div>
+            </div>
+          ) : null}
           <div className="mt-2 rounded-[20px] bg-white/92 px-3 py-3 text-[#1E1B4B]">
             {question ? <PromptCard question={question} onReplay={replay} /> : null}
           </div>
         </section>
       ) : null}
 
-      <div className={dark ? "rounded-[28px] bg-[#2A2363] p-3" : ""} onFocus={onAnswerFocus} onBlur={onAnswerBlur}>
+      <div className={dark && (mode === "type" || calm) ? "rounded-[28px] bg-[#2A2363] p-3" : ""} onFocus={onAnswerFocus} onBlur={onAnswerBlur}>
         {answers}
       </div>
 
@@ -490,9 +553,9 @@ export function GameScreen({ game, mode, deck, pool, accessory, onRecord, onFini
   );
 }
 
-function TimerBar({ id, ms, color, dark = false }: { id: number; ms: number; color: string; dark?: boolean }) {
+function TimerBar({ id, ms, color, dark = false, gap = "mt-3" }: { id: number; ms: number; color: string; dark?: boolean; gap?: string }) {
   return (
-    <div className={`mt-3 h-2 overflow-hidden rounded-full ${dark ? "bg-white/15" : "bg-black/10"}`}>
+    <div className={`${gap} h-2 overflow-hidden rounded-full ${dark ? "bg-white/15" : "bg-black/10"}`}>
       <div key={id} className={`play-timer h-full rounded-full ${color}`} style={{ ["--play-dur" as string]: `${ms}ms` }} />
     </div>
   );

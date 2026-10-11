@@ -67,11 +67,36 @@ export const GAMES: GameRules[] = [
     name: "Boss Yokai",
     emoji: "👹",
     tagline: "Mỗi từ đúng là một đòn đánh boss",
-    howTo: "Boss có máu bằng số từ. Sai thì mất tim và từ đó quay lại đánh bạn. Hết 3 tim là thua.",
+    howTo: "Boss có máu bằng số từ và tự tấn công khi tụ lực xong. Sai hoặc chậm là mất tim. Hết 3 tim là thua.",
+    questionMs: { choice: 7_000, type: 20_000 },
     hearts: 3,
     retryUntilCorrect: true,
   },
 ];
+
+/** Ninja: a wrong slash costs this many seconds of the round. */
+export const NINJA_MISS_PENALTY_S = 3;
+/** Boss: answering within this window is a critical hit. */
+export const CRIT_MS = 2_000;
+export const CRIT_BONUS = 10;
+
+/** Below a third of its HP the boss rages and charges its attack faster. */
+export function bossRage(hp: number, total: number) {
+  return total >= 3 && hp <= Math.floor(total / 3);
+}
+
+export function starsFor(result: { outcome: RoundOutcome; correct: number; wrong: number }) {
+  const answered = result.correct + result.wrong;
+  if (result.outcome === "quit" || result.outcome === "lose" || !answered) {
+    return 0;
+  }
+  const accuracy = result.correct / answered;
+  return accuracy >= 0.9 ? 3 : accuracy >= 0.7 ? 2 : accuracy >= 0.4 ? 1 : 0;
+}
+
+export function xpFor(result: { outcome: RoundOutcome; correct: number }, stars: number) {
+  return result.outcome === "quit" ? 0 : result.correct * 10 + stars * 20;
+}
 
 export function gameRules(id: GameId) {
   return GAMES.find((item) => item.id === id) ?? GAMES[0]!;

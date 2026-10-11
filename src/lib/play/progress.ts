@@ -22,6 +22,18 @@ export type PlaySetup = {
   mode: AnswerMode;
 };
 
+/** Today's totals for the daily quests; reset when `day` is not today. */
+export type DailyLog = {
+  day: number;
+  correct: number;
+  rounds: number;
+  maxCombo: number;
+  bossWins: number;
+  threeStars: number;
+  bestScore: number;
+  claimed: string[];
+};
+
 export type PlayProgress = {
   koban: number;
   streak: { day: number; count: number };
@@ -31,6 +43,10 @@ export type PlayProgress = {
   equipped: string | null;
   muted: boolean;
   setup: PlaySetup;
+  xp: number;
+  daily: DailyLog;
+  /** Best stars per journey stage, keyed by lesson number. */
+  stages: Record<number, number>;
 };
 
 export const MAX_BOX = 5;
@@ -39,6 +55,17 @@ export const BOX_INTERVAL_DAYS = [0, 1, 3, 7, 14, 30];
 export const KNOWN_BOX = 4;
 
 export const DEFAULT_SETUP: PlaySetup = { source: "lesson", lessons: [], levels: [], count: 20, mode: "choice" };
+
+export const EMPTY_DAILY: DailyLog = {
+  day: 0,
+  correct: 0,
+  rounds: 0,
+  maxCombo: 0,
+  bossWins: 0,
+  threeStars: 0,
+  bestScore: 0,
+  claimed: [],
+};
 
 export const EMPTY_PROGRESS: PlayProgress = {
   koban: 0,
@@ -49,7 +76,92 @@ export const EMPTY_PROGRESS: PlayProgress = {
   equipped: null,
   muted: false,
   setup: DEFAULT_SETUP,
+  xp: 0,
+  daily: EMPTY_DAILY,
+  stages: {},
 };
+
+/** XP needed to go from `level` to the next one. */
+export function xpToNext(level: number) {
+  return 100 + (level - 1) * 50;
+}
+
+export function levelFor(xp: number) {
+  let level = 1;
+  let into = Math.max(0, xp);
+  while (into >= xpToNext(level)) {
+    into -= xpToNext(level);
+    level += 1;
+  }
+  return { level, into, need: xpToNext(level) };
+}
+
+type DailyStat = Exclude<keyof DailyLog, "day" | "claimed">;
+
+export type Quest = { id: string; emoji: string; label: string; stat: DailyStat; target: number; reward: number };
+
+export const QUESTS: Quest[] = [
+  { id: "correct30", emoji: "✅", label: "Trả lời đúng 30 từ", stat: "correct", target: 30, reward: 20 },
+  { id: "rounds3", emoji: "🎮", label: "Chơi 3 ván", stat: "rounds", target: 3, reward: 15 },
+  { id: "combo10", emoji: "🔥", label: "Đạt combo 10", stat: "maxCombo", target: 10, reward: 25 },
+  { id: "boss1", emoji: "👹", label: "Hạ gục 1 Boss Yokai", stat: "bossWins", target: 1, reward: 30 },
+  { id: "stars3", emoji: "⭐", label: "Đạt 3 sao trong một ván", stat: "threeStars", target: 1, reward: 25 },
+  { id: "score400", emoji: "🎯", label: "Ghi 400 điểm trong một ván", stat: "bestScore", target: 400, reward: 20 },
+];
+
+/** Three different quests per day, rotating day by day. */
+export function todaysQuests(today: number) {
+  const start = today % QUESTS.length;
+  return [0, 2, 4].map((step) => QUESTS[(start + step) % QUESTS.length]!);
+}
+
+export function dailyFor(daily: DailyLog, today: number): DailyLog {
+  return daily.day === today ? daily : { ...EMPTY_DAILY, day: today };
+}
+
+export function logRound(
+  daily: DailyLog,
+  today: number,
+  round: { correct: number; maxCombo: number; score: number; bossWin: boolean; stars: number },
+): DailyLog {
+  const log = dailyFor(daily, today);
+  return {
+    ...log,
+    correct: log.correct + round.correct,
+    rounds: log.rounds + 1,
+    maxCombo: Math.max(log.maxCombo, round.maxCombo),
+    bossWins: log.bossWins + (round.bossWin ? 1 : 0),
+    threeStars: log.threeStars + (round.stars === 3 ? 1 : 0),
+    bestScore: Math.max(log.bestScore, round.score),
+  };
+}
+
+export function questDone(daily: DailyLog, quest: Quest) {
+  return daily[quest.stat] >= quest.target;
+}
+
+/** What a finished round earned, shown on the result screen. */
+export type RoundMeta = {
+  stars: number;
+  xp: number;
+  levelBefore: number;
+  level: ReturnType<typeof levelFor>;
+  quests: Quest[];
+  /** Journey stage (lesson number) this round was played for. */
+  stage?: { lesson: number; nextLesson?: number; unlocked: boolean };
+};
+
+const STAGE_GAMES: GameId[] = ["sushi", "tanuki", "ninja", "boss"];
+
+/** Journey stages cycle through the games; every 4th stage is a boss. */
+export function stageGame(index: number) {
+  return STAGE_GAMES[index % STAGE_GAMES.length]!;
+}
+
+/** First stage is always open; the rest open once the stage before has a star. */
+export function stageOpen(stages: Record<number, number>, order: number[], index: number) {
+  return index === 0 || (stages[order[index - 1]!] ?? 0) > 0;
+}
 
 /** Local calendar day as an integer, so "tomorrow" follows the user's midnight, not UTC. */
 export function dayNumber(date = new Date()) {
@@ -146,6 +258,7 @@ export function loadProgress(): PlayProgress {
       ...parsed,
       setup: { ...DEFAULT_SETUP, ...parsed.setup },
       streak: { ...EMPTY_PROGRESS.streak, ...parsed.streak },
+      daily: { ...EMPTY_DAILY, ...parsed.daily },
     };
   } catch {
     return EMPTY_PROGRESS;

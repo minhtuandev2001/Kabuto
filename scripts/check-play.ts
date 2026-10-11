@@ -1,7 +1,20 @@
 import assert from "node:assert/strict";
-import { buildDeck, buildOptions, optionLabel, praiseFor, sameMeaningWords } from "../src/lib/play/deck";
+import { bossRage, buildDeck, buildOptions, optionLabel, praiseFor, sameMeaningWords, starsFor, xpFor } from "../src/lib/play/deck";
 import { canTypeWord, isReadingCorrect, normalizeKana, readingCandidates, romajiToHiragana } from "../src/lib/play/kana";
-import { bumpStreak, isDue, liveStreak, recordAnswer, wordKey } from "../src/lib/play/progress";
+import {
+  EMPTY_DAILY,
+  bumpStreak,
+  isDue,
+  levelFor,
+  liveStreak,
+  logRound,
+  questDone,
+  recordAnswer,
+  stageGame,
+  stageOpen,
+  todaysQuests,
+  wordKey,
+} from "../src/lib/play/progress";
 import type { VocabWord } from "../src/lib/types";
 
 function word(kana: string, extra: Partial<VocabWord> = {}): VocabWord {
@@ -89,5 +102,45 @@ assert.ok(praiseFor(3));
 assert.ok(praiseFor(5));
 assert.equal(praiseFor(7), null);
 assert.ok(praiseFor(10));
+
+assert.equal(starsFor({ outcome: "finish", correct: 9, wrong: 1 }), 3);
+assert.equal(starsFor({ outcome: "finish", correct: 7, wrong: 3 }), 2);
+assert.equal(starsFor({ outcome: "time", correct: 4, wrong: 6 }), 1);
+assert.equal(starsFor({ outcome: "finish", correct: 3, wrong: 7 }), 0);
+assert.equal(starsFor({ outcome: "lose", correct: 10, wrong: 0 }), 0);
+assert.equal(starsFor({ outcome: "quit", correct: 10, wrong: 0 }), 0);
+assert.equal(xpFor({ outcome: "finish", correct: 5 }, 2), 90);
+assert.equal(xpFor({ outcome: "quit", correct: 5 }, 0), 0);
+
+assert.deepEqual(levelFor(0), { level: 1, into: 0, need: 100 });
+assert.deepEqual(levelFor(99), { level: 1, into: 99, need: 100 });
+assert.deepEqual(levelFor(100), { level: 2, into: 0, need: 150 });
+assert.deepEqual(levelFor(260), { level: 3, into: 10, need: 200 });
+
+for (let day = today; day < today + 12; day += 1) {
+  const quests = todaysQuests(day);
+  assert.equal(new Set(quests.map((quest) => quest.id)).size, 3, "three different quests a day");
+}
+const played = logRound(EMPTY_DAILY, today, { correct: 12, maxCombo: 6, score: 300, bossWin: true, stars: 3 });
+const again = logRound(played, today, { correct: 20, maxCombo: 4, score: 450, bossWin: false, stars: 1 });
+assert.deepEqual(
+  { correct: again.correct, rounds: again.rounds, maxCombo: again.maxCombo, bossWins: again.bossWins, threeStars: again.threeStars, bestScore: again.bestScore },
+  { correct: 32, rounds: 2, maxCombo: 6, bossWins: 1, threeStars: 1, bestScore: 450 },
+);
+assert.equal(logRound(again, today + 1, { correct: 1, maxCombo: 1, score: 10, bossWin: false, stars: 0 }).correct, 1, "new day resets");
+assert.ok(questDone(again, { id: "x", emoji: "", label: "", stat: "correct", target: 30, reward: 1 }));
+
+const order = [1, 2, 3, 5];
+assert.ok(stageOpen({}, order, 0));
+assert.ok(!stageOpen({}, order, 1));
+assert.ok(stageOpen({ 1: 1 }, order, 1));
+assert.ok(stageOpen({ 1: 1, 3: 2 }, order, 3), "stage opens from the stage right before it");
+assert.ok(!stageOpen({ 1: 1, 3: 2 }, order, 2));
+assert.equal(stageGame(3), "boss");
+assert.equal(stageGame(7), "boss");
+
+assert.ok(!bossRage(20, 20));
+assert.ok(bossRage(6, 20));
+assert.ok(!bossRage(1, 2), "tiny decks never rage");
 
 console.log("check:play ok");

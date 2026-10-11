@@ -10,28 +10,38 @@ import { usePlayProgress } from "@/components/play/usePlayProgress";
 import { useCatalog } from "@/context/CatalogProvider";
 import { usePlayer } from "@/context/PlayerProvider";
 import { JLPT_LEVELS } from "@/lib/grammar";
-import { buildDeck, playableWords, shuffle, type RoundResult } from "@/lib/play/deck";
+import { buildDeck, playableWords, shuffle, starsFor, xpFor, type RoundResult } from "@/lib/play/deck";
 import {
   GACHA_COST,
   DUPLICATE_REFUND,
   KNOWN_BOX,
   bumpStreak,
+  dailyFor,
   dayNumber,
   isDue,
+  levelFor,
+  logRound,
   outfitEmoji,
+  questDone,
   recordAnswer,
   rollOutfit,
+  stageGame,
+  stageOpen,
+  todaysQuests,
   wordKey,
   type AnswerMode,
   type GameId,
   type PlaySetup,
+  type Quest,
+  type RoundMeta,
 } from "@/lib/play/progress";
+import { sfx } from "@/lib/play/sfx";
 import type { VocabWord } from "@/lib/types";
 
 type View =
   | { kind: "hub" }
-  | { kind: "game"; game: GameId; mode: AnswerMode; deck: VocabWord[]; run: number }
-  | { kind: "result"; result: RoundResult; newRecord: boolean };
+  | { kind: "game"; game: GameId; mode: AnswerMode; deck: VocabWord[]; run: number; stage?: number }
+  | { kind: "result"; result: RoundResult; newRecord: boolean; meta: RoundMeta };
 
 function levelRank(level: string) {
   const at = JLPT_LEVELS.indexOf(level as (typeof JLPT_LEVELS)[number]);
@@ -91,7 +101,9 @@ export default function PlayPage() {
     [update],
   );
 
-  function start(game: GameId, deck?: VocabWord[]) {
+  const stageOrder = useMemo(() => playableLessons.map((item) => item.lesson), [playableLessons]);
+
+  function start(game: GameId, deck?: VocabWord[], stage?: number) {
     const words = deck ?? buildDeck(candidates, progress.words, setup.count, dayNumber());
     if (!words.length) {
       return;
@@ -99,8 +111,30 @@ export default function PlayPage() {
     if (isPlaying || isWaiting) {
       togglePlay();
     }
-    setView({ kind: "game", game, mode: setup.mode, deck: words, run: Date.now() });
+    setView({ kind: "game", game, mode: setup.mode, deck: words, run: Date.now(), stage });
     window.scrollTo({ top: 0 });
+  }
+
+  function startStage(lesson: number) {
+    const index = stageOrder.indexOf(lesson);
+    if (index < 0 || !stageOpen(progress.stages, stageOrder, index)) {
+      return;
+    }
+    const words = playableWords(getWordsForLesson(lesson), setup.mode);
+    start(stageGame(index), buildDeck(words, progress.words, setup.count, dayNumber()), lesson);
+  }
+
+  function claimQuest(quest: Quest) {
+    const daily = dailyFor(progress.daily, today);
+    if (daily.claimed.includes(quest.id) || !questDone(daily, quest)) {
+      return;
+    }
+    sfx.coin();
+    update((current) => ({
+      ...current,
+      koban: current.koban + quest.reward,
+      daily: { ...daily, claimed: [...daily.claimed, quest.id] },
+    }));
   }
 
   const record = useCallback(
@@ -112,19 +146,44 @@ export default function PlayPage() {
     [update],
   );
 
+  const stage = view.kind === "game" ? view.stage : undefined;
   const finishRound = useCallback(
     (result: RoundResult) => {
+      const day = dayNumber();
       const newRecord = result.score > 0 && result.score > (progress.best[result.game] ?? 0);
+      const stars = starsFor(result);
+      const xp = xpFor(result, stars);
+      const before = dailyFor(progress.daily, day);
+      const daily =
+        result.outcome === "quit"
+          ? before
+          : logRound(before, day, { ...result, bossWin: result.outcome === "win", stars });
+      const prevStars = stage != null ? (progress.stages[stage] ?? 0) : 0;
+      const stageIndex = stage != null ? stageOrder.indexOf(stage) : -1;
       update((current) => ({
         ...current,
         koban: current.koban + result.koban,
         best: newRecord ? { ...current.best, [result.game]: result.score } : current.best,
-        streak: result.correct > 0 ? bumpStreak(current.streak, dayNumber()) : current.streak,
+        streak: result.correct > 0 ? bumpStreak(current.streak, day) : current.streak,
+        xp: current.xp + xp,
+        daily,
+        stages: stage != null && stars > prevStars ? { ...current.stages, [stage]: stars } : current.stages,
       }));
-      setView({ kind: "result", result, newRecord });
+      const meta: RoundMeta = {
+        stars,
+        xp,
+        levelBefore: levelFor(progress.xp).level,
+        level: levelFor(progress.xp + xp),
+        quests: todaysQuests(day).filter((quest) => questDone(daily, quest) && !questDone(before, quest)),
+        stage:
+          stage != null
+            ? { lesson: stage, nextLesson: stageOrder[stageIndex + 1], unlocked: prevStars === 0 && stars > 0 }
+            : undefined,
+      };
+      setView({ kind: "result", result, newRecord, meta });
       window.scrollTo({ top: 0 });
     },
-    [progress.best, update],
+    [progress.best, progress.daily, progress.stages, progress.xp, stage, stageOrder, update],
   );
 
   function rollGacha() {
@@ -163,14 +222,17 @@ export default function PlayPage() {
   }
 
   if (view.kind === "result") {
-    const { result } = view;
+    const { result, meta } = view;
+    const next = meta.stage?.nextLesson;
     return (
       <ResultView
         result={result}
         newRecord={view.newRecord}
+        meta={meta}
         accessory={accessory}
-        onReplay={() => start(result.game)}
+        onReplay={() => (meta.stage ? startStage(meta.stage.lesson) : start(result.game))}
         onPracticeMissed={() => start(result.game, shuffle(result.missed))}
+        onNextStage={next != null && progress.stages[meta.stage!.lesson] ? () => startStage(next) : undefined}
         onHome={() => setView({ kind: "hub" })}
       />
     );
@@ -191,6 +253,8 @@ export default function PlayPage() {
         untypeable={sourceWords.length - candidates.length}
         onSetup={changeSetup}
         onStart={(game) => start(game)}
+        onStartStage={startStage}
+        onClaimQuest={claimQuest}
         onOpenGacha={() => setGachaOpen(true)}
         onToggleMute={() => update((current) => ({ ...current, muted: !current.muted }))}
       />
